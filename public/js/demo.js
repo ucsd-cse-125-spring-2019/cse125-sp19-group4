@@ -1,8 +1,9 @@
-import getWrappedGL from './util/debug.js';
-import readStringFrom from './util/io.js';
+import getWrappedGL from '/public/util/debug.js';
+import readStringFrom from '/public/util/io.js';
 
 let cubeRotation = 0.0;
 main();
+
 
 /**
  * Start here
@@ -15,7 +16,7 @@ function main() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     console.log('width', canvas.width, 'height', canvas.height);
-    
+
 
     /** @type {WebGLRenderingContext} */
     const gl = getWrappedGL(canvas);
@@ -28,8 +29,8 @@ function main() {
 
     // Initialize a shader program; this is where all the lighting
     // for the vertices and so forth is established.
-    const vsFilename = './demo.vert';
-    const fsFilename = './demo.frag';
+    const vsFilename = '/public/shader/demo.vert';
+    const fsFilename = '/public/shader/demo.frag';
     const shaderProgram = initShaderProgram(gl, vsFilename, fsFilename);
 
     // Collect all the info needed to use the shader program.
@@ -131,7 +132,7 @@ function initBuffers(gl) {
 
     // Now set up the colors for the faces. We'll use solid colors
     // for each face.
-    
+
     const faceColors = [
         [255, 255, 255, 255],    // Front face: white
         [255, 0, 0, 255],    // Back face: red
@@ -140,7 +141,7 @@ function initBuffers(gl) {
         [255, 255, 0, 255],    // Right face: yellow
         [255, 0, 255, 255],    // Left face: purple
     ];
-    
+
     // Convert the array of colors into a table for all the vertices.
 
     let colors = [];
@@ -189,9 +190,7 @@ function initBuffers(gl) {
     };
 }
 
-//
-// Draw the scene.
-//
+
 /**
  * Draw the scene.
  * @param  {WebGLRenderingContext} gl
@@ -325,9 +324,13 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
     cubeRotation += deltaTime;
 }
 
-//
-// Initialize a shader program, so WebGL knows how to draw our data
-//
+
+/**
+ * Initialize a shader program, so WebGL knows how to draw our data
+ * @param  {WebGLRenderingContext} gl
+ * @param  {string} vsFilename
+ * @param  {string} fsFilename
+ */
 function initShaderProgram(gl, vsFilename, fsFilename) {
     const vsSource = readStringFrom(vsFilename);
     const fsSource = readStringFrom(fsFilename);
@@ -351,11 +354,15 @@ function initShaderProgram(gl, vsFilename, fsFilename) {
     return shaderProgram;
 }
 
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
+
+/**
+ * creates a shader of the given type, uploads the source and compiles it.
+ * @param  {WebGLRenderingContext} gl
+ * @param  {number} type
+ * @param  {string} source
+ */
 function loadShader(gl, type, source) {
+    /** @type {WebGLShader} */
     const shader = gl.createShader(type);
 
     // Send the source to the shader object

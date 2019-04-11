@@ -8,6 +8,11 @@ app.use("/public", express.static(path.join(__dirname, '/public')));
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
+console.log(__dirname);
+
+app.get('/cube_demo', function(req, res){
+  res.sendFile(__dirname + '/public/html/demo.html');
+});
 
 io.on('connection', function(socket){
   console.log('a user connected');
@@ -38,8 +43,8 @@ io.on('connection', function(socket){
     io.sockets.emit('broadcast', data);
   });
 
-  socket.on('disconnect', function(){
-    console.log('user disconnected');
+  socket.on('disconnect', function(reason){
+    console.log('user disconnected. Reason:', reason);
   });
 });
 
