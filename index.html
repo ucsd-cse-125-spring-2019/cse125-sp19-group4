@@ -14,8 +14,10 @@
     </style>
   </head>
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-  <script>
+  <!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
+  <script src="/public/js/client.js"></script>
+  <!-- <script type="module" src="/public/js/data.js"></script> -->
+  <!-- <script>
       $(function () {
           var socket = io();
           $('form').submit(function(e){
@@ -28,7 +30,7 @@
               $('#messages').append($('<li>').text(msg));
           });
       });
-  </script>
+  </script> -->
   <body>
     <ul id="messages"></ul>
     <form action="">
