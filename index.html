@@ -13,28 +13,13 @@
       #messages li:nth-child(odd) { background: #eee; }
     </style>
   </head>
-  <script src="/socket.io/socket.io.js"></script>
-  <!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
-  <script src="/public/js/client.js"></script>
-  <!-- <script type="module" src="/public/js/data.js"></script> -->
-  <!-- <script>
-      $(function () {
-          var socket = io();
-          $('form').submit(function(e){
-              e.preventDefault(); // prevents page reloading
-              socket.emit('receive data', $('#m').val());
-              $('#m').val('');
-              return false;
-          });
-          socket.on('broadcast', function(msg){
-              $('#messages').append($('<li>').text(msg));
-          });
-      });
-  </script> -->
   <body>
     <ul id="messages"></ul>
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
   </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./public/js/client.js" type="module"></script>
+
 </html>
