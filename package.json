@@ -1,0 +1,9 @@
+{
+    "name": "game",
+    "version": "1.0.0",
+    "description": "CSE 125 Group 4 project",
+    "dependencies": {
+        "express": "^4.15.2",
+        "socket.io": "^2.2.0"
+    }
+}
