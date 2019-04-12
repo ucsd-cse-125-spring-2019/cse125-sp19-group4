@@ -1,5 +1,7 @@
-const socket = io.connect('http://127.0.0.1:8080/');
+//const socket = io.connect('http://127.0.0.1:8080/');
+const socket = io();
 
+/*
 socket.on('connect', function(){
     console.log("Client connects to server");
     console.log("ID:", socket.id);
@@ -22,7 +24,7 @@ socket.on('connect', function(){
     let data = new Data(1.00, 'data', array, testObj);
     socket.emit('client to server', data);
 });
-
+*/
 socket.on('broadcast', function(obj) {
     console.log('msg from server: ' + obj.number);
     console.log('msg from server: ' + obj.string);
@@ -30,6 +32,19 @@ socket.on('broadcast', function(obj) {
     console.log('msg from server: ' + obj.myObj.name);
 });
 
+/*
 socket.on('disconnect', function(){
     console.log("client diconnects from server");
+});
+*/
+
+$('form').submit(function(e){
+    e.preventDefault(); // prevents page reloading
+    socket.emit('chat message', $('#m').val());
+    $('#m').val('');
+    return false;
+});
+
+socket.on('chat message', function(msg){
+    $('#messages').append($('<li>').text(msg));
 });
