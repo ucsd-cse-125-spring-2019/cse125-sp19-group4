@@ -17,33 +17,6 @@ const inputs = [];
 
 io.on('connection', function(socket){
   console.log('a user connected:', socket.id);
-  /*
-  socket.on('client to server', function(obj){
-    console.log('msg from client: ' + obj.number);
-    console.log('msg from client: ' + obj.string);
-    console.log('msg from client: ' + obj.array);
-    console.log('msg from client: ' + obj.myObj.name);
-
-    class TestObj{
-        constructor(name) {
-            this.name = name;
-        }
-    }
-    class Data {
-        constructor(number, string, array, myObj) {
-            this.number = number;
-            this.string = string;
-            this.array = array;
-            this.myObj = myObj;
-        }
-    }
-    let testObj = new TestObj('Test');
-    // JavaScript numbers are always stored as double precision floating point numbers
-    let array = new Array(8.0, 234.3434, 23, -234, -5.0);
-    let data = new Data(-5.6, 'data2', array, testObj);
-    io.sockets.emit('broadcast', data);
-  });
-  */
   socket.on('chat message', function(msg){
     console.log(socket.id, 'sends a chat message');
     //io.emit('chat message', socket.id + ': ' + msg);
@@ -64,10 +37,9 @@ http.listen(8080, function(){
 const tick_rate = 10;
 setInterval(function() {
   let start = new Date().getTime();
-
+  // console.log('loop==================');
+  
   inputs.forEach(function(e) {
-    console.log(e);
-    
     io.emit('chat message', e);
   });
   inputs.length = 0;
@@ -76,18 +48,20 @@ setInterval(function() {
     var start = new Date().getTime();
     while (true) {
       if ((new Date().getTime() - start) > milliseconds){
-        console.log('5s has passed!');
+        console.log(milliseconds + 'ms has passed!');
         break;
       }
     }
   }
-  /*
-  sleep(5000);
-  console.log('after sleep');
-  */
+  
+  // sleep(1000);
+  // console.log('1');
+  // sleep(1000);
+  // console.log('2');
+  
   let end = new Date().getTime();
   let elapse = end - start;
   if (elapse > 1000) {
-    console.error('Warning: loop time ' + elapse.toString + 'ms exceeds tick rate of ' + tick_rate.toString());
+    console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
   }
 }, 1000/tick_rate);
