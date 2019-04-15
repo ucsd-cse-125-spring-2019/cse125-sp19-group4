@@ -433,8 +433,9 @@ socket.on('enter game', function(){
     main();
 });
 
-socket.on('wait for game begin', function(){
+socket.on('wait for game begin', function(msg){
     $('.game-area').html($('#loading-screen-template').html());
+    $('#queue').html(msg);
 });
 
 $('#GodButton').click(function(){
