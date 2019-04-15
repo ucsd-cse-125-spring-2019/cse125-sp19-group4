@@ -15,8 +15,44 @@ app.get('/cube_demo', function(req, res){
 });
 const inputs = [];
 
+gameInstance = require('./public/js/game.js');
 io.on('connection', function(socket){
   console.log('a user connected:', socket.id);
+
+  socket.on('play as survivor', function(){
+    if (!gameInstance.joinAsSurvivor(socket.id)) {
+      io.to(socket.id).emit('role already taken', 'Only three survivors are supported');
+    }
+    else {
+      if (gameInstance.checkEnoughPlayer()){
+        // Game begins, notify all participants to enter  
+        for (let i = 0; i < gameInstance.clientSockets.length; i++) {
+          io.to(gameInstance.clientSockets[i]).emit('enter game');
+        }
+      }
+      else {
+        io.to(socket.id).emit('wait for game begin');
+      }
+    }
+  });
+
+  socket.on('play as god', function(){
+    if (!gameInstance.joinAsGod(socket.id)) {
+      io.to(socket.id).emit('role already taken', 'Only one god is supported');
+    }
+    else {
+      if (gameInstance.checkEnoughPlayer()){
+        // Game begins, notify all participants to enter  
+        for (let i = 0; i < gameInstance.clientSockets.length; i++) {
+          io.to(gameInstance.clientSockets[i]).emit('enter game');
+        }
+      }
+      else {
+        io.to(socket.id).emit('wait for game begin');
+      }
+    }
+  });
+  
   socket.on('chat message', function(msg){
     console.log(socket.id, 'sends a chat message');
     //io.emit('chat message', socket.id + ': ' + msg);

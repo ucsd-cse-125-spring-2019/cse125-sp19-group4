@@ -9,12 +9,6 @@ socket.on('broadcast', function(obj) {
     console.log('msg from server: ' + obj.myObj.name);
 });
 
-$('form').submit(function(e){
-    e.preventDefault(); // prevents page reloading
-    socket.emit('chat message', $('#m').val());
-    $('#m').val('');
-    return false;
-});
 
 socket.on('chat message', function(msg){
     $('#messages').append($('<li>').text(msg));
@@ -25,6 +19,7 @@ socket.on('chat message', function(msg){
     }
 });
 
+$('.game-area').html($('#intro-screen-template').html());
 /*
 ====================================Canvas===================================
 */
@@ -32,8 +27,6 @@ import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 
 let cubeRotation = 0.0;
-main();
-
 
 /**
  * Start here
@@ -422,3 +415,32 @@ function loadShader(gl, type, source) {
 
     return shader;
 }
+
+socket.on('role already taken', function(msg){
+    alert(msg);
+});
+
+socket.on('enter game', function(){
+    console.log('enter game');
+    $('.game-area').html($('#ingame-template').html());
+    $('form').submit(function(e){
+        e.preventDefault(); // prevents page reloading
+        socket.emit('chat message', $('#m').val());
+        $('#m').val('');
+        return false;
+    });    
+
+    main();
+});
+
+socket.on('wait for game begin', function(){
+    $('.game-area').html($('#loading-screen-template').html());
+});
+
+$('#GodButton').click(function(){
+    socket.emit("play as god");
+});
+
+$('#SurvivorButton').click(function(){
+    socket.emit("play as survivor");
+});

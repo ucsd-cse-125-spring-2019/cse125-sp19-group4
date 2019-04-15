@@ -11,14 +11,45 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
+      .loading {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
+      .menu {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
+      @keyframes rotate {
+        to {
+          transform: rotate(1turn)
+        }
+      }
+      .loading__anim { width: 40px; height: 40px; display: inline-block; border: 5px solid rgba(189,189,189 ,0.25);
+        border-left-color: rgba(3,155,229 ,1); border-top-color: rgba(3,155,229 ,1); border-radius: 50%; animation: rotate 600ms infinite linear;}
     </style>
   </head>
   <body>
-    <canvas id="glCanvas"></canvas>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+    <div class="game-area"></div>
+    <script id="intro-screen-template" type="text/template">
+      <section class="menu">
+        <h1>Fight the God</h1>
+        <span>
+          <ul style="list-style: none">
+            <li><button id='SurvivorButton'>Play as survivor</button></li>
+            <li><button id='GodButton'>Play as god</button></li>
+          </ul>
+        </span>
+      </section>
+    </script>
+    <script id="loading-screen-template" type="text/template">
+      <div class="loading">
+        <section class="loading__items" style="font-weight: bold; text-align: center;">
+          <h1>Please wait for other players to join:)</h1>
+          <span class="loading__anim"></span>
+        </section>
+      </div>
+    </script>
+    <script id="ingame-template" type="text/template">
+      <canvas id="glCanvas"></canvas>
+      <ul id="messages"></ul>
+      <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+    </script>
   </body>
   <script
   src="https://code.jquery.com/jquery-3.4.0.min.js"
@@ -27,5 +58,4 @@
   <script src='/public/js/gl-matrix-min.js'></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="./public/js/client.js" type="module"></script>
-
 </html>
