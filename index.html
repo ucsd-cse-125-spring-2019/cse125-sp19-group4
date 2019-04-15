@@ -11,8 +11,15 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
-      .loading {display: flex; justify-content: center; align-items: center; min-height: 100vh;}
+      .loading {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
       .menu {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
+      @keyframes rotate {
+        to {
+          transform: rotate(1turn)
+        }
+      }
+      .loading__anim { width: 40px; height: 40px; display: inline-block; border: 5px solid rgba(189,189,189 ,0.25);
+        border-left-color: rgba(3,155,229 ,1); border-top-color: rgba(3,155,229 ,1); border-radius: 50%; animation: rotate 600ms infinite linear;}
     </style>
   </head>
   <body>
@@ -29,10 +36,12 @@
       </section>
     </script>
     <script id="loading-screen-template" type="text/template">
-      <section class="loading">
-        Please wait for other players to join:)
-        <span class="loading__anim"></span>
-      </section>
+      <div class="loading">
+        <section class="loading__items" style="font-weight: bold; text-align: center;">
+          <h1>Please wait for other players to join:)</h1>
+          <span class="loading__anim"></span>
+        </section>
+      </div>
     </script>
     <script id="ingame-template" type="text/template">
       <canvas id="glCanvas"></canvas>
