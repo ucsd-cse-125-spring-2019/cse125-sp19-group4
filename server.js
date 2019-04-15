@@ -31,7 +31,10 @@ io.on('connection', function(socket){
         }
       }
       else {
-        io.to(socket.id).emit('wait for game begin');
+        for (let i = 0; i < gameInstance.clientSockets.length; i++) {
+          io.to(gameInstance.clientSockets[i]).emit('wait for game begin',
+            gameInstance.numPlayersStatusToString());
+        }
       }
     }
   });
@@ -48,7 +51,10 @@ io.on('connection', function(socket){
         }
       }
       else {
-        io.to(socket.id).emit('wait for game begin');
+        for (let i = 0; i < gameInstance.clientSockets.length; i++) {
+          io.to(gameInstance.clientSockets[i]).emit('wait for game begin', 
+            gameInstance.numPlayersStatusToString());
+        }
       }
     }
   });

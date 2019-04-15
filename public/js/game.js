@@ -32,6 +32,12 @@ gameInstance.checkEnoughPlayer = function() {
     return true;
 }
 
+    return this.survivors.length + ' survivor' 
+gameInstance.numPlayersStatusToString = function() {
+        + (this.survivors.length < 2 ? '':'s') + ' and ' 
+        + (typeof this.god === 'undefined'? '0':'1') + ' god';
+}
+
 /** Helper class */
 class Survivor {
     constructor(socketid) {
