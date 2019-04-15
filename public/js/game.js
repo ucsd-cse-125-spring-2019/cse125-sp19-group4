@@ -1,5 +1,6 @@
 class GameInstance {
     constructor() {
+        this.clientSockets = [];
         this.survivors = [];
         this.items = [];
     }
@@ -10,18 +11,27 @@ let gameInstance = module.exports = new GameInstance();
 gameInstance.joinAsGod = function(socketid) {
     if (typeof this.god === 'undefined') {
         this.god = new God(socketid);
+        this.clientSockets.push(socketid);
         return true;
     }
     return false;
 };
 
 gameInstance.joinAsSurvivor = function(socketid) {
-    if (this.survivors.length <= 3) {
+    if (this.survivors.length < 3) {
         this.survivors.push(new Survivor(socketid));
+        this.clientSockets.push(socketid);
         return true;
     }
     return false;
 }
+
+gameInstance.checkEnoughPlayer = function() {
+    if (typeof this.god === 'undefined' || this.survivors.length < 3) 
+        return false;
+    return true;
+}
+
 /** Helper class */
 class Survivor {
     constructor(socketid) {
