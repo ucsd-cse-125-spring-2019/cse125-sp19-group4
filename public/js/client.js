@@ -31,10 +31,6 @@ socket.on('chat message', function(msg){
 import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 
-let cubeRotation = 0.0;
-main();
-
-
 /**
  * Start here
  */
@@ -422,3 +418,22 @@ function loadShader(gl, type, source) {
 
     return shader;
 }
+
+socket.on('role already taken', function(msg){
+    alert(msg);
+});
+
+socket.on('enter game', function(){
+    $('.menu').css('display', 'none');
+    $('.gameBoard').css('display', 'block')
+    let cubeRotation = 0.0;
+    main();
+});
+
+$('#GodButton').click(function(){
+    socket.emit("play as god");
+});
+
+$('#SurvivorButton').click(function(){
+    socket.emit("play as survivor");
+});
