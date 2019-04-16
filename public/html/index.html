@@ -2,9 +2,9 @@
 <html>
 <body>
     <canvas width="570" height="570" id="my_Canvas"></canvas>
-    <script src="gl-matrix-min.js"></script>
-    <script src="cannon.min.js"></script>
-    <script src="webgl-obj-loader.js"></script>
+    <script src="/public/lib/gl-matrix-min.js"></script>
+    <script src="/public/lib/cannon.min.js"></script>
+    <script src="/public/lib/webgl-obj-loader.min.js"></script>
     <script>
         //cannonjs setting
         var world = new CANNON.World();
@@ -32,22 +32,21 @@
         //world.step(timeStep);
         //}
         //camera class
+        
         const YAW = -90.0;
         const PITCH = 0.0;
         const SPEED = 2.5;
         const SENSITIVITY = 0.5;
         const ZOOM = 45.0;
         class Camera {
-            //Position = glMatrix.vec3.create();
-            //Front = glMatrix.vec3.create();
-            //Up = glMatrix.vec3.create();
-            //Right = glMatrix.vec3.create();
-            //WorldUp = glMatrix.vec3.create();
-            //Yaw;
-            //Pitch;
-            //MovementSpeed;
-           // MouseSensitivity;
-            //Zoom;
+            /**
+             * Create a new camera instance
+             * @class
+             * @param  {Float32Array} position [0, 0, 0] by default
+             * @param  {Float32Array} up [0, 1, 0] by default
+             * @param  {Number} yaw -90.0 by default
+             * @param  {Number} pitch 0.0 by default
+             */
             constructor(position = [0, 0, 0], up = [0, 1, 0], yaw = YAW, pitch = PITCH) {
                 this.Front = [0, 0, -1];
                 this.MovementSpeed = SPEED;
@@ -129,6 +128,7 @@
                 glMatrix.vec3.normalize(this.Up, this.Up);
             }
         }
+
         let camera = new Camera();
         //camera.processKeyborad("1", 1);
         //camera.ProcessMouseMovement(1800,0);
@@ -140,8 +140,8 @@
         var canvas = document.getElementById('my_Canvas');
 
         gl = canvas.getContext('experimental-webgl');
-        var allText;
         function readTextFile(file) {
+            var allText;
             var rawFile = new XMLHttpRequest();
             rawFile.open("GET", file, false);
             rawFile.onreadystatechange = function () {
@@ -153,13 +153,14 @@
                 }
             }
             rawFile.send(null);
+            return allText;
         }
 
-        readTextFile("male.obj");
+        var str = readTextFile("/public/model/male.obj");
 
         //load model test
         //var objStr = document.getElementById('my_cube.obj').innerHTML;
-        var mesh = new OBJ.Mesh(allText);
+        var mesh = new OBJ.Mesh(str);
         OBJ.initMeshBuffers(gl, mesh);
 
         /*========== Defining and storing the geometry ==========*/
