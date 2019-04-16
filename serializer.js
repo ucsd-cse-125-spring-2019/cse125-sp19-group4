@@ -129,19 +129,3 @@ class Serializer{
         return stringToObj(astring)
     }
 }
-params = {
-    a: 1,
-    b: "1",
-    c: {
-        a: 1,
-        e: function (asd) {return 3},
-        c: {
-            a: {}
-        }
-    },
-    d: function(a) {return a + 3}
-}
-
-event = new Event(1, params)
-console.log(objToString(params))
-console.log(stringToObj(objToString(params)))
