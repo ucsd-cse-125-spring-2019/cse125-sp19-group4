@@ -1,0 +1,442 @@
+﻿<!doctype html>
+<html>
+<body>
+    <canvas width="570" height="570" id="my_Canvas"></canvas>
+    <script src="gl-matrix-min.js"></script>
+    <script src="cannon.min.js"></script>
+    <script src="webgl-obj-loader.js"></script>
+    <script>
+        //cannonjs setting
+        var world = new CANNON.World();
+        world.gravity.set(0, 0, -9.82);
+        world.broadphase = new CANNON.NaiveBroadphase();
+        var mass = 5, radius = 1;
+        var mater = new CANNON.Material();
+        mater.friction = 0;
+        var halfextents = new CANNON.Vec3(1, 1, 1);
+        var sphereShape = new CANNON.Sphere(radius);
+        var cubeShape = new CANNON.Box(halfextents);
+        var sphereBody = new CANNON.Body({ mass: mass, shape: sphereShape });
+        var cubeBody = new CANNON.Body({ mass: mass, shape: cubeShape });
+        sphereBody.position.set(0, 0, 0);
+        cubeBody.position.set(0, 0, 0);
+        world.add(sphereBody);
+        world.add(cubeBody);
+        var groundShape = new CANNON.Plane();
+        var groundBody = new CANNON.Body({ mass: 0, shape: groundShape });
+        groundBody.position.set(0, 0, -5);
+        world.add(groundBody);
+
+        var timeStep = 1.0 / 60.0;
+        //for (var i = 0; i < 60; ++i) {
+        //world.step(timeStep);
+        //}
+        //camera class
+        const YAW = -90.0;
+        const PITCH = 0.0;
+        const SPEED = 2.5;
+        const SENSITIVITY = 0.5;
+        const ZOOM = 45.0;
+        class Camera {
+            //Position = glMatrix.vec3.create();
+            //Front = glMatrix.vec3.create();
+            //Up = glMatrix.vec3.create();
+            //Right = glMatrix.vec3.create();
+            //WorldUp = glMatrix.vec3.create();
+            //Yaw;
+            //Pitch;
+            //MovementSpeed;
+           // MouseSensitivity;
+            //Zoom;
+            constructor(position = [0, 0, 0], up = [0, 1, 0], yaw = YAW, pitch = PITCH) {
+                this.Front = [0, 0, -1];
+                this.MovementSpeed = SPEED;
+                this.MouseSensitivity = SENSITIVITY;
+                this.Zoom = ZOOM;
+                this.Position = position;
+                this.WorldUp = up;
+                this.Right = glMatrix.vec3.create();
+                this.Up = glMatrix.vec3.create();
+                this.Yaw = yaw;
+                this.Pitch = pitch;
+                this.updateCameraVectors();
+            }
+
+            getViewMatrix() {
+                let toreturn = glMatrix.mat4.create();
+                let dir = glMatrix.vec3.create();
+                glMatrix.vec3.add(dir, this.Position, this.Front);
+                glMatrix.mat4.lookAt(toreturn, this.Position, dir, this.Up);
+                return toreturn;
+            }
+
+            processKeyborad(direction, deltaTime) {
+                let velocity = this.MovementSpeed * deltaTime;
+                let temp = glMatrix.vec3.create();
+                if (direction == "Forward") {
+                    glMatrix.vec3.scale(temp, this.Front, velocity);
+                    glMatrix.vec3.add(this.Position, this.Position, temp);
+                }
+                if (direction == "Backward") {
+                    glMatrix.vec3.scale(temp, this.Front, -velocity);
+                    glMatrix.vec3.add(this.Position, this.Position, temp);
+                }
+                if (direction == "Left") {
+                    glMatrix.vec3.scale(temp, this.Right, -velocity);
+                    glMatrix.vec3.add(this.Position, this.Position, temp);
+                }
+                if (direction == "Right") {
+                    glMatrix.vec3.scale(temp, this.Right, velocity);
+                    glMatrix.vec3.add(this.Position, this.Position, temp);
+                }
+                this.updateCameraVectors();
+            }
+
+            ProcessMouseMovement(xoffset, yoffset, constrainPitch = true) {
+                xoffset *= this.MouseSensitivity;
+                yoffset *= this.MouseSensitivity;
+                this.Yaw += xoffset;
+                this.Pitch -= yoffset;
+                if (constrainPitch) {
+                    if (this.Pitch > 89) {
+                        this.Pitch = 89;
+                    }
+                    if (this.Pitch < -89) {
+                        this.Pitch = -89;
+                    }
+                }
+                this.updateCameraVectors();
+            }
+
+            ProcessMouseScroll(yoffset) {
+                if (this.Zoom >= 1 && this.Zoom <= 45)
+                    this.Zoom -= yoffset;
+                if (this.Zoom <= 1)
+                    this.Zoom = 1;
+                if (this.Zoom >= 45)
+                    this.Zoom = 45;
+            }
+
+            updateCameraVectors() {
+                let front = glMatrix.vec3.create();
+                front[0] = Math.cos(this.Yaw * Math.PI / 180) * Math.cos(this.Pitch * Math.PI / 180);
+                front[1] = Math.sin(this.Pitch * Math.PI / 180);
+                front[2] = Math.sin(this.Yaw * Math.PI / 180) * Math.cos(this.Pitch * Math.PI / 180);
+                glMatrix.vec3.normalize(this.Front, front);
+                glMatrix.vec3.cross(this.Right, this.Front, this.WorldUp);
+                glMatrix.vec3.normalize(this.Right, this.Right);
+                glMatrix.vec3.cross(this.Up, this.Right, this.Front);
+                glMatrix.vec3.normalize(this.Up, this.Up);
+            }
+        }
+        let camera = new Camera();
+        //camera.processKeyborad("1", 1);
+        //camera.ProcessMouseMovement(1800,0);
+        //camera.ProcessMouseScroll(10);
+        camera.updateCameraVectors();
+        mtx = camera.getViewMatrix();
+
+        /*============= Creating a canvas ======================*/
+        var canvas = document.getElementById('my_Canvas');
+
+        gl = canvas.getContext('experimental-webgl');
+        var allText;
+        function readTextFile(file) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", file, false);
+            rawFile.onreadystatechange = function () {
+                if (rawFile.readyState === 4) {
+                    if (rawFile.status === 200 || rawFile.status == 0) {
+                        allText = rawFile.responseText;
+                        //console.log(allText);
+                    }
+                }
+            }
+            rawFile.send(null);
+        }
+
+        readTextFile("male.obj");
+
+        //load model test
+        //var objStr = document.getElementById('my_cube.obj').innerHTML;
+        var mesh = new OBJ.Mesh(allText);
+        OBJ.initMeshBuffers(gl, mesh);
+
+        /*========== Defining and storing the geometry ==========*/
+
+        var vertices = [
+            -1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1,
+            -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
+            -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1,
+            1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+            -1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, -1,
+            -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
+        ];
+
+        var colors = [
+            5, 3, 7, 5, 3, 7, 5, 3, 7, 5, 3, 7,
+            1, 1, 3, 1, 1, 3, 1, 1, 3, 1, 1, 3,
+            0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+            1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+            1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0,
+            0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0
+        ];
+
+        var indices = [
+            0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7,
+            8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15,
+            16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23
+        ];
+
+        // Create and store data into vertex buffer
+        //var vertex_buffer = gl.createBuffer();
+        //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+        // Create and store data into color buffer
+        //var color_buffer = gl.createBuffer ();
+        //gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+        //gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+        // Create and store data into index buffer
+        //var index_buffer = gl.createBuffer();
+        //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+        //gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+        /*=================== SHADERS =================== */
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+        var vertCode = 'attribute vec3 position;' +
+            'uniform mat4 Pmatrix;' +
+            'uniform mat4 Vmatrix;' +
+            'uniform mat4 Mmatrix;' +
+            'attribute vec3 color;' +//the color of the point
+            'varying vec3 vColor;' +
+            'void main(void) { ' +//pre-built function
+            'gl_Position = Pmatrix*Vmatrix*Mmatrix*vec4(position, 1.);' +
+            'vColor = color;' +
+            '}';
+
+        var fragCode = 'precision mediump float;' +
+            'varying vec3 vColor;' +
+            'void main(void) {' +
+            'gl_FragColor = vec4(vColor, 1);' +
+            '}';
+
+        var vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, vertCode);
+        gl.compileShader(vertShader);
+
+        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, fragCode);
+        gl.compileShader(fragShader);
+
+        var shaderprogram = gl.createProgram();
+        gl.attachShader(shaderprogram, vertShader);
+        gl.attachShader(shaderprogram, fragShader);
+        gl.linkProgram(shaderprogram);
+
+        /*======== Associating attributes to vertex shader =====*/
+        var _Pmatrix = gl.getUniformLocation(shaderprogram, "Pmatrix");
+        var _Vmatrix = gl.getUniformLocation(shaderprogram, "Vmatrix");
+        var _Mmatrix = gl.getUniformLocation(shaderprogram, "Mmatrix");
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
+        var _position = gl.getAttribLocation(shaderprogram, "position");
+        gl.vertexAttribPointer(_position, mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(_position);
+        /*
+        if (!mesh.textures.length) {
+            gl.disableVertexAttribArray(shaderprogram.textureCoordAttribute);
+        }
+        else {
+            // if the texture vertexAttribArray has been previously
+            // disabled, then it needs to be re-enabled
+            gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureBuffer);
+            gl.vertexAttribPointer(shaderprogram.textureCoordAttribute, mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        }
+        */
+        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.normalBuffer);
+        var _color = gl.getAttribLocation(shaderprogram, "color");
+        gl.vertexAttribPointer(_color, mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(_color);
+        console.log(mesh.vertexBuffer);
+        gl.useProgram(shaderprogram);
+
+        /*==================== MATRIX ====================== */
+
+        function get_projection(angle, a, zMin, zMax) {
+            var ang = Math.tan((angle * .5) * Math.PI / 180);//angle*.5
+            return [
+                0.5 / ang, 0, 0, 0,
+                0, 0.5 * a / ang, 0, 0,
+                0, 0, -(zMax + zMin) / (zMax - zMin), -1,
+                0, 0, (-2 * zMax * zMin) / (zMax - zMin), 0
+            ];
+        }
+
+        var proj_matrix = get_projection(40, canvas.width / canvas.height, 1, 100);
+        var mo_matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+        //var view_matrix = [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ];
+        var view_matrix = mtx;
+        view_matrix[14] = view_matrix[14];
+
+        /*================= Mouse events ======================*/
+
+        var AMORTIZATION = 0.95;
+        var drag = false;
+        var old_x, old_y;
+        var dX = 0, dY = 0;
+        var start = 0;
+
+        var direction = "", deltaTime = 0;
+        var lastDownTarget;
+
+        var mouseDown = function (e) {
+            lastDownTarget = e.target;
+            drag = true;
+            old_x = e.pageX, old_y = e.pageY;
+            e.preventDefault();
+            return false;
+        };
+
+        var mouseUp = function (e) {
+            drag = false;
+        };
+
+        var mouseMove = function (e) {
+            if (!drag) return false;
+            dX = (e.pageX - old_x) * 2 * Math.PI / canvas.width,
+                dY = (e.pageY - old_y) * 2 * Math.PI / canvas.height;
+            camera.ProcessMouseMovement(e.pageX - old_x, e.pageY - old_y);
+            camera.updateCameraVectors();
+            mtx = camera.getViewMatrix();
+            mtx[14] = mtx[14];
+            THETA += dX;
+            PHI += dY;
+            old_x = e.pageX, old_y = e.pageY;
+            e.preventDefault();
+        };
+
+        var keyDown = function (e) {
+            if (!start) {
+                start = (new Date()).getTime();
+            }
+            switch (e.keyCode) {
+                case 37:
+                    direction = "Left";
+                    break;
+                case 38:
+                    direction = "Forward";
+                    break;
+                case 39:
+                    direction = "Right";
+                    break;
+                case 40:
+                    direction = "Backward";
+                    break;
+                default:
+                    break;
+            }
+            camera.processKeyborad(direction, 0.1);
+            camera.updateCameraVectors();
+            mtx = camera.getViewMatrix();
+            mtx[14] = mtx[14];
+        }
+
+        canvas.addEventListener("mousedown", mouseDown, false);
+        canvas.addEventListener("mouseup", mouseUp, false);
+        canvas.addEventListener("mouseout", mouseUp, false);
+        canvas.addEventListener("mousemove", mouseMove, false);
+        window.addEventListener("keydown", keyDown, false);
+        /*=========================rotation================*/
+
+        function rotateX(m, angle) {
+            var c = Math.cos(angle);
+            var s = Math.sin(angle);
+            var mv1 = m[1], mv5 = m[5], mv9 = m[9];
+
+            m[1] = m[1] * c - m[2] * s;
+            m[5] = m[5] * c - m[6] * s;
+            m[9] = m[9] * c - m[10] * s;
+
+            m[2] = m[2] * c + mv1 * s;
+            m[6] = m[6] * c + mv5 * s;
+            m[10] = m[10] * c + mv9 * s;
+        }
+
+        function rotateY(m, angle) {
+            var c = Math.cos(angle);
+            var s = Math.sin(angle);
+            var mv0 = m[0], mv4 = m[4], mv8 = m[8];
+
+            m[0] = c * m[0] + s * m[2];
+            m[4] = c * m[4] + s * m[6];
+            m[8] = c * m[8] + s * m[10];
+
+            m[2] = c * m[2] - s * mv0;
+            m[6] = c * m[6] - s * mv4;
+            m[10] = c * m[10] - s * mv8;
+        }
+
+        /*=================== Drawing =================== */
+
+        var THETA = 0,
+            PHI = 0;
+        var time_old = 0;
+
+        var animate = function (time) {
+            var dt = time - time_old;
+
+            if (!drag) {
+                dX *= AMORTIZATION, dY *= AMORTIZATION;
+                THETA += dX, PHI += dY;
+            }
+
+            //set model matrix to I4
+
+            mo_matrix[0] = 1, mo_matrix[1] = 0, mo_matrix[2] = 0,
+                mo_matrix[3] = 0,
+
+                mo_matrix[4] = 0, mo_matrix[5] = 1, mo_matrix[6] = 0,
+                mo_matrix[7] = 0,
+
+                mo_matrix[8] = 0, mo_matrix[9] = 0, mo_matrix[10] = 1,
+                mo_matrix[11] = 0,
+
+                mo_matrix[12] = 0, mo_matrix[13] = 0, mo_matrix[14] = 0,
+                mo_matrix[15] = 1;
+
+            //rotateY(mo_matrix, THETA);
+            //rotateX(mo_matrix, PHI);
+            var old_pos = [0, 0, 0], new_pos = [0, 0, 0];
+            //world.step(timeStep);
+            new_pos = [cubeBody.position.x, cubeBody.position.z, cubeBody.position.y];
+            var d_pos = [0, 0, 0];
+            //console.log(d_pos);
+            glMatrix.vec3.sub(d_pos, new_pos, old_pos)
+            glMatrix.mat4.translate(mo_matrix, mo_matrix, d_pos);
+            old_pos = new_pos;
+            time_old = time;
+            gl.enable(gl.DEPTH_TEST);
+            // gl.depthFunc(gl.LEQUAL);
+
+            gl.clearColor(0.5, 0.5, 0.5, 0.9);
+            gl.clearDepth(1.0);
+            gl.viewport(0.0, 0.0, canvas.width, canvas.height);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            gl.uniformMatrix4fv(_Pmatrix, false, proj_matrix);
+            gl.uniformMatrix4fv(_Vmatrix, false, mtx);
+            gl.uniformMatrix4fv(_Mmatrix, false, mo_matrix);
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+            gl.drawElements(gl.TRIANGLES, mesh.indexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+
+            window.requestAnimationFrame(animate);
+        }
+        animate(0);
+
+    </script>
+</body>
+</html>
