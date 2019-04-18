@@ -3,6 +3,7 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const path = require('path');
+
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
 app.get('/', function(req, res){
@@ -15,7 +16,7 @@ app.get('/cube_demo', function(req, res){
 });
 const inputs = [];
 
-gameInstance = require('./public/js/game.js');
+gameInstance = require('./public/js/game');
 io.on('connection', function(socket){
   console.log('a user connected:', socket.id);
 
