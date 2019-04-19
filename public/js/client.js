@@ -64,13 +64,12 @@ function main() {
     // set the canvas to full screen
     canvas.width = window.innerWidth;
     canvas.height = 0.8 * window.innerHeight;
-    console.log('width', canvas.width, 'height', canvas.height);
 
-    canvas.addEventListener("mousedown", mouseDown, false);
-    canvas.addEventListener("mouseup", mouseUp, false);
-    canvas.addEventListener("mouseout", mouseUp, false);
-    canvas.addEventListener("mousemove", mouseMove, false);
-    //window.addEventListener("keydown", keyDown, false);
+    // canvas.addEventListener("mousedown", mouseDown, false);
+    // canvas.addEventListener("mouseup", mouseUp, false);
+    // canvas.addEventListener("mouseout", mouseUp, false);
+    // canvas.addEventListener("mousemove", mouseMove, false);
+    
     window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
@@ -124,11 +123,12 @@ function main() {
         const deltaTime = now - then;
         then = now;
             
-        if (Key.isDown('UP')) camera.moveUp(deltaTime);
-        if (Key.isDown('DOWN')) camera.moveDown(deltaTime);
+        if (Key.isDown('UP')) camera.moveFoward(deltaTime);
+        if (Key.isDown('DOWN')) camera.moveBackward(deltaTime);
         if (Key.isDown('LEFT')) camera.moveLeft(deltaTime);
         if (Key.isDown('RIGHT')) camera.moveRight(deltaTime);
-        camera.updateCameraVectors();
+        if (Key.isDown('ROTLEFT')) camera.rotateLeft(deltaTime);
+        if (Key.isDown('ROTRIGHT')) camera.rotateRight(deltaTime);
 
         if (command == 'cube') {
             drawScene(gl, programInfo, meshes, camera);
@@ -347,29 +347,30 @@ function loadShader(gl, type, source) {
 
 /*================= Mouse events ======================*/
 
-let drag = false;
-let old_x, old_y;
+// let drag = false;
+// let old_x, old_y;
 
 
-const mouseDown = function (e) {
-    drag = true;
-    old_x = e.pageX, old_y = e.pageY;
-    e.preventDefault();
-    return false;
-};
+// const mouseDown = function (e) {
+//     drag = true;
+//     old_x = e.pageX, old_y = e.pageY;
+//     e.preventDefault();
+//     return false;
+// };
 
-const mouseUp = function (e) {
-    drag = false;
-};
+// const mouseUp = function (e) {
+//     drag = false;
+// };
 
-const mouseMove = function (e) {
-    if (!drag) return false;
-    camera.ProcessMouseMovement(e.pageX - old_x, e.pageY - old_y);
-    camera.updateCameraVectors();
-    old_x = e.pageX, old_y = e.pageY;
-    e.preventDefault();
-};
+// const mouseMove = function (e) {
+//     if (!drag) return false;
+//     camera.ProcessMouseMovement(e.pageX - old_x, e.pageY - old_y);
+//     camera.updateCameraVectors();
+//     old_x = e.pageX, old_y = e.pageY;
+//     e.preventDefault();
+// };
 
+/*================= Keyboard events ======================*/
 
 const Key = {
     _pressed: {},
@@ -381,6 +382,8 @@ const Key = {
         40: 'DOWN',     // down arrow
         65: 'LEFT',     // A
         68: 'RIGHT',    // D
+        69: 'ROTRIGHT', // E   
+        81: 'ROTLEFT',  // Q
         83: 'DOWN',     // S
         87: 'UP',       // W
     },
