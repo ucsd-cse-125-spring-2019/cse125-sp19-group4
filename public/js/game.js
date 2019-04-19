@@ -58,9 +58,12 @@ gameInstance.numPlayersStatusToString = function() {
 }
 
 /** Helper class */
+survivorCount = 0;
 class Survivor {
     constructor(socketid) {
-        this.id = socketid;
+        this.id = ++survivorCount;
+        this.name = 'Survivor' + this.id;
+        this.socketid = socketid;
         this.position = {x:0, y:0, z:0}; // starting location
         this.health = 100; // set to a default value
     }
@@ -68,15 +71,18 @@ class Survivor {
 
 class God { 
     constructor(socketid) {
+        this.name = 'God';
         this.id = socketid;
     }
 }
 
-class Items {
-    constructor(position) {
-        this.position = position
+class Item {
+    constructor() {
+        this.name = 'Item';
+        this.position = {x:0, y:0, z:0};
     }
 }
+
 class Tile {
     constructor() {
         this.type = '';
