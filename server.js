@@ -15,6 +15,7 @@ app.get('/cube_demo', function(req, res){
   res.sendFile(__dirname + '/public/html/demo.html');
 });
 const inputs = [];
+const movementEvents = {'Survivor 1': new Set(), 'Survivor 2': new Set(), 'Survivor 3': new Set()}
 
 gameInstance = require('./public/js/game');
 io.on('connection', function(socket){
@@ -58,6 +59,10 @@ io.on('connection', function(socket){
         }
       }
     }
+
+    socket.on('movement', function(keyEvent){
+      movementEvents[gameInstance.socketidToPlayer[socket.id].name].add(keyEvent);
+    });
   });
   
   socket.on('chat message', function(msg){
@@ -85,6 +90,10 @@ setInterval(function() {
     io.emit('chat message', e);
   });
   inputs.length = 0;
+
+  // clean out movement inputs
+  for (let i = 1; i <= 3; i++)
+    movementEvents['Survivor ' + i].clear();
 
   function sleep(milliseconds) {
     var start = new Date().getTime();
