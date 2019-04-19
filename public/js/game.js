@@ -1,5 +1,7 @@
 class GameInstance {
     constructor() {
+        this.worldWidth = 5;
+        this.worldHeight = 5;
         this.clientSockets = [];
         this.survivors = [];
         this.items = [];
@@ -7,6 +9,23 @@ class GameInstance {
 }
 
 let gameInstance = module.exports = new GameInstance();
+
+gameInstance.initializeMap = function() {
+    this.map = new Array(this.worldHeight);
+    for (let i = 0; i < this.map.length; i++) {
+        this.map[i] = new Array(this.worldWidth).fill(new Tile());
+    }
+    // store object info on the map
+    this.objectList.forEach(function(obj){
+        if (typeof obj.position === 'undefined') {
+            console.log("Position not initialized: " + obj.name);
+        }
+        else {
+            this.map[obj.position.x][obj.position.z].content.push(obj);
+        }
+    });
+    console.table(this.map);
+}
 
 gameInstance.joinAsGod = function(socketid) {
     if (typeof this.god === 'undefined') {
@@ -58,3 +77,12 @@ class Items {
         this.position = position
     }
 }
+class Tile {
+    constructor() {
+        this.type = '';
+        this.content = [];
+    }
+}
+
+/*================= Game Initialization ======================*/
+gameInstance.initializeMap();
