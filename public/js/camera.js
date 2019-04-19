@@ -1,7 +1,7 @@
 const YAW = -90.0;
 const PITCH = -45.0;
 const SPEED = 5;        // Unit
-const SENSITIVITY = 50;
+const SENSITIVITY = 120;
 const ZOOM = 45.0;
 const POSITION = [0, 5, 5];
 class Camera {
@@ -21,7 +21,7 @@ class Camera {
         this.MovementSpeed = SPEED;
         this.MouseSensitivity = SENSITIVITY;
         this.Zoom = ZOOM;
-        this.Position = position;
+        this.Position = glMatrix.vec3.fromValues(position[0], position[1], position[2]);
         this.WorldUp = up;
         glMatrix.vec3.normalize(this.WorldUp, this.WorldUp);
         this.Right = glMatrix.vec3.create();
@@ -83,35 +83,53 @@ class Camera {
     rotateLeft(deltaTime) {
         const angle = this.MouseSensitivity * deltaTime;
         this.Yaw += angle;
+        this.updateCameraVectors();
+
         let neg_position = glMatrix.vec3.create();
+        let pos_position = glMatrix.vec3.create();
         glMatrix.vec3.subtract(neg_position, POSITION, this.Position);
+        glMatrix.vec3.subtract(pos_position, this.Position, POSITION);
+
         let translation_to_org = glMatrix.mat4.create();
         glMatrix.mat4.fromTranslation(translation_to_org, neg_position);
+
         let translation_back = glMatrix.mat4.create();
-        glMatrix.mat4.transpose(translation_back, translation_to_org);
+        glMatrix.mat4.fromTranslation(translation_back, pos_position);
+
         let rotation = glMatrix.mat4.create();
         glMatrix.mat4.fromYRotation(rotation, glMatrix.glMatrix.toRadian(-angle));
+
         glMatrix.vec3.transformMat4(this.Position, this.Position, translation_to_org);
         glMatrix.vec3.transformMat4(this.Position, this.Position, rotation);
+        glMatrix.vec3.transformMat4(POSITION, POSITION, rotation);
         glMatrix.vec3.transformMat4(this.Position, this.Position, translation_back);
-        this.updateCameraVectors();
+
     }
 
     rotateRight(deltaTime) {
         const angle = this.MouseSensitivity * deltaTime;
+
         this.Yaw -= angle;
+        this.updateCameraVectors();
+
         let neg_position = glMatrix.vec3.create();
+        let pos_position = glMatrix.vec3.create();
         glMatrix.vec3.subtract(neg_position, POSITION, this.Position);
+        glMatrix.vec3.subtract(pos_position, this.Position, POSITION);
+
         let translation_to_org = glMatrix.mat4.create();
         glMatrix.mat4.fromTranslation(translation_to_org, neg_position);
+
         let translation_back = glMatrix.mat4.create();
-        glMatrix.mat4.transpose(translation_back, translation_to_org);
+        glMatrix.mat4.fromTranslation(translation_back, pos_position);
+
         let rotation = glMatrix.mat4.create();
         glMatrix.mat4.fromYRotation(rotation, glMatrix.glMatrix.toRadian(angle));
+        
         glMatrix.vec3.transformMat4(this.Position, this.Position, translation_to_org);
         glMatrix.vec3.transformMat4(this.Position, this.Position, rotation);
+        glMatrix.vec3.transformMat4(POSITION, POSITION, rotation);
         glMatrix.vec3.transformMat4(this.Position, this.Position, translation_back);
-        this.updateCameraVectors();
     }
 
     moveFoward(deltaTime) {

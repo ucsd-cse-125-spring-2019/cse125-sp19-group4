@@ -130,16 +130,8 @@ function main() {
         if (Key.isDown('ROTLEFT')) camera.rotateLeft(deltaTime);
         if (Key.isDown('ROTRIGHT')) camera.rotateRight(deltaTime);
 
-        if (command == 'cube') {
-            drawScene(gl, programInfo, meshes, camera);
-        } else {
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            gl.clearDepth(1.0);                 // Clear everything
-
-            // Clear the canvas before we start drawing on it.
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
-
+        drawScene(gl, programInfo, meshes, camera);
+        
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
