@@ -3,6 +3,7 @@ class GameInstance {
         this.worldWidth = 5;
         this.worldHeight = 5;
         this.clientSockets = [];
+        this.socketidToPlayer = {};
         this.survivors = [];
         this.objectList = []; //store all objects (players, trees, etc) on the map
         this.nameToObj = {};
@@ -37,6 +38,7 @@ gameInstance.joinAsGod = function(socketid) {
     if (typeof this.god === 'undefined') {
         this.god = new God(socketid);
         this.clientSockets.push(socketid);
+        this.socketidToPlayer[socketid] = this.god;
         this.insertObjListAndMap(this.god);
         return true;
     }
@@ -48,6 +50,7 @@ gameInstance.joinAsSurvivor = function(socketid) {
         let survivor = new Survivor(socketid)
         this.survivors.push(survivor);
         this.clientSockets.push(socketid);
+        this.socketidToPlayer[socketid] = survivor;
         this.insertObjListAndMap(survivor);
         return true;
     }
