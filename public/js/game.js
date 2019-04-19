@@ -1,27 +1,25 @@
 /** Helper class */
-survivorCount = 0;
 class Survivor {
-    constructor(socketid) {
-        this.id = ++survivorCount;
-        this.name = 'Survivor ' + this.id;
+    constructor(socketid, sid) {
+        this.name = 'Survivor ' + sid;
         this.socketid = socketid;
-        this.position = {x:0, y:0, z:0}; // starting location
+        this.position = [0, 0, 0]; // starting location (x, y, z)
         this.health = 100; // set to a default value
     }
-} 
+}
 
-class God { 
+class God {
     constructor(socketid) {
         this.name = 'God';
-        this.id = socketid;
-        this.position = {x:0, y:0, z:0};
+        this.socketid = socketid;
+        this.position = [0, 0, 0];
     }
 }
 
 class Item {
     constructor() {
         this.name = 'Item';
-        this.position = {x:0, y:0, z:0};
+        this.position = [0, 0, 0];
     }
 }
 
@@ -34,20 +32,24 @@ class Tile {
 
 
 class GameInstance {
-    constructor() {
+    constructor(max_survivors = 3) {
+        this.max_survivors = max_survivors;
+        this.survivorCount = 0;
         this.worldWidth = 5;
         this.worldHeight = 5;
         this.clientSockets = [];
         this.socketidToPlayer = {};
         this.survivors = [];
-        this.objectList = []; //store all objects (players, trees, etc) on the map
-        this.nameToObj = {};
+        this.objects = {};          // store all objects (players, trees, etc) on the map
+        initializeMap();            // build this.map
     }
 
     insertObjListAndMap(obj) {
-        this.nameToObj[obj.name] = obj; // store reference
-        this.objectList.push(obj);
-        this.map[obj.position.z][obj.position.x].content.push(obj);
+        if (obj.name in objects) {
+            throw obj.name + " already in objects";
+        }
+        this.objects[obj.name] = obj; // store reference
+        this.map[obj.position[2]][obj.position[0]].content.push(obj);
     };
 
     initializeMap() {
@@ -56,12 +58,13 @@ class GameInstance {
             this.map[i] = new Array(this.worldWidth).fill(new Tile());
         }
         // store object info on the map
-        this.objectList.forEach(function(obj){
+        Object.keys(this.objects).forEach(function (key) {
+            const obj = this.objects[key];
             if (typeof obj.position === 'undefined') {
-                console.log("Position not initialized: " + obj.name);
+                console.log("Position not initialized: " + key);
             }
             else {
-                this.map[obj.position.z][obj.position.x].content.push(obj);
+                this.map[obj.position[2]][obj.position[0]].content.push(obj);
             }
         });
     }
@@ -78,8 +81,9 @@ class GameInstance {
     };
 
     joinAsSurvivor(socketid) {
-        if (this.survivors.length < 3) {
-            let survivor = new Survivor(socketid)
+        if (this.survivors.length < this.max_survivors) {
+            const survivor = new Survivor(socketid, this.survivorCount);
+            this.survivorCount++;
             this.survivors.push(survivor);
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
@@ -90,15 +94,16 @@ class GameInstance {
     }
 
     checkEnoughPlayer() {
-        if (typeof this.god === 'undefined' || this.survivors.length < 3) 
+        if (typeof this.god === 'undefined' || this.survivors.length < this.max_survivors) {
             return false;
+        }
         return true;
     }
 
     numPlayersStatusToString() {
-        return this.survivors.length + '/3 survivor' 
-            + (this.survivors.length < 2 ? '':'s') + ' and ' 
-            + (typeof this.god === 'undefined'? '0':'1') + '/1 god';
+        return this.survivors.length + '/' + this.max_survivors + ' survivor'
+            + (this.survivors.length < 2 ? '' : 's') + ' and '
+            + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 }
 

@@ -3,6 +3,7 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const path = require('path');
+const game = require('./public/js/game.js');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -17,9 +18,9 @@ app.get('/cube_demo', function (req, res) {
 const inputs = [];
 const movementEvents = { 'Survivor 1': new Set(), 'Survivor 2': new Set(), 'Survivor 3': new Set() }
 
-const game = require('./public/js/game.js');
-const gameInstance = new game();
-gameInstance.initializeMap();
+// TODO: read from config
+const max_survivors = 1;
+const gameInstance = new game(max_survivors);
 
 io.on('connection', function (socket) {
   console.log('a user connected:', socket.id);
