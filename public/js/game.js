@@ -4,11 +4,18 @@ class GameInstance {
         this.worldHeight = 5;
         this.clientSockets = [];
         this.survivors = [];
-        this.items = [];
+        this.objectList = []; //store all objects (players, trees, etc) on the map
+        this.nameToObj = {};
     }
 }
 
 let gameInstance = module.exports = new GameInstance();
+
+gameInstance.insertObjListAndMap = function(obj) {
+    this.nameToObj[obj.name] = obj; // store reference
+    this.objectList.push(obj);
+    this.map[obj.position.z][obj.position.x].content.push(obj);
+};
 
 gameInstance.initializeMap = function() {
     this.map = new Array(this.worldHeight);
@@ -21,16 +28,16 @@ gameInstance.initializeMap = function() {
             console.log("Position not initialized: " + obj.name);
         }
         else {
-            this.map[obj.position.x][obj.position.z].content.push(obj);
+            this.map[obj.position.z][obj.position.x].content.push(obj);
         }
     });
-    console.table(this.map);
 }
 
 gameInstance.joinAsGod = function(socketid) {
     if (typeof this.god === 'undefined') {
         this.god = new God(socketid);
         this.clientSockets.push(socketid);
+        this.insertObjListAndMap(this.god);
         return true;
     }
     return false;
@@ -38,8 +45,10 @@ gameInstance.joinAsGod = function(socketid) {
 
 gameInstance.joinAsSurvivor = function(socketid) {
     if (this.survivors.length < 3) {
-        this.survivors.push(new Survivor(socketid));
+        let survivor = new Survivor(socketid)
+        this.survivors.push(survivor);
         this.clientSockets.push(socketid);
+        this.insertObjListAndMap(survivor);
         return true;
     }
     return false;
