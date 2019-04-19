@@ -1,3 +1,14 @@
+import getWrappedGL from '/public/util/debug.js';
+import readStringFrom from '/public/util/io.js';
+import Camera from '/public/js/camera.js'
+import gameInstance from '/public/js/game.js'
+
+const camera = new Camera();
+const player = {
+    uid: '',
+    hp: 0,
+    position: [0, 0, 0],
+}
 // ============================ Network IO ================================
 
 const socket = io();
@@ -20,7 +31,7 @@ socket.on('role already taken', function(msg){
     alert(msg);
 });
 
-socket.on('enter game', function(){
+socket.on('enter game', function(msg){
     console.log('enter game');
     $('.game-area').html($('#ingame-template').html());
     $('form').submit(function(e){
@@ -29,6 +40,10 @@ socket.on('enter game', function(){
         $('#m').val('');
         return false;
     });
+    const data = JSON.parse(msg);
+    player.uid = data[socket.id].uid;
+    player.hp =  data[socket.id].hp;
+    player.position =  data[socket.id].position;
     main();
 });
 
@@ -45,14 +60,16 @@ $('#SurvivorButton').click(function(){
     socket.emit("play as survivor");
 });
 
+socket.on('game_status', function(msg) {
+    const data = JSON.parse(msg);
+    camera.Position = data[socket.id].position;
+    // TODO
+});
+
 
 // ====================================Canvas===================================
 
-import getWrappedGL from '/public/util/debug.js';
-import readStringFrom from '/public/util/io.js';
-import Camera from '/public/js/camera.js'
 
-const camera = new Camera();
 
 /**
  * Start here
@@ -123,12 +140,28 @@ function main() {
         const deltaTime = now - then;
         then = now;
             
-        if (Key.isDown('UP')) camera.moveFoward(deltaTime);
-        if (Key.isDown('DOWN')) camera.moveBackward(deltaTime);
-        if (Key.isDown('LEFT')) camera.moveLeft(deltaTime);
-        if (Key.isDown('RIGHT')) camera.moveRight(deltaTime);
-        if (Key.isDown('ROTLEFT')) camera.rotateLeft(deltaTime);
-        if (Key.isDown('ROTRIGHT')) camera.rotateRight(deltaTime);
+        if (Key.isDown('UP')) {
+            //camera.moveFoward(deltaTime);
+            socket.emit("movement", "FORWARD");
+        }
+        if (Key.isDown('DOWN')) {
+            //camera.moveBackward(deltaTime);
+            socket.emit("movement", "BACKWARD");
+        }
+        if (Key.isDown('LEFT')) {
+            //camera.moveLeft(deltaTime);
+            socket.emit("movement", "LEFT");
+        }
+        if (Key.isDown('RIGHT')) {
+            //camera.moveRight(deltaTime);
+            socket.emit("movement", "RIGHT");
+        }
+        if (Key.isDown('ROTLEFT')) {
+            camera.rotateLeft(deltaTime);
+        }
+        if (Key.isDown('ROTRIGHT')) {
+            camera.rotateRight(deltaTime);
+        }
 
         drawScene(gl, programInfo, meshes, camera);
         
