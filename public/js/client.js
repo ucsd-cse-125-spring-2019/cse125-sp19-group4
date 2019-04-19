@@ -1,12 +1,11 @@
 import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 import Camera from '/public/js/camera.js'
-import gameInstance from '/public/js/game.js'
 
 const camera = new Camera();
 const player = {
     uid: '',
-    hp: 0,
+    health: 0,
     position: [0, 0, 0],
 }
 // ============================ Network IO ================================
@@ -41,9 +40,9 @@ socket.on('enter game', function(msg){
         return false;
     });
     const data = JSON.parse(msg);
-    player.uid = data[socket.id].uid;
-    player.hp =  data[socket.id].hp;
-    player.position =  data[socket.id].position;
+    player.uid = data[socket.id].name;
+    console.log("my name is", player.uid);
+    
     main();
 });
 
@@ -62,7 +61,14 @@ $('#SurvivorButton').click(function(){
 
 socket.on('game_status', function(msg) {
     const data = JSON.parse(msg);
-    camera.Position = data[socket.id].position;
+    player.position = data[player.uid].position;
+    player.health = data[player.uid].health;
+    // TODO
+    camera.Position[0] = data[player.uid].position.x;
+    camera.Position[1] = data[player.uid].position.y+5;
+    camera.Position[2] = data[player.uid].position.z+5;
+    console.log(camera.Position);
+    
     // TODO
 });
 

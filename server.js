@@ -27,9 +27,10 @@ io.on('connection', function(socket){
     }
     else {
       if (gameInstance.checkEnoughPlayer()){
-        // Game begins, notify all participants to enter  
+        // Game begins, notify all participants to enter
+        game_start();
         for (let i = 0; i < gameInstance.clientSockets.length; i++) {
-          io.to(gameInstance.clientSockets[i]).emit('enter game');
+          io.to(gameInstance.clientSockets[i]).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
         }
       }
       else {
@@ -59,15 +60,15 @@ io.on('connection', function(socket){
         }
       }
     }
-
-    socket.on('movement', function(keyEvent){
-      movementEvents[gameInstance.socketidToPlayer[socket.id].name].add(keyEvent);
-    });
   });
-  
+
+  socket.on('movement', function(msg) {
+    movementEvents[gameInstance.socketidToPlayer[socket.id].name].add(msg);
+  });
+
   socket.on('chat message', function(msg){
-    //io.emit('chat message', socket.id + ': ' + msg);
-    inputs.push(socket.id + ': ' + msg);
+    io.emit('chat message', socket.id + ': ' + msg);
+    //inputs.push(socket.id + ': ' + msg);
   });
 
   socket.on('disconnect', function(reason){
@@ -81,38 +82,74 @@ http.listen(8080, function(){
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 10;
-setInterval(function() {
-  let start = new Date().getTime();
-  // console.log('loop==================');
-  
-  inputs.forEach(function(e) {
-    io.emit('chat message', e);
-  });
-  inputs.length = 0;
+const tick_rate = 60;
+function game_start() {
+  setInterval(function() {
+    let start = new Date().getTime();
+    
+    inputs.forEach(function(e) {
+      io.emit('chat message', e);
+    });
+    inputs.length = 0;
 
-  // clean out movement inputs
-  for (let i = 1; i <= 3; i++)
-    movementEvents['Survivor ' + i].clear();
-
-  function sleep(milliseconds) {
-    var start = new Date().getTime();
-    while (true) {
-      if ((new Date().getTime() - start) > milliseconds){
-        console.log(milliseconds + 'ms has passed!');
-        break;
-      }
+    // clean out movement inputs
+      console.log(movementEvents);
+      for (let i = 1; i <= 3; i++) {
+      
+      const name = 'Survivor ' + i;
+      let commands = movementEvents[name];
+      commands.forEach(function (e) {
+        if (e == "FORWARD") {
+          gameInstance.nameToObj[name].position.z -= 1;
+        }
+        if (e == "BACKWARD") {
+          gameInstance.nameToObj[name].position.z += 1;
+        }
+        if (e == "LEFT") {
+          gameInstance.nameToObj[name].position.x -= 1;
+        }
+        if (e == "RIGHT") {
+          gameInstance.nameToObj[name].position.x += 1;
+        }
+      })
+      movementEvents['Survivor ' + i].clear();
     }
-  }
-  
-  // sleep(1000);
-  // console.log('1');
-  // sleep(1000);
-  // console.log('2');
-  
-  let end = new Date().getTime();
-  let elapse = end - start;
-  if (elapse > 1000) {
-    console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
-  }
-}, 1000/tick_rate);
+
+    io.emit('game_status', JSON.stringify(gameInstance.nameToObj));
+    let end = new Date().getTime();
+    let elapse = end - start;
+    if (elapse > 1000) {
+      console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
+    }
+  }, 1000/tick_rate);
+}
+
+
+// ================================= Movement ====================================
+// function moveFoward(deltaTime) {
+//   const velocity = this.MovementSpeed * deltaTime;
+//   let temp = glMatrix.vec3.create();
+//   glMatrix.vec3.scale(temp, this.Foward, velocity);
+//   glMatrix.vec3.add(this.Position, this.Position, temp);
+// }
+
+// function moveBackward(deltaTime) {
+//   const velocity = this.MovementSpeed * deltaTime;
+//   let temp = glMatrix.vec3.create();
+//   glMatrix.vec3.scale(temp, this.Foward, -velocity);
+//   glMatrix.vec3.add(this.Position, this.Position, temp);
+// }
+
+// function moveLeft(deltaTime) {
+//   const velocity = this.MovementSpeed * deltaTime;
+//   let temp = glMatrix.vec3.create();
+//   glMatrix.vec3.scale(temp, this.Right, -velocity);
+//   glMatrix.vec3.add(this.Position, this.Position, temp);
+// }
+
+// function moveRight(deltaTime) {
+//   const velocity = this.MovementSpeed * deltaTime;
+//   let temp = glMatrix.vec3.create();
+//   glMatrix.vec3.scale(temp, this.Right, velocity);
+//   glMatrix.vec3.add(this.Position, this.Position, temp);
+// }

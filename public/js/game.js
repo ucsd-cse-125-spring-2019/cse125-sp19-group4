@@ -74,7 +74,7 @@ survivorCount = 0;
 class Survivor {
     constructor(socketid) {
         this.id = ++survivorCount;
-        this.name = 'Survivor' + this.id;
+        this.name = 'Survivor ' + this.id;
         this.socketid = socketid;
         this.position = {x:0, y:0, z:0}; // starting location
         this.health = 100; // set to a default value
@@ -85,6 +85,7 @@ class God {
     constructor(socketid) {
         this.name = 'God';
         this.id = socketid;
+        this.position = {x:0, y:0, z:0};
     }
 }
 
