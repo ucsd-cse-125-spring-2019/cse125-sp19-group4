@@ -6,27 +6,30 @@ const path = require('path');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 console.log(__dirname);
 
-app.get('/cube_demo', function(req, res){
+app.get('/cube_demo', function (req, res) {
   res.sendFile(__dirname + '/public/html/demo.html');
 });
 const inputs = [];
-const movementEvents = {'Survivor 1': new Set(), 'Survivor 2': new Set(), 'Survivor 3': new Set()}
+const movementEvents = { 'Survivor 1': new Set(), 'Survivor 2': new Set(), 'Survivor 3': new Set() }
 
-gameInstance = require('./public/js/game');
-io.on('connection', function(socket){
+const game = require('./public/js/game.js');
+const gameInstance = new game();
+gameInstance.initializeMap();
+
+io.on('connection', function (socket) {
   console.log('a user connected:', socket.id);
 
-  socket.on('play as survivor', function(){
+  socket.on('play as survivor', function () {
     if (!gameInstance.joinAsSurvivor(socket.id)) {
       io.to(socket.id).emit('role already taken', 'Only three survivors are supported');
     }
     else {
-      if (gameInstance.checkEnoughPlayer()){
+      if (gameInstance.checkEnoughPlayer()) {
         // Game begins, notify all participants to enter
         game_start();
         for (let i = 0; i < gameInstance.clientSockets.length; i++) {
@@ -42,12 +45,12 @@ io.on('connection', function(socket){
     }
   });
 
-  socket.on('play as god', function(){
+  socket.on('play as god', function () {
     if (!gameInstance.joinAsGod(socket.id)) {
       io.to(socket.id).emit('role already taken', 'Only one god is supported');
     }
     else {
-      if (gameInstance.checkEnoughPlayer()){
+      if (gameInstance.checkEnoughPlayer()) {
         // Game begins, notify all participants to enter  
         for (let i = 0; i < gameInstance.clientSockets.length; i++) {
           io.to(gameInstance.clientSockets[i]).emit('enter game');
@@ -55,28 +58,28 @@ io.on('connection', function(socket){
       }
       else {
         for (let i = 0; i < gameInstance.clientSockets.length; i++) {
-          io.to(gameInstance.clientSockets[i]).emit('wait for game begin', 
+          io.to(gameInstance.clientSockets[i]).emit('wait for game begin',
             gameInstance.numPlayersStatusToString());
         }
       }
     }
   });
 
-  socket.on('movement', function(msg) {
+  socket.on('movement', function (msg) {
     movementEvents[gameInstance.socketidToPlayer[socket.id].name].add(msg);
   });
 
-  socket.on('chat message', function(msg){
+  socket.on('chat message', function (msg) {
     io.emit('chat message', socket.id + ': ' + msg);
     //inputs.push(socket.id + ': ' + msg);
   });
 
-  socket.on('disconnect', function(reason){
+  socket.on('disconnect', function (reason) {
     console.log('user disconnected. Reason:', reason);
   });
 });
 
-http.listen(8080, function(){
+http.listen(8080, function () {
   console.log('listening on http://127.0.0.1:8080');
 });
 
@@ -84,18 +87,16 @@ http.listen(8080, function(){
 // server loop tick rate, in Hz
 const tick_rate = 60;
 function game_start() {
-  setInterval(function() {
+  setInterval(function () {
     let start = new Date().getTime();
-    
-    inputs.forEach(function(e) {
+
+    inputs.forEach(function (e) {
       io.emit('chat message', e);
     });
     inputs.length = 0;
 
     // clean out movement inputs
-      console.log(movementEvents);
-      for (let i = 1; i <= 3; i++) {
-      
+    for (let i = 1; i <= 3; i++) {
       const name = 'Survivor ' + i;
       let commands = movementEvents[name];
       commands.forEach(function (e) {
@@ -121,7 +122,7 @@ function game_start() {
     if (elapse > 1000) {
       console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
     }
-  }, 1000/tick_rate);
+  }, 1000 / tick_rate);
 }
 
 
