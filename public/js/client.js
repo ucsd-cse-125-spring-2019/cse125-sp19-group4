@@ -8,6 +8,12 @@ const player = {
     health: 0,
     position: [0, 0, 0],
 }
+let meshes = [];
+const charT = glMatrix.mat4.create();
+glMatrix.mat4.fromScaling(charT, [0.1, 0.1, 0.1]);
+glMatrix.mat4.rotateY(charT, charT, glMatrix.glMatrix.toRadian(180));
+const face = [0, 0, -1];
+
 // ============================ Network IO ================================
 
 const socket = io();
@@ -64,7 +70,11 @@ socket.on('game_status', function (msg) {
     player.position = data[player.uid].position;
     player.health = data[player.uid].health;
     // TODO
+    const translation = glMatrix.mat4.create();
+    glMatrix.mat4.fromTranslation(translation, player.position);
+    glMatrix.mat4.multiply(meshes[2].t, translation, charT);
     camera.setPosition(data[player.uid].position);
+
     // TODO
 });
 
@@ -136,9 +146,12 @@ function main() {
     glMatrix.mat4.fromTranslation(trans_left, [5, 0, 0]);
     let trans_right = glMatrix.mat4.create();
     glMatrix.mat4.fromTranslation(trans_right, [0, 0, 0]);
-    const meshes = [{ 'm': male_mesh, 't': trans_left },
-    { 'm': male_mesh, 't': trans_right },
-    { 'm': castle_mesh, 't': glMatrix.mat4.create() }];
+    
+
+    meshes = [{ m: male_mesh, t: trans_left },
+            { m: male_mesh, t: trans_right },
+            { m: male_mesh, t: glMatrix.mat4.clone(charT) },
+            { m: castle_mesh, t: glMatrix.mat4.create() }];
 
     let then = 0;
     // Draw the scene repeatedly
@@ -181,9 +194,19 @@ function main() {
         }
         if (Key.isDown('ROTLEFT')) {
             camera.rotateLeft(deltaTime);
+            const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
+            glMatrix.mat4.rotateY(charT, charT, angle);
+            const rot = glMatrix.mat4.create();
+            glMatrix.mat4.fromYRotation(rot, angle);
+            glMatrix.vec3.transformMat4(face, face, rot);
         }
         if (Key.isDown('ROTRIGHT')) {
             camera.rotateRight(deltaTime);
+            const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
+            glMatrix.mat4.rotateY(charT, charT, -angle);
+            const rot = glMatrix.mat4.create();
+            glMatrix.mat4.fromYRotation(rot, -angle);
+            glMatrix.vec3.transformMat4(face, face, rot);
         }
 
         drawScene(gl, programInfo, meshes, camera);
@@ -430,8 +453,8 @@ const Key = {
         40: 'DOWN',         // down arrow
         65: 'LEFT',         // A
         68: 'RIGHT',        // D
-        69: 'ROTLEFT',      // E     
-        81: 'ROTRIGHT',     // Q
+        69: 'ROTRIGHT',     // E     
+        81: 'ROTLEFT',      // Q
         83: 'DOWN',         // S
         87: 'UP',           // W
     },

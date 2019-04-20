@@ -3,7 +3,7 @@ const PITCH = -45.0;
 const SPEED = 5;        // Unit
 const SENSITIVITY = 120;
 const ZOOM = 45.0;
-const POSITION = [0, 5, 5];
+const POSITION = [0, 10, 10];
 class Camera {
     /**
      * Create a new camera instance
@@ -45,8 +45,8 @@ class Camera {
         return toreturn;
     }
 
-    //Q
-    rotateLeft(deltaTime) {
+    // E
+    rotateRight(deltaTime) {
         const angle = this.MouseSensitivity * deltaTime;
         this.Yaw += angle;
         this.updateCameraVectors();
@@ -72,7 +72,8 @@ class Camera {
 
     }
 
-    rotateRight(deltaTime) {
+    // Q
+    rotateLeft(deltaTime) {
         const angle = this.MouseSensitivity * deltaTime;
 
         this.Yaw -= angle;
@@ -137,7 +138,7 @@ class Camera {
         glMatrix.vec3.cross(this.Up, this.Right, this.Front);
         glMatrix.vec3.normalize(this.Up, this.Up);
         glMatrix.vec3.cross(this.Foward, this.Right, this.WorldUp);
-        glMatrix.vec3.subtract(this.Foward, glMatrix.vec3.create(), this.Foward);
+        glMatrix.vec3.negate(this.Foward, this.Foward);
         glMatrix.vec3.normalize(this.Foward, this.Foward);
     }
 }
