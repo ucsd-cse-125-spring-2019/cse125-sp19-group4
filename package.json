@@ -1,9 +1,10 @@
 {
-    "name": "game",
-    "version": "1.0.0",
-    "description": "CSE 125 Group 4 project",
-    "dependencies": {
-        "express": "^4.16.4",
-        "socket.io": "^2.2.0"
-    }
+        "name": "game",
+        "version": "1.0.0",
+        "description": "CSE 125 Group 4 project",
+        "dependencies": {
+                "express": "^4.16.4",
+                "gl-matrix": "^3.0.0",
+                "socket.io": "^2.2.0"
+        }
 }

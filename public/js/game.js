@@ -1,9 +1,12 @@
+const glMatrix = require('gl-Matrix');
+
 /** Helper class */
 class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;
         this.socketid = socketid;
         this.position = [0, 0, 0]; // starting location (x, y, z)
+        this.movementSpeed = 2;
         this.health = 100; // set to a default value
     }
 }
@@ -13,6 +16,7 @@ class God {
         this.name = 'God';
         this.socketid = socketid;
         this.position = [0, 0, 0];
+        this.movementSpeed = 10;
     }
 }
 
@@ -40,12 +44,12 @@ class GameInstance {
         this.clientSockets = [];
         this.socketidToPlayer = {};
         this.survivors = [];
-        this.objects = {};          // store all objects (players, trees, etc) on the map
-        initializeMap();            // build this.map
+        this.objects = {};                    // store all objects (players, trees, etc) on the map
+        this.initializeMap();                        // build this.map
     }
 
     insertObjListAndMap(obj) {
-        if (obj.name in objects) {
+        if (obj.name in this.objects) {
             throw obj.name + " already in objects";
         }
         this.objects[obj.name] = obj; // store reference
@@ -104,6 +108,15 @@ class GameInstance {
         return this.survivors.length + '/' + this.max_survivors + ' survivor'
             + (this.survivors.length < 2 ? '' : 's') + ' and '
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
+    }
+
+    move(name, direction, deltaTime) {
+        const obj = this.objects[name];
+        const velocity = obj.movementSpeed * deltaTime * 0.001;
+        // glMatrix.vec3.normalize(direction, direction);
+        let temp = glMatrix.vec3.create();
+        glMatrix.vec3.scale(temp, direction, velocity);
+        glMatrix.vec3.add(obj.position, obj.position, temp);
     }
 }
 

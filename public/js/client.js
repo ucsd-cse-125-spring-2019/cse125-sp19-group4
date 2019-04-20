@@ -14,11 +14,11 @@ const socket = io();
 
 let command = '';
 
-socket.on('chat message', function(msg){
+socket.on('chat message', function (msg) {
     $('#messages').append($('<li>').text(msg));
     let n = msg.indexOf(': cmd ');
     if (n != -1) {
-        command = msg.substring(n+6);
+        command = msg.substring(n + 6);
         $('#messages').append($('<li>').text('\'' + command + '\''));
     }
 });
@@ -26,14 +26,14 @@ socket.on('chat message', function(msg){
 $('.game-area').html($('#intro-screen-template').html());
 
 
-socket.on('role already taken', function(msg){
+socket.on('role already taken', function (msg) {
     alert(msg);
 });
 
-socket.on('enter game', function(msg){
+socket.on('enter game', function (msg) {
     console.log('enter game');
     $('.game-area').html($('#ingame-template').html());
-    $('form').submit(function(e){
+    $('form').submit(function (e) {
         e.preventDefault(); // prevents page reloading
         socket.emit('chat message', $('#m').val());
         $('#m').val('');
@@ -42,34 +42,35 @@ socket.on('enter game', function(msg){
     const data = JSON.parse(msg);
     player.uid = data[socket.id].name;
     console.log("my name is", player.uid);
-    
+
     main();
 });
 
-socket.on('wait for game begin', function(msg){
+socket.on('wait for game begin', function (msg) {
     $('.game-area').html($('#loading-screen-template').html());
     $('#queue').html(msg);
 });
 
-$('#GodButton').click(function(){
+$('#GodButton').click(function () {
     socket.emit("play as god");
 });
 
-$('#SurvivorButton').click(function(){
+$('#SurvivorButton').click(function () {
     socket.emit("play as survivor");
 });
 
-socket.on('game_status', function(msg) {
+socket.on('game_status', function (msg) {
     const data = JSON.parse(msg);
     player.position = data[player.uid].position;
     player.health = data[player.uid].health;
     // TODO
-    camera.Position[0] = data[player.uid].position.x;
-    camera.Position[1] = data[player.uid].position.y+5;
-    camera.Position[2] = data[player.uid].position.z+5;
-    console.log(camera.Position);
-    
+    camera.setPosition(data[player.uid].position);
     // TODO
+});
+
+socket.on('pong', (latency) => {
+    // console.log(socket.id, 'Ping:', latency, 'ms');
+    $('#ping').html(latency);
 });
 
 
@@ -92,9 +93,9 @@ function main() {
     // canvas.addEventListener("mouseup", mouseUp, false);
     // canvas.addEventListener("mouseout", mouseUp, false);
     // canvas.addEventListener("mousemove", mouseMove, false);
-    
-    window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
-    window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+
+    window.addEventListener('keyup', function (event) { Key.onKeyup(event); }, false);
+    window.addEventListener('keydown', function (event) { Key.onKeydown(event); }, false);
 
     /** @type {WebGLRenderingContext} */
     const gl = getWrappedGL(canvas);
@@ -135,9 +136,9 @@ function main() {
     glMatrix.mat4.fromTranslation(trans_left, [5, 0, 0]);
     let trans_right = glMatrix.mat4.create();
     glMatrix.mat4.fromTranslation(trans_right, [0, 0, 0]);
-    const meshes = [{'m': male_mesh, 't':trans_left},
-                    {'m': male_mesh, 't':trans_right},
-                    {'m': castle_mesh, 't':glMatrix.mat4.create()}];
+    const meshes = [{ 'm': male_mesh, 't': trans_left },
+    { 'm': male_mesh, 't': trans_right },
+    { 'm': castle_mesh, 't': glMatrix.mat4.create() }];
 
     let then = 0;
     // Draw the scene repeatedly
@@ -145,22 +146,38 @@ function main() {
         now *= 0.001;
         const deltaTime = now - then;
         then = now;
-            
+
         if (Key.isDown('UP')) {
-            //camera.moveFoward(deltaTime);
-            socket.emit("movement", "FORWARD");
+            const movement = {
+                command: "FORWARD",
+                direction: camera.Foward,
+            }
+            socket.emit("movement", JSON.stringify(movement));
         }
         if (Key.isDown('DOWN')) {
-            //camera.moveBackward(deltaTime);
-            socket.emit("movement", "BACKWARD");
+            const dir = glMatrix.vec3.create();
+            glMatrix.vec3.negate(dir, camera.Foward);
+            const movement = {
+                command: "BACKWARD",
+                direction: dir,
+            }
+            socket.emit("movement", JSON.stringify(movement));
         }
         if (Key.isDown('LEFT')) {
-            //camera.moveLeft(deltaTime);
-            socket.emit("movement", "LEFT");
+            const dir = glMatrix.vec3.create();
+            glMatrix.vec3.negate(dir, camera.Right);
+            const movement = {
+                command: "LEFT",
+                direction: dir,
+            }
+            socket.emit("movement", JSON.stringify(movement));
         }
         if (Key.isDown('RIGHT')) {
-            //camera.moveRight(deltaTime);
-            socket.emit("movement", "RIGHT");
+            const movement = {
+                command: "RIGHT",
+                direction: camera.Right,
+            }
+            socket.emit("movement", JSON.stringify(movement));
         }
         if (Key.isDown('ROTLEFT')) {
             camera.rotateLeft(deltaTime);
@@ -170,7 +187,7 @@ function main() {
         }
 
         drawScene(gl, programInfo, meshes, camera);
-        
+
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
@@ -178,8 +195,8 @@ function main() {
 
 /**
  * Initialize the buffers of the mesh
- * @param  {WebGLRenderingContext} gl
- * @param  {String} filepath
+ * @param    {WebGLRenderingContext} gl
+ * @param    {String} filepath
  */
 function initMesh(gl, filepath) {
     //load model
@@ -324,9 +341,9 @@ function drawScene(gl, programInfo, meshes, camera) {
 
 /**
  * Initialize a shader program, so WebGL knows how to draw our data
- * @param  {WebGLRenderingContext} gl
- * @param  {string} vsFilename
- * @param  {string} fsFilename
+ * @param    {WebGLRenderingContext} gl
+ * @param    {string} vsFilename
+ * @param    {string} fsFilename
  */
 function initShaderProgram(gl, vsFilename, fsFilename) {
     const vsSource = readStringFrom(vsFilename);
@@ -407,29 +424,29 @@ const Key = {
     _pressed: {},
 
     cmd: {
-        37: 'LEFT',     // left arrow
-        38: 'UP',       // up arrow
-        39: 'RIGHT',    // right arrow
-        40: 'DOWN',     // down arrow
-        65: 'LEFT',     // A
-        68: 'RIGHT',    // D
-        69: 'ROTRIGHT', // E   
-        81: 'ROTLEFT',  // Q
-        83: 'DOWN',     // S
-        87: 'UP',       // W
+        37: 'LEFT',         // left arrow
+        38: 'UP',           // up arrow
+        39: 'RIGHT',        // right arrow
+        40: 'DOWN',         // down arrow
+        65: 'LEFT',         // A
+        68: 'RIGHT',        // D
+        69: 'ROTLEFT',      // E     
+        81: 'ROTRIGHT',     // Q
+        83: 'DOWN',         // S
+        87: 'UP',           // W
     },
-    
-    isDown: function(command) {
+
+    isDown: function (command) {
         return this._pressed[command];
     },
-    
-    onKeydown: function(event) {
+
+    onKeydown: function (event) {
         if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
-    
-    onKeyup: function(event) {
+
+    onKeyup: function (event) {
         if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
