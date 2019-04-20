@@ -95,7 +95,7 @@ function main() {
 
     /** @type {HTMLCanvasElement} */
     const canvas = document.querySelector("#glCanvas");
-    // set the canvas to full screen
+    // set the canvas resolution
     canvas.width = window.innerWidth;
     canvas.height = 0.8 * window.innerHeight;
 
