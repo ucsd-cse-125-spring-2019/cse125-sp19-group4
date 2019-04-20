@@ -5,8 +5,9 @@ class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;
         this.socketid = socketid;
-        this.position = [0, 0, 0]; // starting location (x, y, z)
-        this.movementSpeed = 2;
+        this.position = [0, 0, 0]; // location (x, y, z)
+        this.direction = [0, 0, -1]; // facing (x, y, z)
+        this.movementSpeed = 5;
         this.health = 100; // set to a default value
     }
 }
@@ -117,6 +118,7 @@ class GameInstance {
         let temp = glMatrix.vec3.create();
         glMatrix.vec3.scale(temp, direction, velocity);
         glMatrix.vec3.add(obj.position, obj.position, temp);
+        obj.direction = direction;
     }
 }
 

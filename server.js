@@ -26,8 +26,7 @@ const max_survivors = 1;
 const gameInstance = new game(max_survivors);
 
 const inputs = [];
-const movementCommands = {};
-const movementDirections = {};
+const movementEvents = {};
 
 
 io.on('connection', function (socket) {
@@ -73,12 +72,12 @@ io.on('connection', function (socket) {
     });
 
     socket.on('movement', function (msg) {
-        const name = gameInstance.socketidToPlayer[socket.id].name;
-        const movement = JSON.parse(msg);
-        if (!(movement.command in movementCommands[name])) {
-            movementCommands[name].add(movement.command);
-            movementDirections[name].add(movement.direction);
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
         }
+        const name = gameInstance.socketidToPlayer[socket.id].name;
+        const direction = JSON.parse(msg);
+        movementEvents[name] = direction;
     });
 
     socket.on('chat message', function (msg) {
@@ -100,11 +99,6 @@ http.listen(8080, function () {
 const tick_rate = 60;
 function game_start() {
 
-    gameInstance.clientSockets.forEach(function (socket) {
-        movementCommands[gameInstance.socketidToPlayer[socket].name] = new Set();
-        movementDirections[gameInstance.socketidToPlayer[socket].name] = new Set();
-    });
-
     let then = 0;
     let elapse = 0;
     setInterval(function () {
@@ -116,14 +110,12 @@ function game_start() {
         });
         inputs.length = 0;
 
-        // clean out movement inputs
-        Object.keys(movementDirections).forEach(function (name) {
-            movementDirections[name].forEach(function (direction) {
-                gameInstance.move(name, direction, deltaTime);
-            })
-            movementCommands[name].clear();
-            movementDirections[name].clear();
+        // Handle Movements
+        Object.keys(movementEvents).forEach(function (name) {
+            gameInstance.move(name, movementEvents[name], deltaTime);
+            delete movementEvents[name];
         });
+        
         const broadcast_status = JSON.stringify(gameInstance.objects);
         // const debug_info = {
         //     server_loop_time: elapse,
