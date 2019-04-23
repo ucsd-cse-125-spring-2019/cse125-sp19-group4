@@ -3,17 +3,26 @@ import readStringFrom from '/public/util/io.js';
 import Camera from '/public/js/camera.js'
 
 const camera = new Camera();
-const player = {
-    uid: '',
-    health: 0,
-    position: [0, 0, 0],
-}
-let meshes = [];
-const SCALE = glMatrix.mat4.create();
-glMatrix.mat4.fromScaling(SCALE, [1, 1, 1]);
-glMatrix.mat4.rotateY(SCALE, SCALE, glMatrix.glMatrix.toRadian(180));
-const charT = glMatrix.mat4.clone(SCALE);
-const face = [0, 0, -1];
+let uid = '';
+
+const FACE_mat = glMatrix.mat4.create();
+glMatrix.mat4.fromYRotation(FACE_mat, glMatrix.glMatrix.toRadian(180));
+const FACE = [0, 0, -1];
+
+
+const model_ref = {};
+
+const transform_ref = {
+    'castle': glMatrix.mat4.create(),
+    'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
+    'player': glMatrix.mat4.clone(FACE_mat),
+    'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+};
+
+
+const meshes = {
+    
+};
 
 // ============================ Network IO ================================
 
@@ -47,8 +56,8 @@ socket.on('enter game', function (msg) {
         return false;
     });
     const data = JSON.parse(msg);
-    player.uid = data[socket.id].name;
-    console.log("my name is", player.uid);
+    uid = data[socket.id].name;
+    console.log("my name is", uid);
 
     main();
 });
@@ -68,25 +77,28 @@ $('#SurvivorButton').click(function () {
 
 socket.on('game_status', function (msg) {
     const data = JSON.parse(msg);
-    player.position = data[player.uid].position;
-    player.health = data[player.uid].health;
+    const player = data[uid];
     camera.setPosition(player.position);
 
-    // TODO
-    // update face
-    const dot = glMatrix.vec3.dot(data[player.uid].direction, face);
-    const axis = glMatrix.vec3.create();
-    glMatrix.vec3.cross(axis, face, data[player.uid].direction);
-    glMatrix.vec3.normalize(axis, axis);
-    const angle = Math.acos(dot);
-    glMatrix.mat4.rotate(charT, SCALE, angle, axis)
-    // update position
-    const translation = glMatrix.mat4.create();
-    glMatrix.mat4.fromTranslation(translation, player.position);
-    glMatrix.mat4.multiply(meshes[2].t, translation, charT);
-
+    Object.keys(data).forEach(function (name) {
+        const obj = data[name];
+        if (typeof meshes[name] === 'undefined') {
+            meshes[name] = { m: model_ref[obj.model], t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+        }
+        const mesh = meshes[name];
+        // update face
+        const dot = glMatrix.vec3.dot(obj.direction, FACE);
+        const axis = glMatrix.vec3.create();
+        glMatrix.vec3.cross(axis, FACE, obj.direction);
+        glMatrix.vec3.normalize(axis, axis);
+        const angle = Math.acos(dot);
+        glMatrix.mat4.rotate(mesh.t, FACE_mat, angle, axis)
+        // update position
+        const translation = glMatrix.mat4.create();
+        glMatrix.mat4.fromTranslation(translation, obj.position);
+        glMatrix.mat4.multiply(mesh.t, translation, mesh.t);
     
-    // TODO
+    });
 });
 
 socket.on('pong', (latency) => {
@@ -151,21 +163,14 @@ function main() {
 
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl);
-    const castle_mesh = initMesh(gl, "/public/model/castle.obj");
-    const male_mesh = initMesh(gl, "/public/model/male.obj");
-    const player_mesh = initMesh(gl, "/public/model/player.obj");
-    const slime_mesh = initMesh(gl, "/public/model/slime.obj");
-    let trans_left = glMatrix.mat4.create();
-    glMatrix.mat4.fromTranslation(trans_left, [5, 0, 0]);
-    let trans_right = glMatrix.mat4.create();
-    glMatrix.mat4.fromTranslation(trans_right, [0, 0, 0]);
 
+    model_ref['castle'] = initMesh(gl, "/public/model/castle.obj");
+    model_ref['male'] = initMesh(gl, "/public/model/male.obj");
+    model_ref['player'] = initMesh(gl, "/public/model/player.obj");
+    model_ref['slime'] = initMesh(gl, "/public/model/slime.obj");
 
-    meshes = [{ m: male_mesh, t: trans_left },
-    { m: slime_mesh, t: trans_right },
-    { m: player_mesh, t: glMatrix.mat4.clone(charT) },
-    { m: castle_mesh, t: glMatrix.mat4.create() }];
-
+    meshes['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
+    meshes['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
@@ -178,18 +183,8 @@ function main() {
             // do nothing
         } else if (Key.isDown('ROTLEFT')) {
             camera.rotateLeft(deltaTime);
-            // const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
-            // glMatrix.mat4.rotateY(charT, charT, angle);
-            // const rot = glMatrix.mat4.create();
-            // glMatrix.mat4.fromYRotation(rot, angle);
-            // glMatrix.vec3.transformMat4(face, face, rot);
         } else if (Key.isDown('ROTRIGHT')) {
             camera.rotateRight(deltaTime);
-            // const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
-            // glMatrix.mat4.rotateY(charT, charT, -angle);
-            // const rot = glMatrix.mat4.create();
-            // glMatrix.mat4.fromYRotation(rot, -angle);
-            // glMatrix.vec3.transformMat4(face, face, rot);
         }
 
         // Movement
@@ -231,7 +226,7 @@ function main() {
         } else {
             move = false;
         }
-        
+
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
         }
@@ -278,7 +273,7 @@ function initMesh(gl, filepath) {
  * Draw the scene.
  * @param  {WebGLRenderingContext} gl
  * @param  {Object} programInfo
- * @param  {Array} meshes mashes from initMesh(gl, filename) with 
+ * @param  {Object} meshes mashes from initMesh(gl, filename) with 
  * transformation
  * @param  {Camera} camera
  */
@@ -319,7 +314,8 @@ function drawScene(gl, programInfo, meshes, camera) {
 
     // Now move the drawing position a bit to where we want to
     // start drawing the square.
-    meshes.forEach(function (mesh) {
+    Object.keys(meshes).forEach(function (name) {
+        const mesh = meshes[name];
         let modelView = glMatrix.mat4.create();
         glMatrix.mat4.multiply(modelView, modelViewMatrix, mesh.t);
 

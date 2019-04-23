@@ -9,6 +9,7 @@ class Survivor {
         this.direction = [0, 0, -1]; // facing (x, y, z)
         this.movementSpeed = 5;
         this.health = 100; // set to a default value
+        this.model = 'player';
     }
 }
 
@@ -17,8 +18,9 @@ class God {
         this.name = 'God';
         this.socketid = socketid;
         this.position = [0, 0, 0];
-        this.movementSpeed = 10;
         this.direction = [0, 0, -1]; // facing (x, y, z)
+        this.movementSpeed = 10;
+        this.model = 'player';
     }
 }
 
@@ -26,6 +28,17 @@ class Item {
     constructor() {
         this.name = 'Item';
         this.position = [0, 0, 0];
+    }
+}
+
+class Slime {
+    constructor() {
+        this.name = 'Slime';
+        this.position = [0, 0, 0];
+        this.direction = [0, 0, 1]; // facing (x, y, z)
+        this.movementSpeed = 5;
+        this.health = 100; // set to a default value
+        this.model = 'slime';
     }
 }
 
@@ -47,7 +60,9 @@ class GameInstance {
         this.socketidToPlayer = {};
         this.survivors = [];
         this.objects = {};                    // store all objects (players, trees, etc) on the map
-        this.initializeMap();                        // build this.map
+        this.initializeMap();                 // build this.map
+        // testing
+        this.insertObjListAndMap(new Slime());
     }
 
     insertObjListAndMap(obj) {

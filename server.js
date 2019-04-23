@@ -22,7 +22,7 @@ app.get('/cube_demo', function (req, res) {
 
 
 // TODO: read from config
-const max_survivors = 1;
+const max_survivors = 2;
 const gameInstance = new game(max_survivors);
 
 const inputs = [];
