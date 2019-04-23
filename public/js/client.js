@@ -1,14 +1,31 @@
+import getWrappedGL from '/public/util/debug.js';
+import readStringFrom from '/public/util/io.js';
+import Camera from '/public/js/camera.js'
+
+const camera = new Camera();
+const player = {
+    uid: '',
+    health: 0,
+    position: [0, 0, 0],
+}
+let meshes = [];
+const SCALE = glMatrix.mat4.create();
+glMatrix.mat4.fromScaling(SCALE, [1, 1, 1]);
+glMatrix.mat4.rotateY(SCALE, SCALE, glMatrix.glMatrix.toRadian(180));
+const charT = glMatrix.mat4.clone(SCALE);
+const face = [0, 0, -1];
+
 // ============================ Network IO ================================
 
 const socket = io();
 
 let command = '';
 
-socket.on('chat message', function(msg){
+socket.on('chat message', function (msg) {
     $('#messages').append($('<li>').text(msg));
     let n = msg.indexOf(': cmd ');
     if (n != -1) {
-        command = msg.substring(n+6);
+        command = msg.substring(n + 6);
         $('#messages').append($('<li>').text('\'' + command + '\''));
     }
 });
@@ -16,43 +33,71 @@ socket.on('chat message', function(msg){
 $('.game-area').html($('#intro-screen-template').html());
 
 
-socket.on('role already taken', function(msg){
+socket.on('role already taken', function (msg) {
     alert(msg);
 });
 
-socket.on('enter game', function(){
+socket.on('enter game', function (msg) {
     console.log('enter game');
     $('.game-area').html($('#ingame-template').html());
-    $('form').submit(function(e){
+    $('form').submit(function (e) {
         e.preventDefault(); // prevents page reloading
         socket.emit('chat message', $('#m').val());
         $('#m').val('');
         return false;
     });
+    const data = JSON.parse(msg);
+    player.uid = data[socket.id].name;
+    console.log("my name is", player.uid);
+
     main();
 });
 
-socket.on('wait for game begin', function(msg){
+socket.on('wait for game begin', function (msg) {
     $('.game-area').html($('#loading-screen-template').html());
     $('#queue').html(msg);
 });
 
-$('#GodButton').click(function(){
+$('#GodButton').click(function () {
     socket.emit("play as god");
 });
 
-$('#SurvivorButton').click(function(){
+$('#SurvivorButton').click(function () {
     socket.emit("play as survivor");
+});
+
+socket.on('game_status', function (msg) {
+    const data = JSON.parse(msg);
+    player.position = data[player.uid].position;
+    player.health = data[player.uid].health;
+    camera.setPosition(player.position);
+
+    // TODO
+    // update face
+    const dot = glMatrix.vec3.dot(data[player.uid].direction, face);
+    const axis = glMatrix.vec3.create();
+    glMatrix.vec3.cross(axis, face, data[player.uid].direction);
+    glMatrix.vec3.normalize(axis, axis);
+    const angle = Math.acos(dot);
+    glMatrix.mat4.rotate(charT, SCALE, angle, axis)
+    // update position
+    const translation = glMatrix.mat4.create();
+    glMatrix.mat4.fromTranslation(translation, player.position);
+    glMatrix.mat4.multiply(meshes[2].t, translation, charT);
+
+    
+    // TODO
+});
+
+socket.on('pong', (latency) => {
+    // console.log(socket.id, 'Ping:', latency, 'ms');
+    $('#ping').html(latency);
 });
 
 
 // ====================================Canvas===================================
 
-import getWrappedGL from '/public/util/debug.js';
-import readStringFrom from '/public/util/io.js';
-import Camera from '/public/js/camera.js'
 
-const camera = new Camera();
 
 /**
  * Start here
@@ -61,18 +106,17 @@ function main() {
 
     /** @type {HTMLCanvasElement} */
     const canvas = document.querySelector("#glCanvas");
-    // set the canvas to full screen
+    // set the canvas resolution
     canvas.width = window.innerWidth;
     canvas.height = 0.8 * window.innerHeight;
-    console.log('width', canvas.width, 'height', canvas.height);
 
-    canvas.addEventListener("mousedown", mouseDown, false);
-    canvas.addEventListener("mouseup", mouseUp, false);
-    canvas.addEventListener("mouseout", mouseUp, false);
-    canvas.addEventListener("mousemove", mouseMove, false);
-    //window.addEventListener("keydown", keyDown, false);
-    window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
-    window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+    // canvas.addEventListener("mousedown", mouseDown, false);
+    // canvas.addEventListener("mouseup", mouseUp, false);
+    // canvas.addEventListener("mouseout", mouseUp, false);
+    // canvas.addEventListener("mousemove", mouseMove, false);
+
+    window.addEventListener('keyup', function (event) { Key.onKeyup(event); }, false);
+    window.addEventListener('keydown', function (event) { Key.onKeydown(event); }, false);
 
     /** @type {WebGLRenderingContext} */
     const gl = getWrappedGL(canvas);
@@ -109,13 +153,18 @@ function main() {
     // const buffers = initCubeBuffers(gl);
     const castle_mesh = initMesh(gl, "/public/model/castle.obj");
     const male_mesh = initMesh(gl, "/public/model/male.obj");
+    const player_mesh = initMesh(gl, "/public/model/player.obj");
+    const slime_mesh = initMesh(gl, "/public/model/slime.obj");
     let trans_left = glMatrix.mat4.create();
     glMatrix.mat4.fromTranslation(trans_left, [5, 0, 0]);
     let trans_right = glMatrix.mat4.create();
     glMatrix.mat4.fromTranslation(trans_right, [0, 0, 0]);
-    const meshes = [{'m': male_mesh, 't':trans_left},
-                    {'m': male_mesh, 't':trans_right},
-                    {'m': castle_mesh, 't':glMatrix.mat4.create()}];
+
+
+    meshes = [{ m: male_mesh, t: trans_left },
+    { m: slime_mesh, t: trans_right },
+    { m: player_mesh, t: glMatrix.mat4.clone(charT) },
+    { m: castle_mesh, t: glMatrix.mat4.create() }];
 
     let then = 0;
     // Draw the scene repeatedly
@@ -123,22 +172,71 @@ function main() {
         now *= 0.001;
         const deltaTime = now - then;
         then = now;
-            
-        if (Key.isDown('UP')) camera.moveUp(deltaTime);
-        if (Key.isDown('DOWN')) camera.moveDown(deltaTime);
-        if (Key.isDown('LEFT')) camera.moveLeft(deltaTime);
-        if (Key.isDown('RIGHT')) camera.moveRight(deltaTime);
-        camera.updateCameraVectors();
 
-        if (command == 'cube') {
-            drawScene(gl, programInfo, meshes, camera);
-        } else {
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-            gl.clearDepth(1.0);                 // Clear everything
-
-            // Clear the canvas before we start drawing on it.
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        // Camera Rotation
+        if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
+            // do nothing
+        } else if (Key.isDown('ROTLEFT')) {
+            camera.rotateLeft(deltaTime);
+            // const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
+            // glMatrix.mat4.rotateY(charT, charT, angle);
+            // const rot = glMatrix.mat4.create();
+            // glMatrix.mat4.fromYRotation(rot, angle);
+            // glMatrix.vec3.transformMat4(face, face, rot);
+        } else if (Key.isDown('ROTRIGHT')) {
+            camera.rotateRight(deltaTime);
+            // const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
+            // glMatrix.mat4.rotateY(charT, charT, -angle);
+            // const rot = glMatrix.mat4.create();
+            // glMatrix.mat4.fromYRotation(rot, -angle);
+            // glMatrix.vec3.transformMat4(face, face, rot);
         }
+
+        // Movement
+        let direction = glMatrix.vec3.create();
+        let move = true;
+        if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            // do nothing
+        } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
+            glMatrix.vec3.negate(direction, camera.Right);
+        } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('RIGHT')) {
+            direction = camera.Right;
+        } else if (Key.isDown('UP') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            glMatrix.vec3.negate(direction, camera.Foward);
+        } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            direction = camera.Foward;
+        } else if (Key.isDown('UP') && Key.isDown('DOWN') || Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            // do nothing
+        } else if (Key.isDown('UP') && Key.isDown('RIGHT')) {
+            glMatrix.vec3.add(direction, camera.Foward, camera.Right);
+            glMatrix.vec3.normalize(direction, direction);
+        } else if (Key.isDown('DOWN') && Key.isDown('RIGHT')) {
+            glMatrix.vec3.subtract(direction, camera.Right, camera.Foward);
+            glMatrix.vec3.normalize(direction, direction);
+        } else if (Key.isDown('DOWN') && Key.isDown('LEFT')) {
+            glMatrix.vec3.add(direction, camera.Foward, camera.Right);
+            glMatrix.vec3.negate(direction, direction);
+            glMatrix.vec3.normalize(direction, direction);
+        } else if (Key.isDown('UP') && Key.isDown('LEFT')) {
+            glMatrix.vec3.subtract(direction, camera.Foward, camera.Right);
+            glMatrix.vec3.normalize(direction, direction);
+        } else if (Key.isDown('UP')) {
+            direction = camera.Foward;
+        } else if (Key.isDown('DOWN')) {
+            glMatrix.vec3.negate(direction, camera.Foward);
+        } else if (Key.isDown('LEFT')) {
+            glMatrix.vec3.negate(direction, camera.Right);
+        } else if (Key.isDown('RIGHT')) {
+            direction = camera.Right;
+        } else {
+            move = false;
+        }
+        
+        if (move) {
+            socket.emit('movement', JSON.stringify(direction));
+        }
+
+        drawScene(gl, programInfo, meshes, camera);
 
         requestAnimationFrame(render);
     }
@@ -147,8 +245,8 @@ function main() {
 
 /**
  * Initialize the buffers of the mesh
- * @param  {WebGLRenderingContext} gl
- * @param  {String} filepath
+ * @param    {WebGLRenderingContext} gl
+ * @param    {String} filepath
  */
 function initMesh(gl, filepath) {
     //load model
@@ -293,9 +391,9 @@ function drawScene(gl, programInfo, meshes, camera) {
 
 /**
  * Initialize a shader program, so WebGL knows how to draw our data
- * @param  {WebGLRenderingContext} gl
- * @param  {string} vsFilename
- * @param  {string} fsFilename
+ * @param    {WebGLRenderingContext} gl
+ * @param    {string} vsFilename
+ * @param    {string} fsFilename
  */
 function initShaderProgram(gl, vsFilename, fsFilename) {
     const vsSource = readStringFrom(vsFilename);
@@ -347,55 +445,58 @@ function loadShader(gl, type, source) {
 
 /*================= Mouse events ======================*/
 
-let drag = false;
-let old_x, old_y;
+// let drag = false;
+// let old_x, old_y;
 
 
-const mouseDown = function (e) {
-    drag = true;
-    old_x = e.pageX, old_y = e.pageY;
-    e.preventDefault();
-    return false;
-};
+// const mouseDown = function (e) {
+//     drag = true;
+//     old_x = e.pageX, old_y = e.pageY;
+//     e.preventDefault();
+//     return false;
+// };
 
-const mouseUp = function (e) {
-    drag = false;
-};
+// const mouseUp = function (e) {
+//     drag = false;
+// };
 
-const mouseMove = function (e) {
-    if (!drag) return false;
-    camera.ProcessMouseMovement(e.pageX - old_x, e.pageY - old_y);
-    camera.updateCameraVectors();
-    old_x = e.pageX, old_y = e.pageY;
-    e.preventDefault();
-};
+// const mouseMove = function (e) {
+//     if (!drag) return false;
+//     camera.ProcessMouseMovement(e.pageX - old_x, e.pageY - old_y);
+//     camera.updateCameraVectors();
+//     old_x = e.pageX, old_y = e.pageY;
+//     e.preventDefault();
+// };
 
+/*================= Keyboard events ======================*/
 
 const Key = {
     _pressed: {},
 
     cmd: {
-        37: 'LEFT',     // left arrow
-        38: 'UP',       // up arrow
-        39: 'RIGHT',    // right arrow
-        40: 'DOWN',     // down arrow
-        65: 'LEFT',     // A
-        68: 'RIGHT',    // D
-        83: 'DOWN',     // S
-        87: 'UP',       // W
+        37: 'LEFT',         // left arrow
+        38: 'UP',           // up arrow
+        39: 'RIGHT',        // right arrow
+        40: 'DOWN',         // down arrow
+        65: 'LEFT',         // A
+        68: 'RIGHT',        // D
+        69: 'ROTRIGHT',     // E     
+        81: 'ROTLEFT',      // Q
+        83: 'DOWN',         // S
+        87: 'UP',           // W
     },
-    
-    isDown: function(command) {
+
+    isDown: function (command) {
         return this._pressed[command];
     },
-    
-    onKeydown: function(event) {
+
+    onKeydown: function (event) {
         if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
-    
-    onKeyup: function(event) {
+
+    onKeyup: function (event) {
         if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
