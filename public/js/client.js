@@ -9,9 +9,10 @@ const player = {
     position: [0, 0, 0],
 }
 let meshes = [];
-const charT = glMatrix.mat4.create();
-glMatrix.mat4.fromScaling(charT, [0.1, 0.1, 0.1]);
-glMatrix.mat4.rotateY(charT, charT, glMatrix.glMatrix.toRadian(180));
+const SCALE = glMatrix.mat4.create();
+glMatrix.mat4.fromScaling(SCALE, [1, 1, 1]);
+glMatrix.mat4.rotateY(SCALE, SCALE, glMatrix.glMatrix.toRadian(180));
+const charT = glMatrix.mat4.clone(SCALE);
 const face = [0, 0, -1];
 
 // ============================ Network IO ================================
@@ -72,11 +73,19 @@ socket.on('game_status', function (msg) {
     camera.setPosition(player.position);
 
     // TODO
+    // update face
+    const dot = glMatrix.vec3.dot(data[player.uid].direction, face);
+    const axis = glMatrix.vec3.create();
+    glMatrix.vec3.cross(axis, face, data[player.uid].direction);
+    glMatrix.vec3.normalize(axis, axis);
+    const angle = Math.acos(dot);
+    glMatrix.mat4.rotate(charT, SCALE, angle, axis)
+    // update position
     const translation = glMatrix.mat4.create();
     glMatrix.mat4.fromTranslation(translation, player.position);
     glMatrix.mat4.multiply(meshes[2].t, translation, charT);
 
-
+    
     // TODO
 });
 
@@ -144,6 +153,8 @@ function main() {
     // const buffers = initCubeBuffers(gl);
     const castle_mesh = initMesh(gl, "/public/model/castle.obj");
     const male_mesh = initMesh(gl, "/public/model/male.obj");
+    const player_mesh = initMesh(gl, "/public/model/player.obj");
+    const slime_mesh = initMesh(gl, "/public/model/slime.obj");
     let trans_left = glMatrix.mat4.create();
     glMatrix.mat4.fromTranslation(trans_left, [5, 0, 0]);
     let trans_right = glMatrix.mat4.create();
@@ -151,8 +162,8 @@ function main() {
 
 
     meshes = [{ m: male_mesh, t: trans_left },
-    { m: male_mesh, t: trans_right },
-    { m: male_mesh, t: glMatrix.mat4.clone(charT) },
+    { m: slime_mesh, t: trans_right },
+    { m: player_mesh, t: glMatrix.mat4.clone(charT) },
     { m: castle_mesh, t: glMatrix.mat4.create() }];
 
     let then = 0;
@@ -161,28 +172,29 @@ function main() {
         now *= 0.001;
         const deltaTime = now - then;
         then = now;
-        
+
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
             // do nothing
         } else if (Key.isDown('ROTLEFT')) {
             camera.rotateLeft(deltaTime);
-            const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
-            glMatrix.mat4.rotateY(charT, charT, angle);
-            const rot = glMatrix.mat4.create();
-            glMatrix.mat4.fromYRotation(rot, angle);
-            glMatrix.vec3.transformMat4(face, face, rot);
+            // const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
+            // glMatrix.mat4.rotateY(charT, charT, angle);
+            // const rot = glMatrix.mat4.create();
+            // glMatrix.mat4.fromYRotation(rot, angle);
+            // glMatrix.vec3.transformMat4(face, face, rot);
         } else if (Key.isDown('ROTRIGHT')) {
             camera.rotateRight(deltaTime);
-            const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
-            glMatrix.mat4.rotateY(charT, charT, -angle);
-            const rot = glMatrix.mat4.create();
-            glMatrix.mat4.fromYRotation(rot, -angle);
-            glMatrix.vec3.transformMat4(face, face, rot);
+            // const angle = Math.acos(glMatrix.vec3.dot(camera.Foward, face));
+            // glMatrix.mat4.rotateY(charT, charT, -angle);
+            // const rot = glMatrix.mat4.create();
+            // glMatrix.mat4.fromYRotation(rot, -angle);
+            // glMatrix.vec3.transformMat4(face, face, rot);
         }
 
         // Movement
         let direction = glMatrix.vec3.create();
+        let move = true;
         if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             // do nothing
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
@@ -216,9 +228,13 @@ function main() {
             glMatrix.vec3.negate(direction, camera.Right);
         } else if (Key.isDown('RIGHT')) {
             direction = camera.Right;
+        } else {
+            move = false;
         }
-
-        socket.emit('movement', JSON.stringify(direction));
+        
+        if (move) {
+            socket.emit('movement', JSON.stringify(direction));
+        }
 
         drawScene(gl, programInfo, meshes, camera);
 

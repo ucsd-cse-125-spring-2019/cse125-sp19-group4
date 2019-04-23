@@ -18,6 +18,7 @@ class God {
         this.socketid = socketid;
         this.position = [0, 0, 0];
         this.movementSpeed = 10;
+        this.direction = [0, 0, -1]; // facing (x, y, z)
     }
 }
 
