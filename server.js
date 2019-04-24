@@ -59,6 +59,7 @@ io.on('connection', function (socket) {
         else {
             if (gameInstance.checkEnoughPlayer()) {
                 // Game begins, notify all participants to enter
+                game_start();
                 gameInstance.clientSockets.forEach(function (socket) {
                     io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
                 });
