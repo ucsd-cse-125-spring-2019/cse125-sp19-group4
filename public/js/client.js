@@ -7,8 +7,9 @@ let uid = '';
 
 const FACE_mat = glMatrix.mat4.create();
 glMatrix.mat4.fromYRotation(FACE_mat, glMatrix.glMatrix.toRadian(180));
-const FACE = [0, 0, -1];
-
+const FACE = [0.0, 0.0, -1.0];
+const NEG_FACE = glMatrix.vec3.create();
+glMatrix.vec3.negate(NEG_FACE, FACE);
 
 const model_ref = {};
 
@@ -89,8 +90,14 @@ socket.on('game_status', function (msg) {
         // update face
         const dot = glMatrix.vec3.dot(obj.direction, FACE);
         const axis = glMatrix.vec3.create();
-        glMatrix.vec3.cross(axis, FACE, obj.direction);
-        glMatrix.vec3.normalize(axis, axis);
+        if (glMatrix.vec3.equals(obj.direction, FACE)) {
+            axis[1] = 1.0;
+        } else if (glMatrix.vec3.equals(obj.direction, NEG_FACE)) {
+            axis[1] = -1.0;
+        } else {
+            glMatrix.vec3.cross(axis, FACE, obj.direction);
+            // glMatrix.vec3.normalize(axis, axis);
+        }
         const angle = Math.acos(dot);
         glMatrix.mat4.rotate(mesh.t, FACE_mat, angle, axis)
         // update position
