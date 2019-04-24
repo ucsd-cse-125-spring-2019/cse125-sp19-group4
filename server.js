@@ -22,7 +22,7 @@ app.get('/cube_demo', function (req, res) {
 
 
 // TODO: read from config
-const max_survivors = 1;
+const max_survivors = 2;
 const gameInstance = new game(max_survivors);
 
 const inputs = [];
@@ -59,6 +59,7 @@ io.on('connection', function (socket) {
         else {
             if (gameInstance.checkEnoughPlayer()) {
                 // Game begins, notify all participants to enter
+                game_start();
                 gameInstance.clientSockets.forEach(function (socket) {
                     io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
                 });
