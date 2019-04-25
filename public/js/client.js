@@ -198,6 +198,7 @@ function main() {
         let direction = glMatrix.vec3.create();
         let move = true;
         if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            move = false;
             // do nothing
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
             glMatrix.vec3.negate(direction, camera.Right);
@@ -208,6 +209,7 @@ function main() {
         } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             direction = camera.Foward;
         } else if (Key.isDown('UP') && Key.isDown('DOWN') || Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            move = false;
             // do nothing
         } else if (Key.isDown('UP') && Key.isDown('RIGHT')) {
             glMatrix.vec3.add(direction, camera.Foward, camera.Right);
