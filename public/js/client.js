@@ -16,10 +16,9 @@ const model_ref = {};
 const transform_ref = {
     'castle': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
-    'player': glMatrix.mat4.clone(FACE_mat),
+    'player': glMatrix.mat4.create(),
     'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
-
 
 const meshes = {
     
@@ -86,7 +85,6 @@ socket.on('game_status', function (msg) {
         if (typeof meshes[name] === 'undefined') {
             meshes[name] = { m: model_ref[obj.model], t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
-        const mesh = meshes[name];
         // update face
         const dot = glMatrix.vec3.dot(obj.direction, FACE);
         const axis = glMatrix.vec3.create();
@@ -96,14 +94,16 @@ socket.on('game_status', function (msg) {
             axis[1] = -1.0;
         } else {
             glMatrix.vec3.cross(axis, FACE, obj.direction);
-            // glMatrix.vec3.normalize(axis, axis);
         }
         const angle = Math.acos(dot);
-        glMatrix.mat4.rotate(mesh.t, FACE_mat, angle, axis)
+        const rotation = glMatrix.mat4.create();
+        glMatrix.mat4.rotate(rotation, FACE_mat, angle, axis)
         // update position
         const translation = glMatrix.mat4.create();
         glMatrix.mat4.fromTranslation(translation, obj.position);
-        glMatrix.mat4.multiply(mesh.t, translation, mesh.t);
+        const transformation = glMatrix.mat4.create();
+        glMatrix.mat4.multiply(transformation, translation, rotation);
+        glMatrix.mat4.multiply(meshes[name].t, transformation, transform_ref[obj.model]);
     
     });
 });
