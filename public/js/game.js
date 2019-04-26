@@ -76,7 +76,10 @@ class GameInstance {
     initializeMap() {
         this.map = new Array(this.worldHeight);
         for (let i = 0; i < this.map.length; i++) {
-            this.map[i] = new Array(this.worldWidth).fill(new Tile());
+            this.map[i] = new Array(this.worldWidth);
+            for (let j = 0; j < this.map[i].length; j++) {
+                this.map[i][j] = new Tile();
+            }
         }
         // store object info on the map
         Object.keys(this.objects).forEach(function (key) {
