@@ -7,7 +7,7 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 const game = require('./public/js/game.js');
-const gameStartTime = Date.now();
+let gameStartTime = Date.now();
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -41,6 +41,7 @@ io.on('connection', function (socket) {
             if (gameInstance.checkEnoughPlayer()) {
                 // Game begins, notify all participants to enter
                 game_start();
+                startTime = Date.now();
                 gameInstance.clientSockets.forEach(function (socket) {
                     io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
                 });
@@ -98,7 +99,7 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 60;
+const tick_rate = 1;
 function game_start() {
 
     let then = 0;
