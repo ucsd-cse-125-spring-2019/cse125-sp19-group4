@@ -16,6 +16,7 @@
       #messages li:nth-child(odd) { background: #eee; }
       .loading {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
       .menu {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
+      .statusBar {float: right; width: 15vw; height: 15vh; padding: 0.5vh 0.5vw 0.5vh 0.5vw; border: 0px; border-radius:10px;background-color:rgb(199, 135, 40);}
       @keyframes rotate {
         to {
           transform: rotate(1turn)
@@ -52,6 +53,12 @@
     </script>
     <script id="ingame-template" type="text/template">
       <canvas id="glCanvas"></canvas>
+      <div id="statusBar" class="statusBar">
+        <div id="timer"></div>
+        <script type="text/javascript">
+          loadStatusList();
+        </script>
+      </div>
       <ul id="messages"></ul>
       <form action="">
         <input id="m" autocomplete="off" /><button>Send</button>
@@ -64,4 +71,5 @@
   <script src="/socket.io/socket.io.js"></script>
   <!-- <script src="/public/lib/socket.io-client.js"></script> -->
   <script src="/public/js/client.js" type="module"></script>
+  <script src="/public/js/statusBar.js" type="module"></script>
 </html>

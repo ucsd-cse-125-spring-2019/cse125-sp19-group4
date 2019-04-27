@@ -7,6 +7,7 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 const game = require('./public/js/game.js');
+const gameStartTime = Date.now();
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -22,7 +23,7 @@ app.get('/cube_demo', function (req, res) {
 
 
 // TODO: read from config
-const max_survivors = 2;
+const max_survivors = 0;
 const gameInstance = new game(max_survivors);
 
 const inputs = [];
@@ -124,6 +125,8 @@ function game_start() {
         io.emit('game_status', broadcast_status);
         let end = new Date().getTime();
         elapse = end - start;
+        duration = end - gameStartTime;
+        io.emit('tiktok', JSON.stringify(duration));
         
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
