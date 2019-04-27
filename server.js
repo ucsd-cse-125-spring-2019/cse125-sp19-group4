@@ -127,18 +127,18 @@ function game_start() {
         inputs.length = 0;
 
         // Handle Movements
-        // if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
-        //     gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name], deltaTime);
-        //     delete movementEvents[gameInstance.god.name];
-        // }
-        // gameInstance.survivors.forEach(function (survivor) {
-        //     if (typeof movementEvents[survivor.name] !== 'undefined') {
-        //         gameInstance.move(survivor.name, movementEvents[survivor.name], deltaTime);
-        //         delete movementEvents[survivor.name];
-        //     } else {
-        //         gameInstance.stay(survivor.name);
-        //     }
-        // });
+        if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name], deltaTime);
+            delete movementEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof movementEvents[survivor.name] !== 'undefined') {
+                gameInstance.move(survivor.name, movementEvents[survivor.name], deltaTime);
+                delete movementEvents[survivor.name];
+            } else {
+                gameInstance.stay(survivor.name);
+            }
+        });
 
         // step and update objects
         physicsEngine.world.step(deltaTime * 0.001);

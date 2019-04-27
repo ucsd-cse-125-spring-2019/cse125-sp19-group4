@@ -136,13 +136,13 @@ class GameInstance {
 
     move(name, direction, deltaTime) {
         const obj = this.objects[name];
-        const speed = obj.movementSpeed * deltaTime * 0.001;
+        const speed = obj.movementSpeed;
         this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
     }
 
     stay(name) {
-        this.physicsEngine.updateVelocity(name, [0, 0, 0], 0);
+        //this.physicsEngine.updateVelocity(name, [0, 0, 0], 0);
     }
 }
 

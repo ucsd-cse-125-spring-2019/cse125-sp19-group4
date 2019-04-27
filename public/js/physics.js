@@ -21,7 +21,7 @@ class PhysicsEngine {
     addGroundPlane() {
         // Make a statis ground plane with mass 0
         let groundShape = new CANNON.Plane();
-        let groundBody = new CANNON.Body({ mass: 0, shape: groundShape });
+        let groundBody = new CANNON.Body({ mass: 0, shape: groundShape, material: new CANNON.Material({ friction: 0.9 }) });
         this.world.add(groundBody);
     }
 
@@ -34,9 +34,10 @@ class PhysicsEngine {
     // }
 
     updateVelocity(name, direction, speed) {
-        const direction_vec3 = new CANNON.Vec3(direction[0], direction[1], direction[2]);
+        
+        const direction_vec3 = new CANNON.Vec3(direction[0], -direction[2], direction[1]);
         direction_vec3.normalize();
-        this.obj[name].velocity = direction_vec3.scale(speed); 
+        this.obj[name].velocity.vadd(direction_vec3.scale(speed), this.obj[name].velocity); 
     }
 }
 
