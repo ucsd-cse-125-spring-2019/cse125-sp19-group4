@@ -78,6 +78,8 @@ socket.on('game_status', function (msg) {
     const data = JSON.parse(msg);
     const player = data[uid];
     camera.setPosition(player.position);
+    console.log(player.position);
+    
 
     let event = new CustomEvent("statusUpdate", {detail: data});
     document.dispatchEvent(event);
@@ -256,8 +258,8 @@ function main() {
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
         }
-
-        drawScene(gl, programInfo, models, camera);
+        
+        drawScene(gl, programInfo, meshes, camera);
 
         requestAnimationFrame(render);
     }

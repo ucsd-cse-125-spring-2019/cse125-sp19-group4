@@ -51,7 +51,7 @@ class Tile {
 
 
 class GameInstance {
-    constructor(max_survivors = 3) {
+    constructor(max_survivors = 3, physicsEngine) {
         this.max_survivors = max_survivors;
         this.survivorCount = 0;
         this.worldWidth = 5;
@@ -63,6 +63,7 @@ class GameInstance {
         this.initializeMap();                 // build this.map
         // testing
         this.insertObjListAndMap(new Slime());
+        this.physicsEngine = physicsEngine;
     }
 
     insertObjListAndMap(obj) {
@@ -99,6 +100,8 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
+            this.physicsEngine.addPlayer(this.god.name, 5, {x:0, y:-10, z:10});
+            
             return true;
         }
         return false;
@@ -112,6 +115,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
+            this.physicsEngine.addPlayer(survivor.name, 5, {x:0, y:-10, z:2});
             return true;
         }
         return false;
@@ -132,12 +136,13 @@ class GameInstance {
 
     move(name, direction, deltaTime) {
         const obj = this.objects[name];
-        const velocity = obj.movementSpeed * deltaTime * 0.001;
-        // glMatrix.vec3.normalize(direction, direction);
-        let temp = glMatrix.vec3.create();
-        glMatrix.vec3.scale(temp, direction, velocity);
-        glMatrix.vec3.add(obj.position, obj.position, temp);
+        const speed = obj.movementSpeed * deltaTime * 0.001;
+        this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
+    }
+
+    stay(name) {
+        this.physicsEngine.updateVelocity(name, [0, 0, 0], 0);
     }
 }
 
