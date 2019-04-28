@@ -1,6 +1,6 @@
 const properties = ['attackPoint', 'defense', 'movementSpeed'];
-const imgSrcs = ["attackPoint.png","defense.png","speed.png"];
-import { uid } from "./client.js"
+const icons = ["attackPoint.png","defense.png","speed.png"];
+import { uid } from "/public/js/client.js"
 const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;"
 
 if (!String.prototype.format) {
@@ -40,7 +40,7 @@ function loadStatusList() {
     //------------------------health bar---------------------------
     let div = document.createElement("div"); 
     let img = document.createElement("img");
-    img.src = "./public/images/health.png";
+    img.src = "/public/images/health.png";
     img.height = 20;
     img.weight = 20;
     img.style = "vertical-align: middle; margin: 2px";
@@ -72,7 +72,7 @@ function loadStatusList() {
     document.getElementById("statusBar").appendChild(ul);
     
     for (let i = 0; i < properties.length; i++) {
-        createStatusItem(properties[i], "./public/images/" + imgSrcs[i])
+        createStatusItem(properties[i], "/public/images/" + icons[i])
     }
     //------------------------everything else----------------------
 }

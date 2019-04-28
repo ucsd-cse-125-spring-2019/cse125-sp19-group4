@@ -99,7 +99,7 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 1;
+const tick_rate = 60;
 function game_start() {
 
     let then = 0;
@@ -120,9 +120,7 @@ function game_start() {
         });
         
         const broadcast_status = JSON.stringify(gameInstance.objects);
-        // const debug_info = {
-        //     server_loop_time: elapse,
-        // }
+        
         io.emit('game_status', broadcast_status);
         let end = new Date().getTime();
         elapse = end - start;
