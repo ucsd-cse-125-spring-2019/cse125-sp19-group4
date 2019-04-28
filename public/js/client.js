@@ -17,12 +17,11 @@ const transform_ref = {
     'castle': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
-    'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'slime': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 0, -5]),
+    'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
-const meshes = {
-    
-};
+const models = {};
 
 // ============================ Network IO ================================
 
@@ -82,8 +81,8 @@ socket.on('game_status', function (msg) {
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
-        if (typeof meshes[name] === 'undefined') {
-            meshes[name] = { m: model_ref[obj.model], t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+        if (typeof models[name] === 'undefined') {
+            models[name] = { m: model_ref[obj.model], t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
         // update face
         const dot = glMatrix.vec3.dot(obj.direction, FACE);
@@ -103,8 +102,8 @@ socket.on('game_status', function (msg) {
         glMatrix.mat4.fromTranslation(translation, obj.position);
         const transformation = glMatrix.mat4.create();
         glMatrix.mat4.multiply(transformation, translation, rotation);
-        glMatrix.mat4.multiply(meshes[name].t, transformation, transform_ref[obj.model]);
-    
+        glMatrix.mat4.multiply(models[name].t, transformation, transform_ref[obj.model]);
+
     });
 });
 
@@ -160,24 +159,33 @@ function main() {
         program: shaderProgram,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+            textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
             modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+            transformMatrix: gl.getUniformLocation(shaderProgram, 'uTransformMatrix'),
+            uSampler: gl.getUniformLocation(shaderProgram, 'uSampler'),
+            ambientColor: gl.getUniformLocation(shaderProgram, "uAmbientColor"),
+            diffuseColor: gl.getUniformLocation(shaderProgram, "uDiffuseColor"),
+            specularColor: gl.getUniformLocation(shaderProgram, "uSpecularColor"),
         },
     };
+    // Tell WebGL to use our program when drawing
+    gl.useProgram(shaderProgram);
 
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl);
 
-    model_ref['castle'] = initMesh(gl, "/public/model/castle.obj");
-    model_ref['male'] = initMesh(gl, "/public/model/male.obj");
-    model_ref['player'] = initMesh(gl, "/public/model/player.obj");
-    model_ref['slime'] = initMesh(gl, "/public/model/slime.obj");
+    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/castle.obj", "", false, programInfo);
+    model_ref['male'] = new OBJObject(gl, "male", "/public/model/male.obj", "", false, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, programInfo);
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, programInfo);
+    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model.obj", "/public/model/f16-texture.bmp", false, programInfo);
 
-    meshes['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
-    meshes['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
+    models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
+    // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
+    models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
@@ -240,41 +248,11 @@ function main() {
             socket.emit('movement', JSON.stringify(direction));
         }
 
-        drawScene(gl, programInfo, meshes, camera);
+        drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
-}
-
-/**
- * Initialize the buffers of the mesh
- * @param    {WebGLRenderingContext} gl
- * @param    {String} filepath
- */
-function initMesh(gl, filepath) {
-    //load model
-    function readTextFile(file) {
-        let text;
-        const rawFile = new XMLHttpRequest();
-        rawFile.open("GET", file, false);
-        rawFile.onreadystatechange = function () {
-            if (rawFile.readyState === 4) {
-                if (rawFile.status === 200 || rawFile.status == 0) {
-                    text = rawFile.responseText;
-                }
-            }
-        }
-        rawFile.send(null);
-        return text;
-    }
-
-    const male_text = readTextFile(filepath);
-
-    const mesh = new OBJ.Mesh(male_text);
-    OBJ.initMeshBuffers(gl, mesh);
-
-    return mesh;
 }
 
 
@@ -282,11 +260,11 @@ function initMesh(gl, filepath) {
  * Draw the scene.
  * @param  {WebGLRenderingContext} gl
  * @param  {Object} programInfo
- * @param  {Object} meshes mashes from initMesh(gl, filename) with 
+ * @param  {Object} models
  * transformation
  * @param  {Camera} camera
  */
-function drawScene(gl, programInfo, meshes, camera) {
+function drawScene(gl, programInfo, models, camera) {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -321,84 +299,30 @@ function drawScene(gl, programInfo, meshes, camera) {
     // the center of the scene.
     const modelViewMatrix = camera.getViewMatrix();
 
+    // Set the shader uniforms
+    gl.uniformMatrix4fv(
+        programInfo.uniformLocations.projectionMatrix,
+        false,
+        projectionMatrix);
+    gl.uniformMatrix4fv(
+        programInfo.uniformLocations.modelViewMatrix,
+        false,
+        modelViewMatrix);
+    
     // Now move the drawing position a bit to where we want to
     // start drawing the square.
-    Object.keys(meshes).forEach(function (name) {
-        const mesh = meshes[name];
-        let modelView = glMatrix.mat4.create();
-        glMatrix.mat4.multiply(modelView, modelViewMatrix, mesh.t);
-
-        // Tell WebGL how to pull out the positions from the position
-        // buffer into the vertexPosition attribute
-        {
-            const numComponents = mesh.m.vertexBuffer.itemSize;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.m.vertexBuffer);
-            gl.vertexAttribPointer(
-                programInfo.attribLocations.vertexPosition,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset);
-            gl.enableVertexAttribArray(
-                programInfo.attribLocations.vertexPosition);
-        }
-
-        // Tell WebGL how to pull out the colors from the color buffer
-        // into the vertexColor attribute.
-        {
-            const numComponents = mesh.m.normalBuffer.itemSize;
-            const type = gl.FLOAT;
-            const normalize = false;
-            const stride = 0;
-            const offset = 0;
-            gl.bindBuffer(gl.ARRAY_BUFFER, mesh.m.normalBuffer);
-            gl.vertexAttribPointer(
-                programInfo.attribLocations.vertexColor,
-                numComponents,
-                type,
-                normalize,
-                stride,
-                offset);
-            gl.enableVertexAttribArray(
-                programInfo.attribLocations.vertexColor);
-        }
-
-        // Tell WebGL which indices to use to index the vertices
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.m.indexBuffer);
-
-        // Tell WebGL to use our program when drawing
-        gl.useProgram(programInfo.program);
-
-        // Set the shader uniforms
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.projectionMatrix,
-            false,
-            projectionMatrix);
-        gl.uniformMatrix4fv(
-            programInfo.uniformLocations.modelViewMatrix,
-            false,
-            modelView);
-
-        {
-            const vertexCount = mesh.m.indexBuffer.numItems;
-            const type = gl.UNSIGNED_SHORT;
-            const offset = 0;
-            gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-        }
-    })
+    Object.keys(models).forEach(function (name) {
+        const model = models[name];
+        model.m.render(gl, model.t);
+    });
 }
 
 
 /**
  * Initialize a shader program, so WebGL knows how to draw our data
  * @param    {WebGLRenderingContext} gl
- * @param    {string} vsFilename
- * @param    {string} fsFilename
+ * @param    {String} vsFilename
+ * @param    {String} fsFilename
  */
 function initShaderProgram(gl, vsFilename, fsFilename) {
     const vsSource = readStringFrom(vsFilename);
@@ -426,7 +350,7 @@ function initShaderProgram(gl, vsFilename, fsFilename) {
  * creates a shader of the given type, uploads the source and compiles it.
  * @param  {WebGLRenderingContext} gl
  * @param  {number} type
- * @param  {string} source
+ * @param  {String} source
  */
 function loadShader(gl, type, source) {
     /** @type {WebGLShader} */
@@ -446,6 +370,60 @@ function loadShader(gl, type, source) {
     }
 
     return shader;
+}
+
+
+/**
+ * @param  {WebGLRenderingContext} gl
+ * @param  {String} url
+ */
+function loadTexture(gl, url) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Because images have to be download over the internet
+    // they might take a moment until they are ready.
+    // Until then put a single pixel in the texture so we can
+    // use it immediately. When the image has finished downloading
+    // we'll update the texture with the contents of the image.
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const width = 1;
+    const height = 1;
+    const border = 0;
+    const srcFormat = gl.RGBA;
+    const srcType = gl.UNSIGNED_BYTE;
+    const pixel = new Uint8Array([0, 0, 255, 255]);  // opaque blue
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+        width, height, border, srcFormat, srcType,
+        pixel);
+
+    if (url !== '') {
+        const image = new Image();
+        image.onload = function () {
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+            gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+                srcFormat, srcType, image);
+
+            // WebGL1 has different requirements for power of 2 images
+            // vs non power of 2 images so check if the image is a
+            // power of 2 in both dimensions.
+            if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+                // Yes, it's a power of 2. Generate mips.
+                gl.generateMipmap(gl.TEXTURE_2D);
+            } else {
+                // No, it's not a power of 2. Turn off mips and set
+                // wrapping to clamp to edge
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            }
+        };
+        image.src = url;
+    }
+
+    return texture;
 }
 
 /*================= Mouse events ======================*/
