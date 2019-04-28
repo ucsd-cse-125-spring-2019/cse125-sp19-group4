@@ -13,7 +13,10 @@ app.use("/public", express.static(path.join(__dirname, '/public')));
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
-console.log(__dirname);
+
+app.get('/texture_demo', function (req, res) {
+    res.sendFile(__dirname + '/public/html/texture.html');
+});
 
 app.get('/cube_demo', function (req, res) {
     res.sendFile(__dirname + '/public/html/demo.html');
@@ -22,7 +25,7 @@ app.get('/cube_demo', function (req, res) {
 
 
 // TODO: read from config
-const max_survivors = 2;
+const max_survivors = 0;
 const gameInstance = new game(max_survivors);
 
 const inputs = [];

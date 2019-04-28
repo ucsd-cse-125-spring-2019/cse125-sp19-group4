@@ -68,9 +68,9 @@ class OBJObject {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.normalBuffer);
         gl.useProgram(shaderprogram);
         this.num_material = this.mesh.indicesPerMaterial.length;
-        this.material_name = [this.num_material];
-        this.indices = [this.num_material];
-        this.indexBuffers = [this.num_material];
+        this.material_name = [];
+        this.indices = [];
+        this.indexBuffers = [];
         this.texture_files = [];
         if (is_mtl) {
             let mtl_content = readTextFile(texture_name);
