@@ -7,6 +7,7 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 const game = require('./public/js/game.js');
+let gameStartTime = Date.now();
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -43,6 +44,7 @@ io.on('connection', function (socket) {
             if (gameInstance.checkEnoughPlayer()) {
                 // Game begins, notify all participants to enter
                 game_start();
+                startTime = Date.now();
                 gameInstance.clientSockets.forEach(function (socket) {
                     io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
                 });
@@ -121,12 +123,12 @@ function game_start() {
         });
         
         const broadcast_status = JSON.stringify(gameInstance.objects);
-        // const debug_info = {
-        //     server_loop_time: elapse,
-        // }
+        
         io.emit('game_status', broadcast_status);
         let end = new Date().getTime();
         elapse = end - start;
+        duration = end - gameStartTime;
+        io.emit('tiktok', JSON.stringify(duration));
         
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());

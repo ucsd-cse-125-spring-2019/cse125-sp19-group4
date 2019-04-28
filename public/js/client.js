@@ -79,6 +79,10 @@ socket.on('game_status', function (msg) {
     const player = data[uid];
     camera.setPosition(player.position);
 
+    let event = new CustomEvent("statusUpdate", {detail: data});
+    document.dispatchEvent(event);
+
+
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
         if (typeof models[name] === 'undefined') {
@@ -105,6 +109,11 @@ socket.on('game_status', function (msg) {
         glMatrix.mat4.multiply(models[name].t, transformation, transform_ref[obj.model]);
 
     });
+});
+
+socket.on('tiktok', (miliseconds) => {
+    let event = new CustomEvent("timerUpdate", {detail: miliseconds});
+    document.dispatchEvent(event);
 });
 
 socket.on('pong', (latency) => {
@@ -486,3 +495,8 @@ const Key = {
     }
 };
 
+function getUid() {
+    return uid;
+}
+
+export { uid }

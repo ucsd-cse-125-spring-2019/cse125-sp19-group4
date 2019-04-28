@@ -16,6 +16,8 @@
       #messages li:nth-child(odd) { background: #eee; }
       .loading {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
       .menu {display: flex; justify-content: center; flex-direction: column; align-items: center; min-height: 100vh;}
+      .statusBar {float: right; right: 10px; top: 10px; padding: 7px; position: absolute; border-style: solid; border-width: 1px; border-color:SaddleBrown; border-radius:2px;
+                  background-color:#131F1C;}
       @keyframes rotate {
         to {
           transform: rotate(1turn)
@@ -24,8 +26,10 @@
       .loading__anim { width: 40px; height: 40px; display: inline-block; border: 5px solid rgba(189,189,189 ,0.25);
         border-left-color: rgba(3,155,229 ,1); border-top-color: rgba(3,155,229 ,1); border-radius: 50%; animation: rotate 600ms infinite linear;}
     </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   </head>
-  <body>
+  <body style="width:100vw; height:100vh;">
     <ul id="debugger">
       <li>Ping <span id="ping"></span>ms</li>
     </ul>
@@ -52,6 +56,12 @@
     </script>
     <script id="ingame-template" type="text/template">
       <canvas id="glCanvas"></canvas>
+      <div id="statusBar" class="statusBar" onLoad="loadStatusList();">
+        <div id="timer" style="color:#B4AE6C">0:00:00</div>
+        <script type="text/javascript">
+          loadStatusList();
+        </script>
+      </div>
       <ul id="messages"></ul>
       <form action="">
         <input id="m" autocomplete="off" /><button>Send</button>
@@ -64,4 +74,5 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/public/js/OBJObject.js"></script>
   <script src="/public/js/client.js" type="module"></script>
+  <script src="/public/js/statusBar.js" type="module"></script>
 </html>
