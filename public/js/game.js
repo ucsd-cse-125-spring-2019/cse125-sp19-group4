@@ -7,7 +7,7 @@ class Survivor {
         this.socketid = socketid;
         this.position = [0, 0, 0]; // location (x, y, z)
         this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.movementSpeed = 5;
+        this.movementSpeed = 10;
         this.health = 100; // set to a default value
         this.model = 'player';
         this.jumping = false;
@@ -20,7 +20,7 @@ class God {
         this.socketid = socketid;
         this.position = [0, 0, 0];
         this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.movementSpeed = 10;
+        this.movementSpeed = 20;
         this.model = 'player';
     }
 }
@@ -37,7 +37,7 @@ class Slime {
         this.name = 'Slime';
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
-        this.movementSpeed = 5;
+        this.movementSpeed = 8;
         this.health = 100; // set to a default value
         this.model = 'slime';
     }
@@ -66,7 +66,7 @@ class GameInstance {
         let slime = new Slime();
         this.insertObjListAndMap(slime);
         this.physicsEngine = physicsEngine;
-        this.physicsEngine.addSlime(slime.name, 10, {x: -20, y: 5, z: 0})
+        this.physicsEngine.addSlime(slime.name, 5, {x: -20, y: 20, z: 0})
     }
 
     insertObjListAndMap(obj) {
@@ -103,7 +103,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
-            this.physicsEngine.addPlayer(this.god.name, 5, {x:10, y:-10, z:10});
+            this.physicsEngine.addPlayer(this.god.name, 5, {x:10, y:10, z:10});
             
             return true;
         }
@@ -118,7 +118,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, 5, {x:-10, y:0, z:1});
+            this.physicsEngine.addPlayer(survivor.name, 20, {x:-10, y:2, z:1});
             return true;
         }
         return false;
@@ -141,8 +141,7 @@ class GameInstance {
         const obj = this.objects[name];
         if (direction === 'JUMP') {
             this.physicsEngine.jump(name);
-            this.jumping = true;
-        } else if (!this.jumping){
+        } else {
             const speed = obj.movementSpeed;
             this.physicsEngine.updateVelocity(name, direction, speed);
             obj.direction = direction;
@@ -150,7 +149,7 @@ class GameInstance {
     }
 
     stay(name) {
-        if (!this.jumping) this.physicsEngine.stopMovement(name);
+        this.physicsEngine.stopMovement(name);
     }
 }
 

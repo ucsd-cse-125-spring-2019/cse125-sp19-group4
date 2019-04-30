@@ -104,19 +104,11 @@ http.listen(8080, function () {
 // server loop tick rate, in Hz
 const tick_rate = 60;
 function game_start() {
-    let then = new Date().getTime();
+    let then = Date.now();
     let elapse = 0;
-    // console.log('v', physicsEngine.obj['Survivor 0'].velocity); 
-    // console.log('pos:', physicsEngine.obj['Survivor 0'].position.x, physicsEngine.obj['Survivor 0'].position.y, physicsEngine.obj['Survivor 0'].position.z);
-    // for (var i = 0; i < 10; ++i){
-    //     physicsEngine.world.step(1);
-    //     console.log('v', physicsEngine.obj['Survivor 0'].velocity);
-        
-    //     console.log('pos:', physicsEngine.obj['Survivor 0'].position.x, physicsEngine.obj['Survivor 0'].position.y, physicsEngine.obj['Survivor 0'].position.z);
-    // }
 
     setInterval(function () {
-        let start = new Date().getTime();
+        let start = Date.now();
         const deltaTime = start - then;
         then = start;
         inputs.forEach(function (e) {
@@ -128,6 +120,8 @@ function game_start() {
         if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
             gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
             delete movementEvents[gameInstance.god.name];
+        } else {
+            gameInstance.stay(gameInstance.god.name);
         }
         gameInstance.survivors.forEach(function (survivor) {
             if (typeof movementEvents[survivor.name] !== 'undefined') {
@@ -141,14 +135,13 @@ function game_start() {
         // step and update objects
         physicsEngine.world.step(deltaTime * 0.001);
         Object.keys(physicsEngine.obj).forEach(function (name) {
-            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.z, -physicsEngine.obj[name].position.y];
+            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y, physicsEngine.obj[name].position.z];
         });
-        // console.log(physicsEngine.obj['Survivor 0'].velocity);
 
         const broadcast_status = JSON.stringify(gameInstance.objects);
         
         io.emit('game_status', broadcast_status);
-        let end = new Date().getTime();
+        let end = Date.now();
         elapse = end - start;
         duration = end - gameStartTime;
         io.emit('tiktok', JSON.stringify(duration));

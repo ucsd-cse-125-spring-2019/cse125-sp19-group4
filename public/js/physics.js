@@ -5,7 +5,7 @@ class PhysicsEngine {
 
         // Create the world
         this.world = new CANNON.World();
-        this.world.gravity.set(0, 0, -9.82); 
+        this.world.gravity.set(0, -9.82, 0);
         this.world.broadphase = new CANNON.NaiveBroadphase();
         this.world.solver.iterations = 10;
 
@@ -24,58 +24,51 @@ class PhysicsEngine {
 
         this.addGroundPlane();
     }
-    
-    addPlayer(name, mass = 5, position = {x: 1, y: 1, z: 1}) {
-        let halfextents = new CANNON.Vec3(1, 1, 1);
-        let cubeShape = new CANNON.Box(halfextents);
+
+    addPlayer(name, mass = 20, position = { x: 1, y: 1, z: 1 }) {
+        const ballShape = new CANNON.Sphere(1);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
-        let cubeBody = new CANNON.Body({
-            mass: mass, 
-            shape: cubeShape,
-            type: CANNON.Body.KINEMATIC
+        const playerBody = new CANNON.Body({
+            mass: mass,
+            shape: ballShape,
+            linearDamping: 0.5,
+            // type: CANNON.Body.KINEMATIC
         });
-        cubeBody.position.set(position.x, position.y, position.z);
-        this.world.add(cubeBody);
-        this.obj[name] = cubeBody;
+        playerBody.position.set(position.x, position.y, position.z);
+        playerBody.jumps = 2;
+        this.world.add(playerBody);
+        this.obj[name] = playerBody;
     }
 
-    addSlime(name, mass = 10, position = {x: 2, y: 2, z:2}) {
-        let halfextents = new CANNON.Vec3(2, 2, 2);
-        let cubeShape = new CANNON.Box(halfextents);
-        let cubeBody = new CANNON.Body({
-            mass: mass, 
-            shape: cubeShape,
-            material: this.groundMaterial
+    addSlime(name, mass = 5, position = { x: 2, y: 2, z: 2 }) {
+        const ballShape = new CANNON.Sphere(1);
+        const slimeBody = new CANNON.Body({
+            mass: mass,
+            shape: ballShape,
+            linearDamping: 0.9,
         });
-        cubeBody.position.set(position.x, position.y, position.z);
-        this.world.add(cubeBody);
-        this.obj[name] = cubeBody;
+        slimeBody.position.set(position.x, position.y, position.z);
+        slimeBody.jumps = 0;    // can't jump
+        this.world.add(slimeBody);
+        this.obj[name] = slimeBody;
     }
 
     addGroundPlane() {
         // Make a statis ground plane with mass 0
-        let groundShape = new CANNON.Plane();
-        let groundBody = new CANNON.Body({ mass: 0, shape: groundShape});
+        const groundShape = new CANNON.Plane();
+        const groundBody = new CANNON.Body({ mass: 0, shape: groundShape });
+        groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+        groundBody.computeAABB();
         this.world.add(groundBody);
         this.ground = groundBody;
     }
 
-    // addBody(mass = 5, position = {x: 0, y: 0, z: 0}) {
-    //     let halfextents = new CANNON.Vec3(5, 5, 5);
-    //     let cubeShape = new CANNON.Box(halfextents);
-    //     let cubeBody = new CANNON.Body({mass: mass, shape: cubeShape});
-    //     cubeBody.position.set(position.x, position.y, position.z);
-    //     this.world.add(cubeBody);
-    // }
-
     updateVelocity(name, direction, speed) {
-        const direction_vec3 = new CANNON.Vec3(direction[0], -direction[2], direction[1]);
-        direction_vec3.normalize();
-        this.obj[name].velocity = direction_vec3.scale(speed);
-        console.log(this.obj['Survivor 0'].velocity.length())
-    } 
+        this.obj[name].velocity.x = direction[0] * speed;
+        this.obj[name].velocity.z = direction[2] * speed;
+    }
 
     /**
      * Set kinematic object velocity to 0 so that it stops moving
@@ -86,8 +79,10 @@ class PhysicsEngine {
         if (this.obj[name].aabb.overlaps(this.ground.aabb)) {
             // console.log("collision with ground");
             // console.log(this.obj[name].aabb);
-            this.obj[name].velocity.setZero();
-        }   
+            this.obj[name].jumps = 2;
+            this.obj[name].velocity.x = 0;
+            this.obj[name].velocity.z = 0;
+        }
     }
 
     /**
@@ -95,7 +90,11 @@ class PhysicsEngine {
      * @param {string} name 
      */
     jump(name) {
-        this.obj[name].velocity.set(0, 0, 3);
+        if (this.obj[name].jumps > 0) {
+            this.obj[name].velocity.y = 5;
+            this.obj[name].jumps -= 1;
+
+        }
     }
 }
 
