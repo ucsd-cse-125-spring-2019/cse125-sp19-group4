@@ -216,7 +216,10 @@ function main() {
         // Movement
         let direction = glMatrix.vec3.create();
         let move = true;
-        if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+        if (Key.isDown('JUMP')) {
+            direction = 'JUMP';
+        }
+        else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             move = false;
             // do nothing
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
@@ -259,7 +262,7 @@ function main() {
             socket.emit('movement', JSON.stringify(direction));
         }
         
-        drawScene(gl, programInfo, meshes, camera);
+        drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
     }
@@ -468,6 +471,7 @@ const Key = {
     _pressed: {},
 
     cmd: {
+        32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
         39: 'RIGHT',        // right arrow

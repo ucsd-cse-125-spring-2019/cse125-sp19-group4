@@ -10,6 +10,7 @@ class Survivor {
         this.movementSpeed = 5;
         this.health = 100; // set to a default value
         this.model = 'player';
+        this.jumping = false;
     }
 }
 
@@ -62,8 +63,10 @@ class GameInstance {
         this.objects = {};                    // store all objects (players, trees, etc) on the map
         this.initializeMap();                 // build this.map
         // testing
-        this.insertObjListAndMap(new Slime());
+        let slime = new Slime();
+        this.insertObjListAndMap(slime);
         this.physicsEngine = physicsEngine;
+        this.physicsEngine.addSlime(slime.name, 10, {x: -20, y: 5, z: 0})
     }
 
     insertObjListAndMap(obj) {
@@ -100,7 +103,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
-            this.physicsEngine.addPlayer(this.god.name, 5, {x:0, y:-10, z:10});
+            this.physicsEngine.addPlayer(this.god.name, 5, {x:10, y:-10, z:10});
             
             return true;
         }
@@ -115,7 +118,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, 5, {x:0, y:-10, z:2});
+            this.physicsEngine.addPlayer(survivor.name, 5, {x:-10, y:0, z:1});
             return true;
         }
         return false;
@@ -134,15 +137,20 @@ class GameInstance {
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 
-    move(name, direction, deltaTime) {
+    move(name, direction) {
         const obj = this.objects[name];
-        const speed = obj.movementSpeed;
-        this.physicsEngine.updateVelocity(name, direction, speed);
-        obj.direction = direction;
+        if (direction === 'JUMP') {
+            this.physicsEngine.jump(name);
+            this.jumping = true;
+        } else if (!this.jumping){
+            const speed = obj.movementSpeed;
+            this.physicsEngine.updateVelocity(name, direction, speed);
+            obj.direction = direction;
+        }
     }
 
     stay(name) {
-        //this.physicsEngine.updateVelocity(name, [0, 0, 0], 0);
+        if (!this.jumping) this.physicsEngine.stopMovement(name);
     }
 }
 

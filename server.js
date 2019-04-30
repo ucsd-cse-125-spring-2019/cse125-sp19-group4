@@ -7,11 +7,8 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 const game = require('./public/js/game.js');
-<<<<<<< HEAD
 let gameStartTime = Date.now();
-=======
 const physics = require('./public/js/physics.js');
->>>>>>> 179b156... Add basic physics engine
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -109,14 +106,15 @@ const tick_rate = 60;
 function game_start() {
     let then = new Date().getTime();
     let elapse = 0;
-
+    // console.log('v', physicsEngine.obj['Survivor 0'].velocity); 
+    // console.log('pos:', physicsEngine.obj['Survivor 0'].position.x, physicsEngine.obj['Survivor 0'].position.y, physicsEngine.obj['Survivor 0'].position.z);
     // for (var i = 0; i < 10; ++i){
     //     physicsEngine.world.step(1);
-    //     console.log('v', physicsEngine.obj['God'].velocity);
+    //     console.log('v', physicsEngine.obj['Survivor 0'].velocity);
         
-    //     console.log('pos:', physicsEngine.obj['God'].position.x, physicsEngine.obj['God'].position.y, physicsEngine.obj['God'].position.z);
+    //     console.log('pos:', physicsEngine.obj['Survivor 0'].position.x, physicsEngine.obj['Survivor 0'].position.y, physicsEngine.obj['Survivor 0'].position.z);
     // }
-      
+
     setInterval(function () {
         let start = new Date().getTime();
         const deltaTime = start - then;
@@ -128,12 +126,12 @@ function game_start() {
 
         // Handle Movements
         if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
-            gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name], deltaTime);
+            gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
             delete movementEvents[gameInstance.god.name];
         }
         gameInstance.survivors.forEach(function (survivor) {
             if (typeof movementEvents[survivor.name] !== 'undefined') {
-                gameInstance.move(survivor.name, movementEvents[survivor.name], deltaTime);
+                gameInstance.move(survivor.name, movementEvents[survivor.name]);
                 delete movementEvents[survivor.name];
             } else {
                 gameInstance.stay(survivor.name);
@@ -145,8 +143,7 @@ function game_start() {
         Object.keys(physicsEngine.obj).forEach(function (name) {
             gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.z, -physicsEngine.obj[name].position.y];
         });
-        
-
+        // console.log(physicsEngine.obj['Survivor 0'].velocity);
 
         const broadcast_status = JSON.stringify(gameInstance.objects);
         
