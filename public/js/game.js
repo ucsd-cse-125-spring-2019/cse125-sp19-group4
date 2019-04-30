@@ -7,9 +7,10 @@ class Survivor {
         this.socketid = socketid;
         this.position = [0, 0, 0]; // location (x, y, z)
         this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.movementSpeed = 5;
+        this.movementSpeed = 10;
         this.health = 100; // set to a default value
         this.model = 'player';
+        this.jumping = false;
     }
 }
 
@@ -19,7 +20,7 @@ class God {
         this.socketid = socketid;
         this.position = [0, 0, 0];
         this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.movementSpeed = 10;
+        this.movementSpeed = 20;
         this.model = 'player';
     }
 }
@@ -36,7 +37,7 @@ class Slime {
         this.name = 'Slime';
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
-        this.movementSpeed = 5;
+        this.movementSpeed = 8;
         this.health = 100; // set to a default value
         this.model = 'slime';
     }
@@ -51,7 +52,7 @@ class Tile {
 
 
 class GameInstance {
-    constructor(max_survivors = 3) {
+    constructor(max_survivors = 3, physicsEngine) {
         this.max_survivors = max_survivors;
         this.survivorCount = 0;
         this.worldWidth = 5;
@@ -62,7 +63,10 @@ class GameInstance {
         this.objects = {};                    // store all objects (players, trees, etc) on the map
         this.initializeMap();                 // build this.map
         // testing
-        this.insertObjListAndMap(new Slime());
+        let slime = new Slime();
+        this.insertObjListAndMap(slime);
+        this.physicsEngine = physicsEngine;
+        this.physicsEngine.addSlime(slime.name, 5, {x: -20, y: 20, z: 0})
     }
 
     insertObjListAndMap(obj) {
@@ -99,6 +103,8 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
+            this.physicsEngine.addPlayer(this.god.name, 5, {x:10, y:10, z:10});
+            
             return true;
         }
         return false;
@@ -112,6 +118,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
+            this.physicsEngine.addPlayer(survivor.name, 20, {x:-10, y:2, z:1});
             return true;
         }
         return false;
@@ -130,14 +137,19 @@ class GameInstance {
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 
-    move(name, direction, deltaTime) {
+    move(name, direction) {
         const obj = this.objects[name];
-        const velocity = obj.movementSpeed * deltaTime * 0.001;
-        // glMatrix.vec3.normalize(direction, direction);
-        let temp = glMatrix.vec3.create();
-        glMatrix.vec3.scale(temp, direction, velocity);
-        glMatrix.vec3.add(obj.position, obj.position, temp);
-        obj.direction = direction;
+        if (direction === 'JUMP') {
+            this.physicsEngine.jump(name);
+        } else {
+            const speed = obj.movementSpeed;
+            this.physicsEngine.updateVelocity(name, direction, speed);
+            obj.direction = direction;
+        }
+    }
+
+    stay(name) {
+        this.physicsEngine.stopMovement(name);
     }
 }
 

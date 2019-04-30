@@ -17,7 +17,7 @@ const transform_ref = {
     'castle': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
-    'slime': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 0, -5]),
+    'slime': glMatrix.mat4.create(),
     'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
@@ -78,6 +78,8 @@ socket.on('game_status', function (msg) {
     const data = JSON.parse(msg);
     const player = data[uid];
     camera.setPosition(player.position);
+    // console.log(player.position);
+    
 
     let event = new CustomEvent("statusUpdate", {detail: data});
     document.dispatchEvent(event);
@@ -214,7 +216,12 @@ function main() {
         // Movement
         let direction = glMatrix.vec3.create();
         let move = true;
-        if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+        if (Key.isDown('JUMP')) {
+            direction = 'JUMP';
+            delete Key._pressed['JUMP'];
+            Key.jumped = true;
+        }
+        else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             move = false;
             // do nothing
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
@@ -255,8 +262,9 @@ function main() {
 
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
+            // console.log(direction);
         }
-
+        
         drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
@@ -464,8 +472,11 @@ function loadTexture(gl, url) {
 
 const Key = {
     _pressed: {},
+    
+    jumped: false,
 
     cmd: {
+        32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
         39: 'RIGHT',        // right arrow
@@ -483,12 +494,20 @@ const Key = {
     },
 
     onKeydown: function (event) {
-        if (event.keyCode in this.cmd) {
+        if (event.keyCode == 32 && this.jumped) {
+            // do nothing
+        } else if (event.keyCode in this.cmd) {
+            console.log('keydown', event.keyCode);
+            
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
 
     onKeyup: function (event) {
+        console.log('keyup', event.keyCode);
+        if (event.keyCode == 32) {
+            this.jumped = false;
+        }
         if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }

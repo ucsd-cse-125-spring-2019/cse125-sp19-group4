@@ -2,12 +2,13 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    pingInterval: 2000,
-    pingTimeout: 1500,
+    // pingInterval: 2000,
+    // pingTimeout: 1500,
 });
 const path = require('path');
 const game = require('./public/js/game.js');
 let gameStartTime = Date.now();
+const physics = require('./public/js/physics.js');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -23,11 +24,10 @@ app.get('/cube_demo', function (req, res) {
     res.sendFile(__dirname + '/public/html/demo.html');
 });
 
-
-
 // TODO: read from config
-const max_survivors = 0;
-const gameInstance = new game(max_survivors);
+const max_survivors = 1;
+const physicsEngine = new physics();
+const gameInstance = new game(max_survivors, physicsEngine);
 
 const inputs = [];
 const movementEvents = {};
@@ -104,11 +104,11 @@ http.listen(8080, function () {
 // server loop tick rate, in Hz
 const tick_rate = 60;
 function game_start() {
-
-    let then = 0;
+    let then = Date.now();
     let elapse = 0;
+
     setInterval(function () {
-        let start = new Date().getTime();
+        let start = Date.now();
         const deltaTime = start - then;
         then = start;
         inputs.forEach(function (e) {
@@ -117,15 +117,31 @@ function game_start() {
         inputs.length = 0;
 
         // Handle Movements
-        Object.keys(movementEvents).forEach(function (name) {
-            gameInstance.move(name, movementEvents[name], deltaTime);
-            delete movementEvents[name];
+        if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
+            delete movementEvents[gameInstance.god.name];
+        } else {
+            gameInstance.stay(gameInstance.god.name);
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof movementEvents[survivor.name] !== 'undefined') {
+                gameInstance.move(survivor.name, movementEvents[survivor.name]);
+                delete movementEvents[survivor.name];
+            } else {
+                gameInstance.stay(survivor.name);
+            }
         });
-        
+
+        // step and update objects
+        physicsEngine.world.step(deltaTime * 0.001);
+        Object.keys(physicsEngine.obj).forEach(function (name) {
+            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y, physicsEngine.obj[name].position.z];
+        });
+
         const broadcast_status = JSON.stringify(gameInstance.objects);
         
         io.emit('game_status', broadcast_status);
-        let end = new Date().getTime();
+        let end = Date.now();
         elapse = end - start;
         duration = end - gameStartTime;
         io.emit('tiktok', JSON.stringify(duration));
