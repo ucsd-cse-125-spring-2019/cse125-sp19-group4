@@ -7,7 +7,6 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 const game = require('./public/js/game.js');
-let gameStartTime = Date.now();
 const physics = require('./public/js/physics.js');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
@@ -31,6 +30,7 @@ const gameInstance = new game(max_survivors, physicsEngine);
 
 const inputs = [];
 const movementEvents = {};
+const jumpEvents = {};
 
 
 io.on('connection', function (socket) {
@@ -81,9 +81,15 @@ io.on('connection', function (socket) {
         if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
             return;
         }
-        const name = gameInstance.socketidToPlayer[socket.id].name;
         const direction = JSON.parse(msg);
-        movementEvents[name] = direction;
+        movementEvents[gameInstance.socketidToPlayer[socket.id].name] = direction;
+    });
+
+    socket.on('jump', function () {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        jumpEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
     socket.on('chat message', function (msg) {
@@ -104,6 +110,7 @@ http.listen(8080, function () {
 // server loop tick rate, in Hz
 const tick_rate = 60;
 function game_start() {
+    const gameStartTime = Date.now();
     let then = Date.now();
     let elapse = 0;
 
@@ -129,6 +136,18 @@ function game_start() {
                 delete movementEvents[survivor.name];
             } else {
                 gameInstance.stay(survivor.name);
+            }
+        });
+
+        // Handle jumps
+        if (typeof jumpEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.jump(gameInstance.god.name);
+            delete jumpEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof jumpEvents[survivor.name] !== 'undefined') {
+                gameInstance.jump(survivor.name);
+                delete jumpEvents[survivor.name];
             }
         });
 

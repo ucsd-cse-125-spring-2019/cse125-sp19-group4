@@ -16,8 +16,8 @@ const model_ref = {};
 const transform_ref = {
     'castle': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
-    'player': glMatrix.mat4.create(),
-    'slime': glMatrix.mat4.create(),
+    'player': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, -1, 0]),
+    'slime': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, -2, 0]),
     'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
@@ -213,15 +213,17 @@ function main() {
             camera.rotateRight(deltaTime);
         }
 
+        // Jump
+        if (Key.isDown('JUMP')) {
+            delete Key._pressed['JUMP'];
+            Key.jumped = true;
+            socket.emit('jump');
+        }
         // Movement
         let direction = glMatrix.vec3.create();
         let move = true;
-        if (Key.isDown('JUMP')) {
-            direction = 'JUMP';
-            delete Key._pressed['JUMP'];
-            Key.jumped = true;
-        }
-        else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+        
+        if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             move = false;
             // do nothing
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
@@ -497,18 +499,15 @@ const Key = {
         if (event.keyCode == 32 && this.jumped) {
             // do nothing
         } else if (event.keyCode in this.cmd) {
-            console.log('keydown', event.keyCode);
-            
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
 
     onKeyup: function (event) {
-        console.log('keyup', event.keyCode);
         if (event.keyCode == 32) {
             this.jumped = false;
         }
-        if (event.keyCode in this.cmd) {
+        else if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
     }

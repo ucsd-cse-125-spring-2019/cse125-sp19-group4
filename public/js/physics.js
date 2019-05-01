@@ -25,7 +25,7 @@ class PhysicsEngine {
         this.addGroundPlane();
     }
 
-    addPlayer(name, mass = 20, position = { x: 1, y: 1, z: 1 }) {
+    addPlayer(name, mass = 20, position = { x: 0, y: 0, z: 0 }, maxJump) {
         const ballShape = new CANNON.Sphere(1);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
@@ -36,21 +36,21 @@ class PhysicsEngine {
             linearDamping: 0.5,
             // type: CANNON.Body.KINEMATIC
         });
-        playerBody.position.set(position.x, position.y, position.z);
-        playerBody.jumps = 2;
+        playerBody.position.set(position.x, position.y + 1, position.z);
+        playerBody.jumps = maxJump;
         this.world.add(playerBody);
         this.obj[name] = playerBody;
     }
 
-    addSlime(name, mass = 5, position = { x: 2, y: 2, z: 2 }) {
-        const ballShape = new CANNON.Sphere(1);
+    addSlime(name, mass = 5, position = { x: 0, y: 0, z: 0 }) {
+        const ballShape = new CANNON.Sphere(2);
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: ballShape,
             linearDamping: 0.9,
         });
-        slimeBody.position.set(position.x, position.y, position.z);
-        slimeBody.jumps = 0;    // can't jump
+        slimeBody.position.set(position.x, position.y + 1, position.z);
+        slimeBody.jumps = 0;
         this.world.add(slimeBody);
         this.obj[name] = slimeBody;
     }
@@ -78,8 +78,6 @@ class PhysicsEngine {
         this.obj[name].computeAABB();
         if (this.obj[name].aabb.overlaps(this.ground.aabb)) {
             // console.log("collision with ground");
-            // console.log(this.obj[name].aabb);
-            this.obj[name].jumps = 2;
             this.obj[name].velocity.x = 0;
             this.obj[name].velocity.z = 0;
         }
@@ -89,11 +87,14 @@ class PhysicsEngine {
      * Perform jump movement for survivors
      * @param {string} name 
      */
-    jump(name) {
+    jump(name, jumpSpeed, maxJump) {
+        this.obj[name].computeAABB();
+        if (this.obj[name].aabb.overlaps(this.ground.aabb)) {
+            this.obj[name].jumps = maxJump;
+        }
         if (this.obj[name].jumps > 0) {
-            this.obj[name].velocity.y = 5;
+            this.obj[name].velocity.y = jumpSpeed;
             this.obj[name].jumps -= 1;
-
         }
     }
 }
