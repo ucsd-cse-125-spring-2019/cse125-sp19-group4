@@ -57,7 +57,11 @@ socket.on('enter game', function (msg) {
 });
 
 socket.on('wait for game begin', function (msg) {
-    $('.game-area').html($('#loading-screen-template').html());
+    document.getElementById('loadingBox').style.display = "block";
+    document.getElementById('menu').style.opacity = "0.5";
+    document.getElementById('GodButton').disabled = true; // prevent users from clicking the buttons
+    document.getElementById('SurvivorButton').disabled = true;
+
     $('#queue').html(msg);
 });
 
@@ -115,7 +119,7 @@ socket.on('tiktok', (miliseconds) => {
 
 socket.on('pong', (latency) => {
     // console.log(socket.id, 'Ping:', latency, 'ms');
-    $('#ping').html(latency);
+    $('#ping').html(latency + "ms");
 });
 
 
@@ -504,14 +508,14 @@ const Key = {
     },
 
     onKeyup: function (event) {
-
         if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
 
+        // If the user is chatting, blocks all other key event
         if (this.messaging) {
-            // When the chat input is up, if user hit enter when the input box is empty, close input box
             if (event.keyCode == 13)  {
+                // When the chat input is up, if user hit enter when the input box is empty, close input box
                 if ($('#messageInput').val() == '') {
                     this.messaging = false;
                     closeMessageCountDown = 5;
