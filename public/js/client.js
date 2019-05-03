@@ -27,14 +27,11 @@ const models = {};
 
 const socket = io();
 
-let command = '';
-
 socket.on('chat message', function (msg) {
+    openChatBox();
     $('#messages').append($('<li>').text(msg));
-    let n = msg.indexOf(': cmd ');
-    if (n != -1) {
-        command = msg.substring(n + 6);
-        $('#messages').append($('<li>').text('\'' + command + '\''));
+    if (!messaging) {
+        chatBoxFade();
     }
 });
 
@@ -57,10 +54,10 @@ socket.on('enter game', function (msg) {
 });
 
 socket.on('wait for game begin', function (msg) {
-    document.getElementById('loadingBox').style.display = "block";
-    document.getElementById('menu').style.opacity = "0.5";
-    document.getElementById('GodButton').disabled = true; // prevent users from clicking the buttons
-    document.getElementById('SurvivorButton').disabled = true;
+    $('#loadingBox').css('display', 'block');
+    $('#menu').css('opacity', '0.1');
+    $('#GodButton').prop('disabled', true);
+    $('#SurvivorButton').prop('disabled', true);
 
     $('#queue').html(msg);
 });
@@ -78,9 +75,9 @@ socket.on('game_status', function (msg) {
     const player = data[uid];
     camera.setPosition(player.position);
     // console.log(player.position);
-    
 
-    let event = new CustomEvent("statusUpdate", {detail: data});
+
+    let event = new CustomEvent("statusUpdate", { detail: data });
     document.dispatchEvent(event);
 
 
@@ -113,7 +110,7 @@ socket.on('game_status', function (msg) {
 });
 
 socket.on('tiktok', (miliseconds) => {
-    let event = new CustomEvent("timerUpdate", {detail: miliseconds});
+    let event = new CustomEvent("timerUpdate", { detail: miliseconds });
     document.dispatchEvent(event);
 });
 
@@ -221,7 +218,7 @@ function main() {
         // Movement
         let direction = glMatrix.vec3.create();
         let move = true;
-        
+
         if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             move = false;
             // do nothing
@@ -265,7 +262,7 @@ function main() {
             socket.emit('movement', JSON.stringify(direction));
             // console.log(direction);
         }
-        
+
         drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
@@ -326,7 +323,7 @@ function drawScene(gl, programInfo, models, camera) {
         programInfo.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix);
-    
+
     // Now move the drawing position a bit to where we want to
     // start drawing the square.
     Object.keys(models).forEach(function (name) {
@@ -473,12 +470,12 @@ function loadTexture(gl, url) {
 
 const Key = {
     _pressed: {},
-    
+
     jumped: false,
 
     cmd: {
         13: 'ENTER',        // enter
-        27: 'ESC',
+        27: 'ESC',          // ESC
         32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
@@ -497,10 +494,35 @@ const Key = {
     },
 
     onKeydown: function (event) {
-        if (this.messaging) {
+        if (messaging) {
+            if (event.keyCode == 27) {
+                // ESC, close chat box
+                messaging = false;
+                $('#messageInput').prop("disabled", true);
+                $('#messageForm').css("display", "none");
+                chatBoxFade();
+            } else if (event.keyCode == 13) {
+                // When the chat input is up, if user hit enter when the input box is empty, close input box
+                if ($('#messageInput').val() == '') {
+                    messaging = false;
+                    $('#messageInput').prop("disabled", true);
+                    $('#messageForm').css("display", "none");
+                    chatBoxFade();
+                } else {
+                    $('#messageInput').submit; // clear message
+                }
+            }
             return;
         }
-        if (event.keyCode == 32 && this.jumped) {
+
+        // open up chatting and lock other key events
+        if (event.keyCode == 13) {
+            messaging = true;
+            openChatBox();
+            $('#messageForm').css("display", "block");
+            $('#messageInput').prop("disabled", false);
+            $('#messageInput').focus();
+        } else if (event.keyCode == 32 && this.jumped) {
             // do nothing
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
@@ -512,44 +534,17 @@ const Key = {
             delete this._pressed[this.cmd[event.keyCode]];
         }
 
-        // If the user is chatting, blocks all other key event
-        if (this.messaging) {
-            if (event.keyCode == 13)  {
-                // When the chat input is up, if user hit enter when the input box is empty, close input box
-                if ($('#messageInput').val() == '') {
-                    this.messaging = false;
-                    closeMessageCountDown = 5;
-                    document.getElementById('messageInput').disabled = true;
-                    document.getElementById('messageForm').style.display = "none";
-                } else {
-                    $('#messageInput').val(''); // clear message
-                }
-            }
-            return;
-        }
-
         if (event.keyCode == 32) {
             this.jumped = false;
-        }
-        else if (event.keyCode == 13) { // open up chatting and lock other key events
-            this.messaging = true;
-            closeMessageCountDown = -1;
-            $('#messages').animate({ opacity: 1 }, 50);
-            document.getElementById('messageInput').disabled = false;
-            document.getElementById('messageForm').style.display = "block";
-            document.getElementById('messageInput').focus();
         }
     }
 };
 
-function getUid() {
-    return uid;
-}
-
-
 
 /*===================================UI======================================*/
-let closeMessageCountDown = -1;
+const closeMessageCountDown = 3000;     // 3 sec before the chatbox fades away
+let fadeTimer;
+let messaging = false;
 
 function UIInitialize() {
 
@@ -558,20 +553,24 @@ function UIInitialize() {
         e.preventDefault(); // prevents page reloading
         if ($('#messageInput').val() != "") {
             socket.emit('chat message', $('#messageInput').val());
-            $("#messages").animate({scrollTop: $('#messages').prop("scrollHeight")}, 1);
+            $('#messageInput').val('');
+            $("#messages").animate({ scrollTop: $('#messages').prop("scrollHeight") }, 1);
             return false;
         }
     });
-
-    // hide the messaging 5 seconds after user close chat input box
-    setInterval(function(){
-        if (closeMessageCountDown > 0) {
-            closeMessageCountDown--;
-        } else if (closeMessageCountDown == 0) {
-            $("#messages").animate({opacity: 0}, 2000)
-            closeMessageCountDown--;
-        }
-    }, 1000);
 }
 
-export {uid}
+function openChatBox() {
+    clearTimeout(fadeTimer);
+    $('#messages').animate({ opacity: 1 }, 50);
+}
+
+function chatBoxFade() {
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => {
+        $("#messages").animate({ opacity: 0 }, 1000);
+    }, closeMessageCountDown);
+}
+/*================================End of UI===================================*/
+
+export { uid }
