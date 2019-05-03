@@ -6,13 +6,19 @@
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
       canvas { position: absolute; width: 100%; height: 100%; z-index: -1; }
-      form { padding: 0px; position: fixed; bottom: 20%; width: 50%; margin-left: 25%; display: none;}
-      form input { border: 0; padding: 10px; width: 100%; background-color: rgba(227,227,227,0.3);
+
+      /* -----------------------------------------Chatting--------------------------------------- */
+      #messageBox {position: absolute; bottom: 30px; left: 15px; width: 20%; height: 50%;}
+      #messageForm { padding: 0px; display: none; position: absolute; bottom: 0; left: 0; width: 100%;}
+      #messageInput { border: 0; padding: 5px 10px; width: 100%; background-color: rgba(227,227,227,0.3);
                    box-shadow: 0 0 5px grey; border-radius: 5px; outline: none; transition: 0.1s; disabled: true; }
-      #messages { list-style-type: none; margin: 0; padding: 10px; position: absolute; top: 10px; left: 10px;
-                  width: 20%; max-height: 40%; background-color: rgba(227,227,227,0.3); overflow:hidden; overflow-y:scroll;
+      #messages { list-style-type: none; margin: 0; padding: 10px; position: absolute; bottom: 36px;
+                  width: 100%; max-height: 80%; background-color: rgba(227,227,227,0.3); overflow:hidden; overflow-y:scroll;
                   border: gray 1px; border-radius: 5px; box-shadow: 0 0 5px gray; opacity: 0; }
       #messages li { padding: 0px 5px; }
+      /* -----------------------------------------Chatting--------------------------------------- */
+
+
       .loading {display: none; position:absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
       .menu { height: 100vh; width: 100vw; }
       .split { height:85%; width:50%; position:absolute; display: flex; background-size: cover;
@@ -66,10 +72,12 @@
         <div id="timer" style="color:#B4AE6C; display: inline-block;" >0:00:00</div>
         <div id="debugger" style="color:#B4AE6C; display: inline-block; position: absolute; right: 12px;" id="ping">10ms</div>
       </div>
-      <ul id="messages"></ul>
-      <form id="messageForm">
-        <input id="messageInput" autocomplete="off" onblur="this.focus()" autofocus/>
-      </form>
+      <div id="messageBox">
+        <ul id="messages"></ul>
+        <form id="messageForm">
+          <input id="messageInput" autocomplete="off" onblur="this.focus()" autofocus/>
+        </form>
+      </div>
       <script>
         loadStatusList();
       </script>
