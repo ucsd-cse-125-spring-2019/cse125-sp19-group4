@@ -1,21 +1,21 @@
 class OBJObject {
 
-    constructor(gl, mesh_name, mesh_path, texture_path, has_mtl, programInfo) {
+    constructor(gl, mesh_name, mesh_path, texture_path, has_mtl, texture_index, programInfo) {
+        this.texture_index = texture_index;
         this.programInfo = programInfo;
         this.has_mtl = has_mtl;
         const mesh_content = readTextFile(mesh_path);
         this.mesh = new OBJ.Mesh(mesh_content);
         this.mesh.name = mesh_name;
         OBJ.initMeshBuffers(gl, this.mesh);
-
         this.num_material = this.mesh.indicesPerMaterial.length;
         this.material_names = [];
         this.indices = [];
-        this.indexBuffers = [];
+        this.indexBuffers = []; 
         this.texture_files = [];
         if (this.has_mtl) {
-            const mtl_content = readTextFile(texture_path);
-            this.materials = new OBJ.MaterialLibrary(mtl_content).materials;
+            this.mtl_content = readTextFile(texture_path);
+            this.materials = new OBJ.MaterialLibrary(this.mtl_content).materials;
             for (let i = 0; i < this.num_material; ++i) {
                 this.material_names[i] = this.mesh.materialNames[i];
                 this.indices[i] = this.mesh.indicesPerMaterial[i];
@@ -38,10 +38,10 @@ class OBJObject {
                 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices[i]), gl.STATIC_DRAW);
             }
             console.log('loading texture for', mesh_name, texture_path);
-            
-            const texture = loadTexture(gl, texture_path);
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, texture);
+            //this.texture = gl.createTexture();
+            this.texture = loadTexture(gl, texture_path);
+            gl.activeTexture(gl.TEXTURE0 + texture_index); 
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
         }
     }
 
@@ -66,17 +66,21 @@ class OBJObject {
                 gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.materials[this.material_names[i]].ambient);
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, this.materials[this.material_names[i]].diffuse);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[this.material_names[i]].specular);
-                gl.uniform1i(this.programInfo.uniformLocations.uSampler, i);
-                gl.activeTexture(gl.TEXTURE0 + i);
+                gl.activeTexture(gl.TEXTURE0 + i + this.texture_index);
                 gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i]["diffuse"]);
-                gl.uniform1i(this.programInfo.uniformLocations.uSampler, 0);
+                gl.uniform1i(this.programInfo.uniformLocations.uSampler, i + this.texture_index);
                 gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
             }
         } else {
             for (let i = 0; i < this.num_material; ++i) {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
-                gl.uniform1i(this.programInfo.uniformLocations.uSampler, 0);
-                gl.activeTexture(gl.TEXTURE0);
+                gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, [1,1,1]);
+                gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1,1,1]);
+                gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1,1,1]);
+                gl.uniform3fv(this.programInfo.uniformLocations.viewPosition, [0,10,0]);
+                gl.activeTexture(gl.TEXTURE0 + this.texture_index);
+                gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
                 gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
             }
         }
@@ -126,13 +130,12 @@ function loadTexture(gl, url) {
             gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
             gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
                 srcFormat, srcType, image);
-
             // WebGL1 has different requirements for power of 2 images
             // vs non power of 2 images so check if the image is a
             // power of 2 in both dimensions.
             if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
                 // Yes, it's a power of 2. Generate mips.
-                gl.generateMipmap(gl.TEXTURE_2D);
+                gl.generateMipmap(gl.TEXTURE_2D); 
             } else {
                 // No, it's not a power of 2. Turn off mips and set
                 // wrapping to clamp to edge

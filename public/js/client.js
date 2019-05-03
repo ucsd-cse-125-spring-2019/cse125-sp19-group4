@@ -184,6 +184,7 @@ function main() {
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+            normal: gl.getAttribLocation(shaderProgram, 'normal'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -193,24 +194,23 @@ function main() {
             ambientColor: gl.getUniformLocation(shaderProgram, "uAmbientColor"),
             diffuseColor: gl.getUniformLocation(shaderProgram, "uDiffuseColor"),
             specularColor: gl.getUniformLocation(shaderProgram, "uSpecularColor"),
+            viewPosition: gl.getUniformLocation(shaderProgram, "ViewPosition"),
         },
     };
     // Tell WebGL to use our program when drawing
     gl.useProgram(shaderProgram);
-
+    
     // Here's where we call the routine that builds all the objects we'll be drawing.
-    // const buffers = initCubeBuffers(gl);
-
-    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/castle.obj", "", false, programInfo);
-    model_ref['male'] = new OBJObject(gl, "male", "/public/model/male.obj", "", false, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, programInfo);
-    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, programInfo);
-    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model.obj", "/public/model/f16-texture.bmp", false, programInfo);
-    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, programInfo);
-    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "", false, programInfo);
+    // const buffers = initCubeBuffers(gl); 
+    
+    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/castle1.obj", "", false, 0, programInfo);
+    model_ref['male'] = new OBJObject(gl, "male", "/public/model/male.obj", "", false, 1, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, 2, programInfo);
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
+    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, 4, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
-    // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
+    models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
     models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
@@ -282,7 +282,6 @@ function main() {
 
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
-            // console.log(direction);
         }
         
         // Attack
@@ -354,11 +353,11 @@ function drawScene(gl, programInfo, models, camera) {
         programInfo.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix);
-
     // Now move the drawing position a bit to where we want to
     // start drawing the square.
     Object.keys(models).forEach(function (name) {
         const model = models[name];
+        // console.log(name);
         model.m.render(gl, model.t);
     });
 }
@@ -540,7 +539,6 @@ const Key = {
     jumped: false,
 
     cmd: {
-        32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
         39: 'RIGHT',        // right arrow
