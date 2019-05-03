@@ -47,17 +47,12 @@ socket.on('role already taken', function (msg) {
 
 socket.on('enter game', function (msg) {
     console.log('enter game');
-    $('.game-area').html($('#ingame-template').html());
-    $('form').submit(function (e) {
-        e.preventDefault(); // prevents page reloading
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
-        return false;
-    });
+
     const data = JSON.parse(msg);
     uid = data[socket.id].name;
     console.log("my name is", uid);
 
+    UIInitialize();
     main();
 });
 
@@ -137,7 +132,7 @@ function main() {
     const canvas = document.querySelector("#glCanvas");
     // set the canvas resolution
     canvas.width = window.innerWidth;
-    canvas.height = 0.8 * window.innerHeight;
+    canvas.height = window.innerHeight;
 
     // canvas.addEventListener("mousedown", mouseDown, false);
     // canvas.addEventListener("mouseup", mouseUp, false);
@@ -284,7 +279,7 @@ function main() {
  * @param  {Camera} camera
  */
 function drawScene(gl, programInfo, models, camera) {
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+    gl.clearColor(200.0, 200.0, 200.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
@@ -478,6 +473,8 @@ const Key = {
     jumped: false,
 
     cmd: {
+        13: 'ENTER',        // enter
+        27: 'ESC',
         32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
@@ -496,6 +493,9 @@ const Key = {
     },
 
     onKeydown: function (event) {
+        if (this.messaging) {
+            return;
+        }
         if (event.keyCode == 32 && this.jumped) {
             // do nothing
         } else if (event.keyCode in this.cmd) {
@@ -504,11 +504,36 @@ const Key = {
     },
 
     onKeyup: function (event) {
+
+        if (event.keyCode in this.cmd) {
+            delete this._pressed[this.cmd[event.keyCode]];
+        }
+
+        if (this.messaging) {
+            // When the chat input is up, if user hit enter when the input box is empty, close input box
+            if (event.keyCode == 13)  {
+                if ($('#messageInput').val() == '') {
+                    this.messaging = false;
+                    closeMessageCountDown = 5;
+                    document.getElementById('messageInput').disabled = true;
+                    document.getElementById('messageForm').style.display = "none";
+                } else {
+                    $('#messageInput').val(''); // clear message
+                }
+            }
+            return;
+        }
+
         if (event.keyCode == 32) {
             this.jumped = false;
         }
-        else if (event.keyCode in this.cmd) {
-            delete this._pressed[this.cmd[event.keyCode]];
+        else if (event.keyCode == 13) { // open up chatting and lock other key events
+            this.messaging = true;
+            closeMessageCountDown = -1;
+            $('#messages').animate({ opacity: 1 }, 50);
+            document.getElementById('messageInput').disabled = false;
+            document.getElementById('messageForm').style.display = "block";
+            document.getElementById('messageInput').focus();
         }
     }
 };
@@ -517,4 +542,32 @@ function getUid() {
     return uid;
 }
 
-export { uid }
+
+
+/*===================================UI======================================*/
+let closeMessageCountDown = -1;
+
+function UIInitialize() {
+
+    $('.game-area').html($('#ingame-template').html());
+    $('#messageForm').submit(function (e) {
+        e.preventDefault(); // prevents page reloading
+        if ($('#messageInput').val() != "") {
+            socket.emit('chat message', $('#messageInput').val());
+            $("#messages").animate({scrollTop: $('#messages').prop("scrollHeight")}, 1);
+            return false;
+        }
+    });
+
+    // hide the messaging 5 seconds after user close chat input box
+    setInterval(function(){
+        if (closeMessageCountDown > 0) {
+            closeMessageCountDown--;
+        } else if (closeMessageCountDown == 0) {
+            $("#messages").animate({opacity: 0}, 2000)
+            closeMessageCountDown--;
+        }
+    }, 1000);
+}
+
+export {uid}
