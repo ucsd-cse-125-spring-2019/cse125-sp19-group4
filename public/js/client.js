@@ -55,6 +55,7 @@ socket.on('enter game', function (msg) {
     let player = data[socket.id];
     console.log("my name is", uid);
     StatusBar.InitializeSkills(player.skills);
+    StatusBar.InitializeStatus(player.status);
 });
 
 socket.on('wait for game begin', function (msg) {
@@ -80,15 +81,10 @@ socket.on('game_status', function (msg) {
     camera.setPosition(player.position);
     // console.log(player.position);
 
+    // Update statusbar
+    StatusBar.statusUpdate(player.status);
+    StatusBar.coolDownUpdate(player.skills);
 
-    let event = new CustomEvent("statusUpdate", { detail: data });
-    document.dispatchEvent(event);
-
-    // Handle all statusBar Update
-    for (let skill in player.skills) {
-        let coolDownPercent = player.skills[skill].curCoolDown / player.skills[skill].coolDown * 100;
-        StatusBar.coolDownUpdate(skill, coolDownPercent)
-    }
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];

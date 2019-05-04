@@ -1,5 +1,3 @@
-const properties = ['attackPoint', 'defense', 'movementSpeed'];
-const icons = ["attackPoint.png","defense.png","speed.png"];
 import { uid } from "/public/js/client.js"
 const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;"
 
@@ -15,20 +13,29 @@ if (!String.prototype.format) {
     };
 }
 
-function createStatusItem(textId, imgSrc) {
+/* ---------------------------- helper functions --------------------------- */
+const invalidStatus = ['STATUS_health', 'STATUS_curHealth']
+function isStatusValid(status) {
+    return invalidStatus.indexOf(status) < 0;
+}
+/* ---------------------------- helper functions --------------------------- */
+
+/* -------------------------Initialize status bar--------------------------- */
+function createStatusItem(statusName, initialValue) {
     let div = document.createElement("div");   
+    let imgSrc = "/public/images/" + statusName +".png";
 
     let img = document.createElement("img");
     img.src = imgSrc;
     img.height = 20;
     img.weight = 20;
     img.style = "vertical-align: middle; margin: 2px";
-    img.title = textId;
+    img.title = statusName;
 
 
     let text = document.createElement("span"); 
-    text.id = textId;
-    text.innerHTML = "0";
+    text.id = statusName;
+    text.innerHTML = initialValue;
     text.style = "display: inline-block; vertical-align: middle; margin: 0px 5px; color:#B4AE6C;";
 
     div.appendChild(img);
@@ -36,11 +43,11 @@ function createStatusItem(textId, imgSrc) {
     document.getElementById("statusList").appendChild(div);     // Append <li> to <ul> with id="myList"
 }
 
-function loadStatusList() {
+function InitializeStatus(status) {
     //------------------------health bar---------------------------
     let div = document.createElement("div"); 
     let img = document.createElement("img");
-    img.src = "/public/images/health.png";
+    img.src = "/public/images/STATUS_health.png";
     img.height = 20;
     img.weight = 20;
     img.style = "vertical-align: middle; margin: 2px";
@@ -71,41 +78,15 @@ function loadStatusList() {
     ul.style = "margin: 0px;";
     document.getElementById("statusBar").appendChild(ul);
     
-    for (let i = 0; i < properties.length; i++) {
-        createStatusItem(properties[i], "/public/images/" + icons[i])
+    for (let i in status) {
+        if (isStatusValid(i)) {
+            createStatusItem(i, status[i])
+        }
     }
     //------------------------everything else----------------------
 }
-window.loadStatusList = loadStatusList; // So that index.html has access to it
 
-function timerUpdate(milisecs) {
-    let hour = Math.floor(milisecs / 3600000);
-    let minute = Math.floor(milisecs / 60000 % 60);
-    minute = ("0" + minute).slice(-2)
-    let second = Math.floor(milisecs / 1000 % 60);
-    second = ("0" + second).slice(-2)
-    let timeString = hour + ":" + minute + ":" + second;
-    document.getElementById("timer").innerHTML = timeString;
-    document.getElementById("healthBar").style = healthBarStyle.format(milisecs % 80);//TODO remove
-}
 
-/**
- * Here e is the json that contains whatever the server has sent.
- * This function will only update fields that exists in e.
- * For example, if e contains ad: 100, it will udpate ad to 100,
- * if e doesn't contain anything, nothing will happen.
- */
-document.addEventListener("statusUpdate", function(e) {
-    let player = e.detail[uid];
-    for (let i = 0; i < properties.length; i++) {
-        let prop = properties[i];
-        if (prop in player) {
-            document.getElementById(prop).innerHTML = player[prop];
-        }
-    }
-});
-
-const skills = ['1', '2', '3', '4'];
 function InitializeSkills(skills) {
     for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
@@ -120,12 +101,39 @@ function InitializeSkills(skills) {
         skillsBar.appendChild(skill);
     }
 }
+/* -------------------------Initialize status bar--------------------------- */
 
-function coolDownUpdate(skillName, coolDown) {
-    let mask = document.getElementById(skillName);
-    console.log(coolDown)
-    mask.style.height = coolDown + "%";
+
+
+/* --------------------------all update functions--------------------------- */
+function timerUpdate(milisecs) {
+    let hour = Math.floor(milisecs / 3600000);
+    let minute = Math.floor(milisecs / 60000 % 60);
+    minute = ("0" + minute).slice(-2)
+    let second = Math.floor(milisecs / 1000 % 60);
+    second = ("0" + second).slice(-2)
+    let timeString = hour + ":" + minute + ":" + second;
+    document.getElementById("timer").innerHTML = timeString;
 }
 
+function statusUpdate(status) {
+    for (let i in status) {
+        if (isStatusValid(i)) {
+            document.getElementById(i).innerHTML = status[i];
+        }
+    }
+}
 
-export {coolDownUpdate, InitializeSkills, loadStatusList, timerUpdate}
+function coolDownUpdate(skills) {
+    for (let skill in skills) {
+        let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
+        let mask = document.getElementById(skill);
+        mask.style.height = coolDownPercent + "%";
+    }
+}
+/* --------------------------all update functions--------------------------- */
+
+
+
+
+export {coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate}

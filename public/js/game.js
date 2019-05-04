@@ -11,13 +11,19 @@ class Survivor {
         this.mass = 500;
         this.maxJump = 2;
         this.jumpSpeed = 8;
-        this.health = 100; // set to a default value
         this.model = 'player';
         this.skills = {
-            '1': {
+            'SKILL_1': {
                 'coolDown': 10,
                 'curCoolDown': 0,
             }
+        }
+        this.status = {
+            'STATUS_health': 100,
+            'STATUS_curHealth': 100,
+            'STATUS_attackPoint' : 10,
+            'STATUS_defense' : 10,
+            'STATUS_speed' : 10,
         }
     }
 }
@@ -38,6 +44,13 @@ class God {
                 'coolDown': 10,
                 'curCoolDown': 0,
             }
+        }
+        this.status = {
+            'STATUS_health': 100,
+            'STATUS_curHealth': 100,
+            'STATUS_attackPoint' : 10,
+            'STATUS_defense' : 10,
+            'STATUS_speed' : 10,
         }
     }
 }
@@ -122,8 +135,8 @@ class GameInstance {
                 for (let skill in skills) {
                     if (skills[skill].curCoolDown > 0) {
                         skills[skill].curCoolDown -= amount;
-                    } else if (skills[skill].curCoolDown <= 0) { //for debug purpose
-                        skills[skill].curCoolDown = skills[skill].coolDown;
+                    } else if (skills[skill].curCoolDown <= 0) {
+                        skills[skill].curCoolDown = 0;
                     }
                 }
             }
