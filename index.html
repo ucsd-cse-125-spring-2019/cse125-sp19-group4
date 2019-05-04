@@ -11,7 +11,7 @@
       #messageBox {position: absolute; bottom: 30px; left: 15px; width: 20%; height: 50%;}
       #messageForm { padding: 0px; display: none; position: absolute; bottom: 0; left: 0; width: 100%;}
       #messageInput { border: 0; padding: 5px 10px; width: 100%; background-color: rgba(227,227,227,0.3);
-                   box-shadow: 0 0 5px grey; border-radius: 5px; outline: none; transition: 0.1s; disabled: true; }
+                   box-shadow: 0 0 5px grey; border-radius: 5px; outline: none; transition: 0.1s; }
       #messages { list-style-type: none; margin: 0; padding: 10px; position: absolute; bottom: 36px;
                   width: 100%; max-height: 80%; background-color: rgba(227,227,227,0.3); overflow:hidden; overflow-y:scroll;
                   border: gray 1px; border-radius: 5px; box-shadow: 0 0 5px gray; opacity: 0; }
@@ -75,7 +75,7 @@
       <div id="messageBox">
         <ul id="messages"></ul>
         <form id="messageForm">
-          <input id="messageInput" autocomplete="off" onblur="this.focus()" autofocus/>
+          <input id="messageInput" autocomplete="off" onblur="this.focus()" autofocus disabled/>
         </form>
       </div>
       <script>
