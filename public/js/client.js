@@ -25,8 +25,12 @@ const transform_ref = {
 };
 
 const models = {};
+const cast_models = [];
 
+let x = 0;
+let y = 0;
 const cursor = glMatrix.vec3.create();
+
 
 // ============================ Network IO ================================
 
@@ -140,6 +144,7 @@ function main() {
     canvas.height = window.innerHeight;
 
     window.addEventListener("mousedown", mouseDown, false);
+    window.addEventListener("contextmenu", contextmenu, false);
     // canvas.addEventListener("mouseup", mouseUp, false);
     // canvas.addEventListener("mouseout", mouseUp, false);
     window.addEventListener("mousemove", mouseMove, false);
@@ -197,11 +202,13 @@ function main() {
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
     // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
     models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
+    cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
         now *= 0.001;
         const deltaTime = now - then;
+        
         then = now;
 
         // Camera Rotation
@@ -219,6 +226,7 @@ function main() {
             Key.jumped = true;
             socket.emit('jump');
         }
+
         // Movement
         let direction = glMatrix.vec3.create();
         let move = true;
@@ -267,6 +275,26 @@ function main() {
             // console.log(direction);
         }
 
+        // Skill
+        if (casting >= 0) {
+            if (typeof models['casting'] === 'undefined') {
+                models['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
+            }
+            const normal = [0.0, 1.0, 0.0];
+            const center = [0.0, 0.0, 0.0];
+
+            const ray = camera.getRay(x, y);
+            const denominator = glMatrix.vec3.dot(normal, ray.dir);
+            if (Math.abs(denominator) > 0.00001) {
+                const difference = glMatrix.vec3.create();
+                glMatrix.vec3.subtract(difference, center, ray.pos);
+                const t = glMatrix.vec3.dot(difference, normal) / denominator;
+                glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
+            }
+            const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
+            glMatrix.mat4.multiply(models['casting'].t, translation, cast_models[casting].t);
+        }
+        const temptime = Date.now();
         drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
@@ -449,46 +477,39 @@ function loadTexture(gl, url) {
 //     e.preventDefault();
 // };
 
+const contextmenu = function (e) {
+    e.preventDefault();
+}
+
 const mouseDown = function (e) {
     e.preventDefault();
-
-    const normal = [0.0, 1.0, 0.0];
-    const center = [0.0, 0.0, 0.0];
-    const x = e.pageX;
-    const y = e.pageY;
-    const ray = camera.getRay(x, y);
-    console.log('x', x, window.innerWidth, 'y', y, window.innerHeight);
-    console.log(ray.dir);
-    
-    const denominator = glMatrix.vec3.dot(normal, ray.dir);
-    if (Math.abs(denominator) > 0.00001) {
-        const difference = glMatrix.vec3.create();
-        glMatrix.vec3.subtract(difference, center, ray.pos);
-        const t = glMatrix.vec3.dot(difference, normal) / denominator;
-        glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
+    switch (e.which) {
+        case 1:
+            // left click
+            if (casting == 0) {
+                console.log('slime fired');
+                const skillsParams = { skillNum: 0, skillName: 'Slime', position: cursor };
+                socket.emit('skill', JSON.stringify(skillsParams));
+            }
+            break;
+        case 3:
+            // right click
+            if (casting >= 0) {
+                casting = -1;
+                console.log('stop casting');
+                delete models['casting'];
+            }
+            break;
+        default:
+            break;
     }
-    console.log('cursor in world:', cursor);
-
     return false;
 };
 
 const mouseMove = function (e) {
-    if (true) {
-        const normal = [0.0, 1.0, 0.0];
-        const center = [0.0, 0.0, 0.0];
-        const x = e.pageX;
-        const y = e.pageY;
-        const ray = camera.getRay(x, y);
-        const denominator = glMatrix.vec3.dot(normal, ray.dir);
-        if (Math.abs(denominator) > 0.00001) {
-            const difference = glMatrix.vec3.create();
-            glMatrix.vec3.subtract(difference, center, ray.pos);
-            const t = glMatrix.vec3.dot(difference, normal) / denominator;
-            glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
-        }
-        const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
-        glMatrix.mat4.multiply(models['f16'].t, translation, transform_ref['f16']);
-    }
+    x = e.pageX;
+    y = e.pageY;
+    
 };
 
 /*================= Keyboard events ======================*/
@@ -600,14 +621,13 @@ function chatBoxFade() {
 
 /*================================= Skill ===================================*/
 let casting = -1;
+
 function handleSkill(uid, skillNum) {
     if (uid === "God") {
         switch (skillNum) {
             case 0:
                 // Spawn Slime
                 casting = 0;
-                console.log('casting Slime');
-                
                 break;
             // case 1:
             //     break;

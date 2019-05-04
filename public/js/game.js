@@ -12,17 +12,21 @@ class Survivor {
         this.jumpSpeed = 8;
         this.model = 'player';
         this.skills = {
-            'SKILL_1': {
+            0: {
+                'name': 'SKILL_1',
                 'coolDown': 10,
                 'curCoolDown': 0,
+                'function': function () {
+                    // TODO
+                },
             }
         }
         this.status = {
             'STATUS_health': 100,
             'STATUS_curHealth': 100,
-            'STATUS_attackPoint' : 10,
-            'STATUS_defense' : 10,
-            'STATUS_speed' : 10,
+            'STATUS_attackPoint': 10,
+            'STATUS_defense': 10,
+            'STATUS_speed': 10,
         }
     }
 }
@@ -38,17 +42,31 @@ class God {
         this.jumpSpeed = 10;
         this.model = 'player';
         this.skills = {
-            'Slime': {
-                'coolDown': 10,
+            0: {
+                'name': 'Slime',
+                'coolDown': 1,
                 'curCoolDown': 0,
+                'function': function (game, params) {
+                    const position = params.position;
+                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
+                        console.log('Slime() out of the world');
+                        return;
+                    }
+                    const slime = new Slime(game.slimeCount);
+                    slime.position = position;
+                    slime.position[1] += 2;
+                    game.slimeCount++;
+                    game.insertObjListAndMap(slime);
+                    game.physicsEngine.addSlime(slime.name, slime.mass, { x: position[0], y: position[1], z: position[2] }, 0)
+                },
             }
         }
         this.status = {
             'STATUS_health': 100,
             'STATUS_curHealth': 100,
-            'STATUS_attackPoint' : 10,
-            'STATUS_defense' : 10,
-            'STATUS_speed' : 20,
+            'STATUS_attackPoint': 10,
+            'STATUS_defense': 10,
+            'STATUS_speed': 20,
         }
     }
 }
@@ -61,8 +79,8 @@ class Item {
 }
 
 class Slime {
-    constructor() {
-        this.name = 'Slime';
+    constructor(sid) {
+        this.name = 'Slime ' + sid;
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
         this.mass = 100;
@@ -89,18 +107,20 @@ class GameInstance {
     constructor(max_survivors = 3, physicsEngine) {
         this.max_survivors = max_survivors;
         this.survivorCount = 0;
-        this.worldWidth = 5;
-        this.worldHeight = 5;
+        this.slimeCount = 0;
+        this.worldHalfWidth = 500;
+        this.worldHalfHeight = 500;
         this.clientSockets = [];
         this.socketidToPlayer = {};
         this.survivors = [];
         this.objects = {};                    // store all objects (players, trees, etc) on the map
         this.initializeMap();                 // build this.map
         // testing
-        let slime = new Slime();
+        const slime = new Slime(this.slimeCount);
+        this.slimeCount++;
         this.insertObjListAndMap(slime);
         this.physicsEngine = physicsEngine;
-        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0)
+        this.physicsEngine.addSlime(slime.name, slime.mass, { x: -20, y: 10, z: 0 }, 0)
     }
 
     insertObjListAndMap(obj) {
@@ -108,13 +128,13 @@ class GameInstance {
             throw obj.name + " already in objects";
         }
         this.objects[obj.name] = obj; // store reference
-        this.map[obj.position[2]][obj.position[0]].content.push(obj);
+        this.map[Math.floor(obj.position[2]) + this.worldHalfHeight][Math.floor(obj.position[0]) + this.worldHalfWidth].content.push(obj);
     };
 
     initializeMap() {
-        this.map = new Array(this.worldHeight);
+        this.map = new Array(2 * this.worldHalfHeight);
         for (let i = 0; i < this.map.length; i++) {
-            this.map[i] = new Array(this.worldWidth);
+            this.map[i] = new Array(2 * this.worldHalfWidth);
             for (let j = 0; j < this.map[i].length; j++) {
                 this.map[i][j] = new Tile();
             }
@@ -153,7 +173,7 @@ class GameInstance {
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
             this.physicsEngine.addPlayer(this.god.name, this.god.mass, { x: 0, y: 10, z: 0 }, this.god.maxJump);
-            
+
             return true;
         }
         return false;
@@ -209,7 +229,7 @@ class GameInstance {
             return;
         }
         skill.curCoolDown = skill.coolDown;
-        // dosomething
+        skill.function(this, skillParams);
     }
 }
 

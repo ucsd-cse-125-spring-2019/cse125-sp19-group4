@@ -95,7 +95,7 @@ function InitializeSkills(skills) {
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
                      "bottom: 0; opacity: 0.8";
         mask.id = i;
-        skill.innerHTML = i;
+        skill.innerHTML = skills[i].name;
         skill.className += "skill";
         skill.appendChild(mask);
         skillsBar.appendChild(skill);
