@@ -78,8 +78,7 @@ function loadStatusList() {
 }
 window.loadStatusList = loadStatusList; // So that index.html has access to it
 
-document.addEventListener("timerUpdate", function(e) {
-    let milisecs = JSON.parse(e.detail);
+function timerUpdate(milisecs) {
     let hour = Math.floor(milisecs / 3600000);
     let minute = Math.floor(milisecs / 60000 % 60);
     minute = ("0" + minute).slice(-2)
@@ -88,7 +87,7 @@ document.addEventListener("timerUpdate", function(e) {
     let timeString = hour + ":" + minute + ":" + second;
     document.getElementById("timer").innerHTML = timeString;
     document.getElementById("healthBar").style = healthBarStyle.format(milisecs % 80);//TODO remove
-});
+}
 
 /**
  * Here e is the json that contains whatever the server has sent.
@@ -107,19 +106,26 @@ document.addEventListener("statusUpdate", function(e) {
 });
 
 const skills = ['1', '2', '3', '4'];
-const cooldown = ['5s', '3s', '1s']
-function addSkills() {
-    for (let i = 0; i < 4; i++ ) {
+function InitializeSkills(skills) {
+    for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
         let skill = document.createElement('div');
         let mask = document.createElement('div'); // cooldown mask
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
                      "bottom: 0; opacity: 0.8";
-        mask.style.transition = cooldown[i];
-        skill.innerHTML = skills[i];
+        mask.id = i;
+        skill.innerHTML = i;
         skill.className += "skill";
         skill.appendChild(mask);
         skillsBar.appendChild(skill);
     }
 }
-window.addSkills = addSkills;
+
+function coolDownUpdate(skillName, coolDown) {
+    let mask = document.getElementById(skillName);
+    console.log(coolDown)
+    mask.style.height = coolDown + "%";
+}
+
+
+export {coolDownUpdate, InitializeSkills, loadStatusList, timerUpdate}

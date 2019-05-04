@@ -1,6 +1,7 @@
 import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 import Camera from '/public/js/camera.js'
+import * as StatusBar from '/public/js/statusBar.js'
 
 const UIdebug = true;
 
@@ -46,12 +47,14 @@ socket.on('role already taken', function (msg) {
 socket.on('enter game', function (msg) {
     console.log('enter game');
 
-    const data = JSON.parse(msg);
-    uid = data[socket.id].name;
-    console.log("my name is", uid);
-
     UIInitialize();
     main();
+
+    const data = JSON.parse(msg);
+    uid = data[socket.id].name;
+    let player = data[socket.id];
+    console.log("my name is", uid);
+    StatusBar.InitializeSkills(player.skills);
 });
 
 socket.on('wait for game begin', function (msg) {
@@ -81,6 +84,11 @@ socket.on('game_status', function (msg) {
     let event = new CustomEvent("statusUpdate", { detail: data });
     document.dispatchEvent(event);
 
+    // Handle all statusBar Update
+    for (let skill in player.skills) {
+        let coolDownPercent = player.skills[skill].curCoolDown / player.skills[skill].coolDown * 100;
+        StatusBar.coolDownUpdate(skill, coolDownPercent)
+    }
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
@@ -111,8 +119,7 @@ socket.on('game_status', function (msg) {
 });
 
 socket.on('tiktok', (miliseconds) => {
-    let event = new CustomEvent("timerUpdate", { detail: miliseconds });
-    document.dispatchEvent(event);
+    StatusBar.timerUpdate(miliseconds);
 });
 
 socket.on('pong', (latency) => {

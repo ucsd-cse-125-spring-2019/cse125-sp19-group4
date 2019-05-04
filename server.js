@@ -31,6 +31,7 @@ const gameInstance = new game(max_survivors, physicsEngine);
 const inputs = [];
 const movementEvents = {};
 const jumpEvents = {};
+const skillEvents = {};
 
 
 io.on('connection', function (socket) {
@@ -92,6 +93,14 @@ io.on('connection', function (socket) {
         jumpEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
+    socket.on('skill', function (msg) {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        const skillParams = JSON.parse(msg)
+        skillEvents[gameInstance.socketidToPlayer[socket.id].name] = skillParams;
+    });
+
     socket.on('chat message', function (msg) {
         io.emit('chat message', gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
         //inputs.push(socket.id + ': ' + msg);
@@ -123,6 +132,8 @@ function game_start() {
         });
         inputs.length = 0;
 
+        gameInstance.decrementCoolDown(1/tick_rate);
+
         // Handle Movements
         if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
             gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
@@ -148,6 +159,18 @@ function game_start() {
             if (typeof jumpEvents[survivor.name] !== 'undefined') {
                 gameInstance.jump(survivor.name);
                 delete jumpEvents[survivor.name];
+            }
+        });
+
+        // Handle skill
+        if (typeof skillEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.handleSkill(gameInstance.god.name, skillEvents[gameInstance.god.name]);
+            delete skillEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof skillEvents[survivor.name] !== 'undefined') {
+                gameInstance.handleSkill(survivor.name, skillEvents[gameInstance.god.name]);
+                delete skillEvents[survivor.name];
             }
         });
 

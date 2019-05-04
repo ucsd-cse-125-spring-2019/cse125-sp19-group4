@@ -13,6 +13,12 @@ class Survivor {
         this.jumpSpeed = 8;
         this.health = 100; // set to a default value
         this.model = 'player';
+        this.skills = {
+            '1': {
+                'coolDown': 10,
+                'curCoolDown': 0,
+            }
+        }
     }
 }
 
@@ -27,6 +33,12 @@ class God {
         this.maxJump = 10;
         this.jumpSpeed = 10;
         this.model = 'player';
+        this.skills = {
+            '1': {
+                'coolDown': 10,
+                'curCoolDown': 0,
+            }
+        }
     }
 }
 
@@ -103,6 +115,21 @@ class GameInstance {
         });
     }
 
+    decrementCoolDown(amount) {
+        for (let obj in this.objects) {
+            if (this.objects[obj].skills != undefined) {
+                let skills = this.objects[obj].skills;
+                for (let skill in skills) {
+                    if (skills[skill].curCoolDown > 0) {
+                        skills[skill].curCoolDown -= amount;
+                    } else if (skills[skill].curCoolDown <= 0) { //for debug purpose
+                        skills[skill].curCoolDown = skills[skill].coolDown;
+                    }
+                }
+            }
+        }
+    }
+
     joinAsGod(socketid) {
         if (typeof this.god === 'undefined') {
             this.god = new God(socketid);
@@ -156,6 +183,16 @@ class GameInstance {
 
     stay(name) {
         this.physicsEngine.stopMovement(name);
+    }
+
+    handleSkill(name, skillParams) {
+        const obj = this.objects[name];
+        let {skillName} = skillParams;
+        if (obj.skills[skillName].curCoolDown > 0) { // not cooled down
+            return;
+        }
+        obj.skills[skillName].curCoolDown = obj.skills[skillName].coolDown;
+        // dosomething
     }
 }
 
