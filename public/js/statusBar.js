@@ -105,3 +105,21 @@ document.addEventListener("statusUpdate", function(e) {
         }
     }
 });
+
+const skills = ['1', '2', '3', '4'];
+const cooldown = ['5s', '3s', '1s']
+function addSkills() {
+    for (let i = 0; i < 4; i++ ) {
+        let skillsBar = document.getElementById("skillsBar");
+        let skill = document.createElement('div');
+        let mask = document.createElement('div'); // cooldown mask
+        mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
+                     "bottom: 0; opacity: 0.8";
+        mask.style.transition = cooldown[i];
+        skill.innerHTML = skills[i];
+        skill.className += "skill";
+        skill.appendChild(mask);
+        skillsBar.appendChild(skill);
+    }
+}
+window.addSkills = addSkills;

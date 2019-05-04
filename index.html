@@ -18,6 +18,13 @@
       #messages li { padding: 0px 5px; }
       /* -----------------------------------------Chatting--------------------------------------- */
 
+      /* ----------------------------------------Status Bar-------------------------------------- */
+      #statusBar1 {position: absolute; bottom: 5%; width: 50%; height: 60px; left: 25%; background-color: red;}
+      #skillsBar {}
+      .skill { display: inline-block; height: 40px; width: 40px; box-shadow: 0 0 3px; background: yellow;
+               position: relative;}
+      /* ----------------------------------------Status Bar-------------------------------------- */
+
 
       .loading {display: none; position:absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);}
       .menu { height: 100vh; width: 100vw; }
@@ -72,6 +79,9 @@
         <div id="timer" style="color:#B4AE6C; display: inline-block;" >0:00:00</div>
         <div id="debugger" style="color:#B4AE6C; display: inline-block; position: absolute; right: 12px;" id="ping">10ms</div>
       </div>
+      <div id="statusBar1">
+        <ul id="skillsBar"></ul>
+      </div>
       <div id="messageBox">
         <ul id="messages"></ul>
         <form id="messageForm">
@@ -80,6 +90,7 @@
       </div>
       <script>
         loadStatusList();
+        addSkills();
       </script>
     </script>
   </body>

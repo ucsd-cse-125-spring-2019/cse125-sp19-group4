@@ -2,6 +2,8 @@ import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 import Camera from '/public/js/camera.js'
 
+const UIdebug = true;
+
 const camera = new Camera();
 let uid = '';
 
@@ -39,7 +41,6 @@ socket.on('chat message', function (msg) {
 });
 
 $('.game-area').html($('#intro-screen-template').html());
-
 
 socket.on('role already taken', function (msg) {
     alert(msg);
