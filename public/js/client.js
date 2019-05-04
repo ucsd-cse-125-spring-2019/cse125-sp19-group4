@@ -478,8 +478,6 @@ const Key = {
     jumped: false,
 
     cmd: {
-        13: 'ENTER',        // enter
-        27: 'ESC',          // ESC
         32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
@@ -530,6 +528,11 @@ const Key = {
             // do nothing
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
+        } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
+            let skillsParams = {
+                skillNum: event.keyCode - 49
+            }
+            socket.emit('skill', JSON.stringify(skillsParams));
         }
     },
 

@@ -200,11 +200,12 @@ class GameInstance {
 
     handleSkill(name, skillParams) {
         const obj = this.objects[name];
-        let {skillName} = skillParams;
-        if (obj.skills[skillName].curCoolDown > 0) { // not cooled down
+        let { skillNum } = skillParams;
+        let skill = Object.values(obj.skills)[skillNum]
+        if (skill.curCoolDown > 0) { // not cooled down
             return;
         }
-        obj.skills[skillName].curCoolDown = obj.skills[skillName].coolDown;
+        skill.curCoolDown = skill.coolDown;
         // dosomething
     }
 }

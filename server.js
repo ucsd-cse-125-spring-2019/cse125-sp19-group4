@@ -169,7 +169,7 @@ function game_start() {
         }
         gameInstance.survivors.forEach(function (survivor) {
             if (typeof skillEvents[survivor.name] !== 'undefined') {
-                gameInstance.handleSkill(survivor.name, skillEvents[gameInstance.god.name]);
+                gameInstance.handleSkill(survivor.name, skillEvents[survivor.name]);
                 delete skillEvents[survivor.name];
             }
         });
