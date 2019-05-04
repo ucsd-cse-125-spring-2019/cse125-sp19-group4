@@ -152,7 +152,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
-            this.physicsEngine.addPlayer(this.god.name, this.god.mass, { x: 10, y: 10, z: 10 }, this.god.maxJump);
+            this.physicsEngine.addPlayer(this.god.name, this.god.mass, { x: 0, y: 10, z: 0 }, this.god.maxJump);
             
             return true;
         }
