@@ -1,4 +1,4 @@
-import { uid } from "/public/js/client.js"
+// import { uid } from "/public/js/client.js"
 const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;"
 
 if (!String.prototype.format) {

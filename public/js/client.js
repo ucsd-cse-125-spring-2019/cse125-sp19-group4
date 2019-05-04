@@ -126,8 +126,6 @@ socket.on('pong', (latency) => {
 
 // ====================================Canvas===================================
 
-
-
 /**
  * Start here
  */
@@ -526,13 +524,10 @@ const Key = {
             $('#messageInput').focus();
         } else if (event.keyCode == 32 && this.jumped) {
             // do nothing
+        } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
+            handleSkill(uid, event.keyCode - 49);
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
-        } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
-            let skillsParams = {
-                skillNum: event.keyCode - 49
-            }
-            socket.emit('skill', JSON.stringify(skillsParams));
         }
     },
 
@@ -580,4 +575,26 @@ function chatBoxFade() {
 }
 /*================================End of UI===================================*/
 
+/*================================= Skill ===================================*/
+let casting = -1;
+function handleSkill(uid, skillNum) {
+    if (uid === "God") {
+        switch (skillNum) {
+            case 0:
+                // Spawn Slime
+                casting = 0;
+                console.log('casting Slime');
+                
+                break;
+            // case 1:
+            //     break;
+            default:
+                // do nothing
+        }
+    }
+    // const skillsParams = {};
+    // socket.emit('skill', JSON.stringify(skillsParams));
+}
+
+/*============================== End of Skill ===================================*/
 export { uid }

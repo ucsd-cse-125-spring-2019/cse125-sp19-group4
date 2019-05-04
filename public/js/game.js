@@ -7,7 +7,6 @@ class Survivor {
         this.socketid = socketid;
         this.position = [0, 0, 0]; // location (x, y, z)
         this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.movementSpeed = 10;
         this.mass = 500;
         this.maxJump = 2;
         this.jumpSpeed = 8;
@@ -34,13 +33,12 @@ class God {
         this.socketid = socketid;
         this.position = [0, 0, 0];
         this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.movementSpeed = 20;
         this.mass = 500;
         this.maxJump = 10;
         this.jumpSpeed = 10;
         this.model = 'player';
         this.skills = {
-            '1': {
+            'Slime': {
                 'coolDown': 10,
                 'curCoolDown': 0,
             }
@@ -50,7 +48,7 @@ class God {
             'STATUS_curHealth': 100,
             'STATUS_attackPoint' : 10,
             'STATUS_defense' : 10,
-            'STATUS_speed' : 10,
+            'STATUS_speed' : 20,
         }
     }
 }
@@ -68,9 +66,14 @@ class Slime {
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
         this.mass = 100;
-        this.movementSpeed = 8;
-        this.health = 100; // set to a default value
         this.model = 'slime';
+        this.status = {
+            'STATUS_health': 100,
+            'STATUS_curHealth': 100,
+            'STATUS_attackPoint': 10,
+            'STATUS_defense': 0,
+            'STATUS_speed': 5,
+        }
     }
 }
 
@@ -130,7 +133,7 @@ class GameInstance {
 
     decrementCoolDown(amount) {
         for (let obj in this.objects) {
-            if (this.objects[obj].skills != undefined) {
+            if (typeof this.objects[obj].skills !== 'undefined') {
                 let skills = this.objects[obj].skills;
                 for (let skill in skills) {
                     if (skills[skill].curCoolDown > 0) {
@@ -185,7 +188,7 @@ class GameInstance {
 
     move(name, direction) {
         const obj = this.objects[name];
-        const speed = obj.movementSpeed;
+        const speed = obj.status.STATUS_speed;
         this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
     }
