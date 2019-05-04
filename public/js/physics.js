@@ -43,7 +43,7 @@ class PhysicsEngine {
     }
 
     addSlime(name, mass = 5, position = { x: 0, y: 0, z: 0 }) {
-        const ballShape = new CANNON.Sphere(2);
+        const ballShape = new CANNON.Sphere(1);
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: ballShape,

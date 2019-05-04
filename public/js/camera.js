@@ -3,7 +3,7 @@ const PITCH = -45.0;
 const SPEED = 5;        // Unit
 const SENSITIVITY = 120;
 const ZOOM = 45.0;
-const POSITION = [0, 10, 10];
+const POSITION = [0, 20, 20];
 class Camera {
     /**
      * Create a new camera instance
@@ -39,7 +39,7 @@ class Camera {
 
     getRay(x, y) {
         const w = window.innerWidth;
-        const h = window.innerWidth;
+        const h = window.innerHeight;
         const alpha = Math.tan(this.fieldOfView / 2) * w / h * (x - w / 2) / (w / 2);
         const beta = Math.tan(this.fieldOfView / 2) * (h / 2 - y) / (h / 2);
         let ray = {};

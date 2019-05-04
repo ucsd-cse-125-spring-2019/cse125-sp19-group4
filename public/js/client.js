@@ -17,7 +17,7 @@ const transform_ref = {
     'castle': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
-    'slime': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, -2, 0]),
+    'slime': glMatrix.mat4.create(),
     'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
@@ -75,7 +75,6 @@ $('#SurvivorButton').click(function () {
 socket.on('game_status', function (msg) {
     const data = JSON.parse(msg);
     const player = data[uid];
-    player.position[1] -= 1.0;
     camera.setPosition(player.position);
     // console.log(player.position);
 
@@ -456,6 +455,9 @@ const mouseDown = function (e) {
     const x = e.pageX;
     const y = e.pageY;
     const ray = camera.getRay(x, y);
+    console.log('x', x, window.innerWidth, 'y', y, window.innerHeight);
+    console.log(ray.dir);
+    
     const denominator = glMatrix.vec3.dot(normal, ray.dir);
     if (Math.abs(denominator) > 0.00001) {
         const difference = glMatrix.vec3.create();

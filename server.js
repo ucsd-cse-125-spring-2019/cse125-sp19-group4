@@ -154,7 +154,7 @@ function game_start() {
         // step and update objects
         physicsEngine.world.step(deltaTime * 0.001);
         Object.keys(physicsEngine.obj).forEach(function (name) {
-            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y, physicsEngine.obj[name].position.z];
+            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - 1, physicsEngine.obj[name].position.z];
         });
 
         const broadcast_status = JSON.stringify(gameInstance.objects);
