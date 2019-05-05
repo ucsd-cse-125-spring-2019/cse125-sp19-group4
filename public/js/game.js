@@ -142,14 +142,14 @@ class GameInstance {
         this.initializeMap();                 // build this.map
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
-    
+        this.meleeId = 0;
         this.toClean = [];
 
         // testing
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
         this.insertObjListAndMap(slime);
-        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0)
+        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0);
     }
 
     insertObjListAndMap(obj) {
@@ -274,6 +274,12 @@ class GameInstance {
         this.physicsEngine.shoot(name, player.direction, 30, bullet.name);
     }
 
+    melee(name) {
+        const player = this.objects[name];
+        const meleeId = "Melee " + (this.meleeId++);
+        this.physicsEngine.melee(name, player.direction, meleeId);
+    }
+
     /**
      * Run through 'hits' to handle all the damage in current step 
      */
@@ -304,10 +310,12 @@ class GameInstance {
     cleanup() {
         const gameInstance = this;
         this.toClean.forEach(function (name) {
-            delete gameInstance.objects[name];
+            if (typeof gameInstance.objects[name] !== 'undefined')
+                delete gameInstance.objects[name];
         });
         this.physicsEngine.cleanup(this.toClean);
         this.toClean.length = 0;
+        this.meleeId = 0; // Each melee would only last 1 step
     }
 }
 

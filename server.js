@@ -33,7 +33,7 @@ const movementEvents = {};
 const jumpEvents = {};
 const skillEvents = {};
 const shootEvents = {};
-
+const meleeEvents = {};
 
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
@@ -89,6 +89,10 @@ io.on('connection', function (socket) {
 
     socket.on('shoot', function () {
         shootEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
+    });
+
+    socket.on('melee', function () {
+        meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
     socket.on('jump', function () {
@@ -188,6 +192,16 @@ function game_start() {
             if (typeof shootEvents[survivor.name] !== 'undefined') {
                 gameInstance.shoot(survivor.name);
                 delete shootEvents[survivor.name];
+            }
+        });
+        if (typeof meleeEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.melee(gameInstance.god.name, meleeEvents[gameInstance.god.name]);
+            delete meleeEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof meleeEvents[survivor.name] !== 'undefined') {
+                gameInstance.melee(survivor.name);
+                delete meleeEvents[survivor.name];
             }
         });
 

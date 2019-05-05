@@ -284,7 +284,11 @@ function main() {
         }
         
         // Attack
-        if (Key.isDown('SHOOT')) {
+        if (Key.isDown('MELEE')) {
+            delete Key._pressed['MELEE'];
+            socket.emit('melee');
+        }
+        else if (Key.isDown('SHOOT')) {
             delete Key._pressed['SHOOT'];
             socket.emit('shoot');
         }
@@ -542,7 +546,8 @@ const Key = {
         65: 'LEFT',         // A
         68: 'RIGHT',        // D
         69: 'ROTRIGHT',     // E
-        74: 'SHOOT',       // J     
+        74: 'SHOOT',        // J   
+        75: 'MELEE',        // K  
         81: 'ROTLEFT',      // Q
         83: 'DOWN',         // S
         87: 'UP',           // W
