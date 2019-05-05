@@ -119,6 +119,14 @@ class Tile {
     }
 }
 
+class Bullet {
+    constructor(position, direction, bulletId) {
+        this.name = 'Bullet ' + bulletId;
+        this.position = position;
+        this.direction = direction;
+        this.model = 'bullet';
+    }
+}
 
 class GameInstance {
     constructor(max_survivors = 3, physicsEngine) {
@@ -132,12 +140,14 @@ class GameInstance {
         this.survivors = [];
         this.objects = {};                    // store all objects (players, trees, etc) on the map
         this.initializeMap();                 // build this.map
+        this.physicsEngine = physicsEngine;
+        this.bulletId = 0;
+    
         // testing
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
         this.insertObjListAndMap(slime);
-        this.physicsEngine = physicsEngine;
-        this.physicsEngine.addSlime(slime.name, slime.mass, { x: -20, y: 10, z: 0 }, 0)
+        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0)
     }
 
     insertObjListAndMap(obj) {
@@ -238,6 +248,7 @@ class GameInstance {
         this.physicsEngine.stopMovement(name);
     }
 
+    // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
         const obj = this.objects[name];
         let { skillNum } = skillParams;
@@ -247,6 +258,41 @@ class GameInstance {
         }
         skill.curCoolDown = skill.coolDown;
         skill.function(this, skillParams);
+    }
+
+    /**
+     * TODO: Add more attack forms besides bullet
+     * Create a bullet for the attacker
+     * @param {string} name the name of object that initiates the attack
+     */
+    shoot(name) {
+        const player = this.objects[name];
+        const bullet = new Bullet(player.position, player.direction, this.bulletId++);
+        this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
+        this.physicsEngine.shoot(name, player.direction, 30, bullet.name);
+    }
+
+    /**
+     * Run through 'hits' to handle all the damage in current step 
+     */
+    handleDamage() {
+        const gameInstance = this;
+        this.physicsEngine.hits.forEach(function (bulletName) {
+            const bullet = gameInstance.physicsEngine.obj[bulletName];
+            const attacker = gameInstance.objects[bullet.from];
+            const attackee = gameInstance.objects[bullet.to];
+
+            // the bullet hit enemy
+            if (typeof attackee !== 'undefined') {
+                attackee.onHit(attacker.damage);
+                console.log(attackee.health);
+
+                if (attackee.health <= 0) {
+                    gameInstance.toClean.push(attackee.name);
+                }
+            }
+            gameInstance.toClean.push(bulletName);
+        });
     }
 }
 
