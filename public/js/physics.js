@@ -1,4 +1,5 @@
 const CANNON = require('../lib/cannon.min.js');
+const glMatrix = require('gl-Matrix');
 class PhysicsEngine {
     constructor() {
         this.obj = {};
@@ -23,6 +24,9 @@ class PhysicsEngine {
         this.world.addContactMaterial(ground_ground_cm);
 
         this.addGroundPlane();
+
+        // Store all hits in current step
+        this.hits = [];
     }
 
     addPlayer(name, mass = 20, position = { x: 0, y: 0, z: 0 }, maxJump) {
@@ -106,6 +110,49 @@ class PhysicsEngine {
             this.obj[name].velocity.y = jumpSpeed;
             this.obj[name].jumps -= 1;
         }
+    }
+
+    /**
+     * 
+     * @param {string} name name of object shooting
+     * @param {array} direction face direction
+     */
+    shoot(name, direction, shootingSpeed, bulletId) {
+        glMatrix.vec3.normalize(direction, direction);
+        const player = this.obj[name];
+
+        //Represent the attack as an object
+        const ballShape = new CANNON.Sphere(0.2);
+        const bulletBody = new CANNON.Body({
+            mass: 0.1,
+            shape: ballShape,
+            linearDamping: 0.7    
+        });
+
+        // Set the velocity and its position
+        bulletBody.velocity.set( direction[0] * shootingSpeed,
+                                 direction[1] * shootingSpeed,
+                                 direction[2] * shootingSpeed );
+        const x = player.position.x + direction[0] * (player.shapes[0].radius+ballShape.radius);
+        const y = player.position.y + direction[1] * (ballShape.radius) + 1.5;
+        const z = player.position.z + direction[2] * (player.shapes[0].radius+ballShape.radius);
+        bulletBody.position.set(x, y, z); 
+        this.world.add(bulletBody);
+    
+        // Store bullet information
+        this.obj[bulletId] = bulletBody;
+         // this.bullets.push(bulletBody);
+        bulletBody.role = 'bullet';
+        bulletBody.from = name; // shot 
+
+        const engine = this;
+        bulletBody.addEventListener("collide", function(e) {
+            if (e.body.role === 'enemy') {
+                console.log("Collide with enenmy");
+                bulletBody.to = e.body.name; // TODO: Change to array?
+            }
+            engine.hits.push(bulletId);
+        });
     }
 }
 
