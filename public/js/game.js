@@ -128,6 +128,15 @@ class Bullet {
     }
 }
 
+class Tree {
+    constructor() {
+        this.name = 'Tree';
+        this.position = [20, 0, -20];
+        this.direction = [0, 0, -1];
+        this.model = 'tree';
+    }
+}
+
 class GameInstance {
     constructor(max_survivors = 3, physicsEngine) {
         this.max_survivors = max_survivors;
@@ -150,6 +159,8 @@ class GameInstance {
         this.slimeCount++;
         this.insertObjListAndMap(slime);
         this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0);
+        const tree = new Tree();
+        this.insertObjListAndMap(tree);
     }
 
     insertObjListAndMap(obj) {

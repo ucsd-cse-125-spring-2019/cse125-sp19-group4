@@ -82,6 +82,12 @@ class PhysicsEngine {
         groundBody.role = 'ground';
     }
 
+    addTree() {
+        // tree should be static 
+        // const treeShape = new CANNON.Cube();
+        const treeBody = new CANNON.Body();
+    }
+
     updateVelocity(name, direction, speed) {
         this.obj[name].velocity.x = direction[0] * speed;
         this.obj[name].velocity.z = direction[2] * speed;
@@ -113,6 +119,11 @@ class PhysicsEngine {
             this.obj[name].velocity.y = jumpSpeed;
             this.obj[name].jumps -= 1;
         }
+    }
+
+    cutTree() {
+        // Detect the collide but don't attach force
+        // attackBody.collisionResponse = 0;
     }
 
     /**
