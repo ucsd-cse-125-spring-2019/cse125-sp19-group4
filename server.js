@@ -32,6 +32,7 @@ const inputs = [];
 const movementEvents = {};
 const jumpEvents = {};
 const skillEvents = {};
+const shootEvents = {};
 
 
 io.on('connection', function (socket) {
@@ -84,6 +85,10 @@ io.on('connection', function (socket) {
         }
         const direction = JSON.parse(msg);
         movementEvents[gameInstance.socketidToPlayer[socket.id].name] = direction;
+    });
+
+    socket.on('shoot', function () {
+        shootEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
     socket.on('jump', function () {
@@ -174,8 +179,23 @@ function game_start() {
             }
         });
 
-        // step and update objects
+        // Handle attacks
+        if (typeof shootEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.shoot(gameInstance.god.name, shootEvents[gameInstance.god.name]);
+            delete shootEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof shootEvents[survivor.name] !== 'undefined') {
+                gameInstance.shoot(survivor.name);
+                delete shootEvents[survivor.name];
+            }
+        });
+
+        // Step and update objects
         physicsEngine.world.step(deltaTime * 0.001);
+
+        // Handle all the damage incurred in current step and clean up physics engine 
+        gameInstance.handleDamage();
         Object.keys(physicsEngine.obj).forEach(function (name) {
             gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - 1, physicsEngine.obj[name].position.z];
         });
