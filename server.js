@@ -24,7 +24,7 @@ app.get('/cube_demo', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 0;
+const max_survivors = 1;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 
