@@ -26,7 +26,7 @@ class PhysicsEngine {
     }
 
     addPlayer(name, mass = 20, position = { x: 0, y: 0, z: 0 }, maxJump) {
-        const ballShape = new CANNON.Sphere(1);
+        const ballShape = new CANNON.Sphere(2);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
@@ -40,6 +40,13 @@ class PhysicsEngine {
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
         this.obj[name] = playerBody;
+        playerBody.role = 'player';
+        playerBody.name = name;
+        playerBody.addEventListener('collide', function(e){
+            // console.log("Collided with: " + e.body.role);
+            // console.log("e.contact.bi.role: " + e.contact.bi.role);
+            // console.log("e.contact.bj.role: " + e.contact.bj.role);
+        })
     }
 
     addSlime(name, mass = 5, position = { x: 0, y: 0, z: 0 }) {
@@ -51,6 +58,8 @@ class PhysicsEngine {
         });
         slimeBody.position.set(position.x, position.y + 1, position.z);
         slimeBody.jumps = 0;
+        slimeBody.role = 'enemy';
+        slimeBody.name = name;
         this.world.add(slimeBody);
         this.obj[name] = slimeBody;
     }
@@ -63,6 +72,7 @@ class PhysicsEngine {
         groundBody.computeAABB();
         this.world.add(groundBody);
         this.ground = groundBody;
+        groundBody.role = 'ground';
     }
 
     updateVelocity(name, direction, speed) {
