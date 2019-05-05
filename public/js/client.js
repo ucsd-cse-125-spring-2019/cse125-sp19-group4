@@ -18,6 +18,7 @@ const model_ref = {};
 
 const transform_ref = {
     'castle': glMatrix.mat4.create(),
+    'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
     'slime': glMatrix.mat4.create(),
@@ -198,6 +199,7 @@ function main() {
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, programInfo);
     model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model.obj", "/public/model/f16-texture.bmp", false, programInfo);
+    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
     // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
