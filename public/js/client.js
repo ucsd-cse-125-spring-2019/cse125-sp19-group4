@@ -276,6 +276,12 @@ function main() {
             socket.emit('movement', JSON.stringify(direction));
             // console.log(direction);
         }
+        
+        // Attack
+        if (Key.isDown('SHOOT')) {
+            delete Key._pressed['SHOOT'];
+            socket.emit('shoot');
+        }
 
         // Skill
         if (casting >= 0) {
@@ -529,7 +535,8 @@ const Key = {
         40: 'DOWN',         // down arrow
         65: 'LEFT',         // A
         68: 'RIGHT',        // D
-        69: 'ROTRIGHT',     // E     
+        69: 'ROTRIGHT',     // E
+        74: 'SHOOT',       // J     
         81: 'ROTLEFT',      // Q
         83: 'DOWN',         // S
         87: 'UP',           // W
