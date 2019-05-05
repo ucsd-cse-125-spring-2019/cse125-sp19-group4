@@ -10,6 +10,8 @@ class Survivor {
         this.mass = 500;
         this.maxJump = 2;
         this.jumpSpeed = 8;
+        this.damage = 10;
+        this.health = 100; // set to a default value
         this.model = 'player';
         this.skills = {
             0: {
@@ -28,6 +30,10 @@ class Survivor {
             'STATUS_defense': 10,
             'STATUS_speed': 10,
         }
+    }
+
+    onHit(damage) {
+        this.health -= damage;
     }
 }
 
@@ -69,6 +75,10 @@ class God {
             'STATUS_speed': 20,
         }
     }
+
+    onHit(damage) {
+        this.health -= damage;
+    }
 }
 
 class Item {
@@ -84,14 +94,21 @@ class Slime {
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
         this.mass = 100;
+        this.movementSpeed = 8;
+        this.damage = 10;
+        this.health = 30; // set to a default value
         this.model = 'slime';
         this.status = {
-            'STATUS_health': 100,
+            'STATUS_health': 30,
             'STATUS_curHealth': 100,
             'STATUS_attackPoint': 10,
             'STATUS_defense': 0,
             'STATUS_speed': 5,
         }
+    }
+
+    onHit(damage) {
+        this.health -= damage;
     }
 }
 
