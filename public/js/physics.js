@@ -154,6 +154,21 @@ class PhysicsEngine {
             engine.hits.push(bulletId);
         });
     }
+
+    /**
+     * Clean up the physics engine
+     * @param {array} toDestroy list containing all instances to delete from physics engine
+     */
+    cleanup(toDestroy) {
+        const engine = this;
+        toDestroy.forEach(function (e) {
+            if (typeof engine.obj[e] !== undefined) {
+                engine.world.removeBody(engine.obj[e]);
+                delete engine.obj[e];
+            }
+        })
+        this.hits.length = 0;
+    }
 }
 
 module.exports = PhysicsEngine;

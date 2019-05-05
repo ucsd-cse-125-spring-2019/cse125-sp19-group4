@@ -119,6 +119,12 @@ socket.on('game_status', function (msg) {
         glMatrix.mat4.multiply(models[name].t, transformation, transform_ref[obj.model]);
 
     });
+
+    Object.keys(models).forEach(function (name) {
+        if (typeof data[name] === 'undefined') {
+            delete models[name];
+        }
+    })
 });
 
 socket.on('tiktok', (miliseconds) => {

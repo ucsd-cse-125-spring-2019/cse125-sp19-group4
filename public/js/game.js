@@ -143,6 +143,8 @@ class GameInstance {
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
     
+        this.toClean = [];
+
         // testing
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
@@ -293,6 +295,19 @@ class GameInstance {
             }
             gameInstance.toClean.push(bulletName);
         });
+    }
+
+    /**
+     * Clean up all the instances that are to be removed from the world
+     * e.g. dead monster, bullets
+     */
+    cleanup() {
+        const gameInstance = this;
+        this.toClean.forEach(function (name) {
+            delete gameInstance.objects[name];
+        });
+        this.physicsEngine.cleanup(this.toClean);
+        this.toClean.length = 0;
     }
 }
 
