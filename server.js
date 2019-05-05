@@ -24,13 +24,14 @@ app.get('/cube_demo', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 1;
+const max_survivors = 0;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 
 const inputs = [];
 const movementEvents = {};
 const jumpEvents = {};
+const skillEvents = {};
 
 
 io.on('connection', function (socket) {
@@ -92,6 +93,14 @@ io.on('connection', function (socket) {
         jumpEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
+    socket.on('skill', function (msg) {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        const skillParams = JSON.parse(msg)
+        skillEvents[gameInstance.socketidToPlayer[socket.id].name] = skillParams;
+    });
+
     socket.on('chat message', function (msg) {
         io.emit('chat message', gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
         //inputs.push(socket.id + ': ' + msg);
@@ -123,6 +132,8 @@ function game_start() {
         });
         inputs.length = 0;
 
+        gameInstance.decrementCoolDown(1/tick_rate);
+
         // Handle Movements
         if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
             gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
@@ -151,10 +162,22 @@ function game_start() {
             }
         });
 
+        // Handle skill
+        if (typeof skillEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.handleSkill(gameInstance.god.name, skillEvents[gameInstance.god.name]);
+            delete skillEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof skillEvents[survivor.name] !== 'undefined') {
+                gameInstance.handleSkill(survivor.name, skillEvents[survivor.name]);
+                delete skillEvents[survivor.name];
+            }
+        });
+
         // step and update objects
         physicsEngine.world.step(deltaTime * 0.001);
         Object.keys(physicsEngine.obj).forEach(function (name) {
-            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y, physicsEngine.obj[name].position.z];
+            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - 1, physicsEngine.obj[name].position.z];
         });
 
         const broadcast_status = JSON.stringify(gameInstance.objects);

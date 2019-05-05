@@ -1,6 +1,9 @@
 import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 import Camera from '/public/js/camera.js'
+import * as StatusBar from '/public/js/statusBar.js'
+
+const UIdebug = true;
 
 const camera = new Camera();
 let uid = '';
@@ -16,12 +19,18 @@ const model_ref = {};
 const transform_ref = {
     'castle': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
-    'player': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, -1, 0]),
-    'slime': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, -2, 0]),
+    'player': glMatrix.mat4.create(),
+    'slime': glMatrix.mat4.create(),
     'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
 const models = {};
+const cast_models = [];
+
+let x = 0;
+let y = 0;
+const cursor = glMatrix.vec3.create();
+
 
 // ============================ Network IO ================================
 
@@ -37,7 +46,6 @@ socket.on('chat message', function (msg) {
 
 $('.game-area').html($('#intro-screen-template').html());
 
-
 socket.on('role already taken', function (msg) {
     alert(msg);
 });
@@ -45,12 +53,15 @@ socket.on('role already taken', function (msg) {
 socket.on('enter game', function (msg) {
     console.log('enter game');
 
-    const data = JSON.parse(msg);
-    uid = data[socket.id].name;
-    console.log("my name is", uid);
-
     UIInitialize();
     main();
+
+    const data = JSON.parse(msg);
+    uid = data[socket.id].name;
+    let player = data[socket.id];
+    console.log("my name is", uid);
+    StatusBar.InitializeSkills(player.skills);
+    StatusBar.InitializeStatus(player.status);
 });
 
 socket.on('wait for game begin', function (msg) {
@@ -76,9 +87,9 @@ socket.on('game_status', function (msg) {
     camera.setPosition(player.position);
     // console.log(player.position);
 
-
-    let event = new CustomEvent("statusUpdate", { detail: data });
-    document.dispatchEvent(event);
+    // Update statusbar
+    StatusBar.statusUpdate(player.status);
+    StatusBar.coolDownUpdate(player.skills);
 
 
     Object.keys(data).forEach(function (name) {
@@ -110,8 +121,7 @@ socket.on('game_status', function (msg) {
 });
 
 socket.on('tiktok', (miliseconds) => {
-    let event = new CustomEvent("timerUpdate", { detail: miliseconds });
-    document.dispatchEvent(event);
+    StatusBar.timerUpdate(miliseconds);
 });
 
 socket.on('pong', (latency) => {
@@ -121,8 +131,6 @@ socket.on('pong', (latency) => {
 
 
 // ====================================Canvas===================================
-
-
 
 /**
  * Start here
@@ -135,10 +143,11 @@ function main() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // canvas.addEventListener("mousedown", mouseDown, false);
+    window.addEventListener("mousedown", mouseDown, false);
+    window.addEventListener("contextmenu", contextmenu, false);
     // canvas.addEventListener("mouseup", mouseUp, false);
     // canvas.addEventListener("mouseout", mouseUp, false);
-    // canvas.addEventListener("mousemove", mouseMove, false);
+    window.addEventListener("mousemove", mouseMove, false);
 
     window.addEventListener('keyup', function (event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function (event) { Key.onKeydown(event); }, false);
@@ -193,11 +202,13 @@ function main() {
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
     // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
     models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
+    cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
         now *= 0.001;
         const deltaTime = now - then;
+        
         then = now;
 
         // Camera Rotation
@@ -215,6 +226,7 @@ function main() {
             Key.jumped = true;
             socket.emit('jump');
         }
+
         // Movement
         let direction = glMatrix.vec3.create();
         let move = true;
@@ -263,6 +275,26 @@ function main() {
             // console.log(direction);
         }
 
+        // Skill
+        if (casting >= 0) {
+            if (typeof models['casting'] === 'undefined') {
+                models['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
+            }
+            const normal = [0.0, 1.0, 0.0];
+            const center = [0.0, 0.0, 0.0];
+
+            const ray = camera.getRay(x, y);
+            const denominator = glMatrix.vec3.dot(normal, ray.dir);
+            if (Math.abs(denominator) > 0.00001) {
+                const difference = glMatrix.vec3.create();
+                glMatrix.vec3.subtract(difference, center, ray.pos);
+                const t = glMatrix.vec3.dot(difference, normal) / denominator;
+                glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
+            }
+            const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
+            glMatrix.mat4.multiply(models['casting'].t, translation, cast_models[casting].t);
+        }
+        const temptime = Date.now();
         drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
@@ -289,31 +321,10 @@ function drawScene(gl, programInfo, models, camera) {
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // Create a perspective matrix, a special matrix that is
-    // used to simulate the distortion of perspective in a camera.
-    // Our field of view is 45 degrees, with a width/height
-    // ratio that matches the display size of the canvas
-    // and we only want to see objects between 0.1 units
-    // and 100 units away from the camera.
-
-    const fieldOfView = 60 * Math.PI / 180;   // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.1;
-    const zFar = 100.0;
-    const projectionMatrix = glMatrix.mat4.create();
-
-    // note: glmatrix.js always has the first argument
-    // as the destination to receive the result.
-    glMatrix.mat4.perspective(projectionMatrix,
-        fieldOfView,
-        aspect,
-        zNear,
-        zFar);
-
     // Set the drawing position to the "identity" point, which is
     // the center of the scene.
     const modelViewMatrix = camera.getViewMatrix();
-
+    const projectionMatrix = camera.getProjectionMatrix();
     // Set the shader uniforms
     gl.uniformMatrix4fv(
         programInfo.uniformLocations.projectionMatrix,
@@ -466,6 +477,41 @@ function loadTexture(gl, url) {
 //     e.preventDefault();
 // };
 
+const contextmenu = function (e) {
+    e.preventDefault();
+}
+
+const mouseDown = function (e) {
+    e.preventDefault();
+    switch (e.which) {
+        case 1:
+            // left click
+            if (casting == 0) {
+                console.log('slime fired');
+                const skillsParams = { skillNum: 0, skillName: 'Slime', position: cursor };
+                socket.emit('skill', JSON.stringify(skillsParams));
+            }
+            break;
+        case 3:
+            // right click
+            if (casting >= 0) {
+                casting = -1;
+                console.log('stop casting');
+                delete models['casting'];
+            }
+            break;
+        default:
+            break;
+    }
+    return false;
+};
+
+const mouseMove = function (e) {
+    x = e.pageX;
+    y = e.pageY;
+    
+};
+
 /*================= Keyboard events ======================*/
 
 const Key = {
@@ -474,8 +520,6 @@ const Key = {
     jumped: false,
 
     cmd: {
-        13: 'ENTER',        // enter
-        27: 'ESC',          // ESC
         32: 'JUMP',         // space
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
@@ -524,6 +568,8 @@ const Key = {
             $('#messageInput').focus();
         } else if (event.keyCode == 32 && this.jumped) {
             // do nothing
+        } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
+            handleSkill(uid, event.keyCode - 49);
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
         }
@@ -573,4 +619,25 @@ function chatBoxFade() {
 }
 /*================================End of UI===================================*/
 
+/*================================= Skill ===================================*/
+let casting = -1;
+
+function handleSkill(uid, skillNum) {
+    if (uid === "God") {
+        switch (skillNum) {
+            case 0:
+                // Spawn Slime
+                casting = 0;
+                break;
+            // case 1:
+            //     break;
+            default:
+                // do nothing
+        }
+    }
+    // const skillsParams = {};
+    // socket.emit('skill', JSON.stringify(skillsParams));
+}
+
+/*============================== End of Skill ===================================*/
 export { uid }
