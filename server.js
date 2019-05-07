@@ -2,8 +2,8 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    // pingInterval: 2000,
-    // pingTimeout: 1500,
+    pingInterval: 10000,
+    pingTimeout: 3000,
 });
 const path = require('path');
 const game = require('./public/js/game.js');

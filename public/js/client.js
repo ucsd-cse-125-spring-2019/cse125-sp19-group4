@@ -134,7 +134,7 @@ socket.on('tiktok', (miliseconds) => {
 
 socket.on('pong', (latency) => {
     // console.log(socket.id, 'Ping:', latency, 'ms');
-    $('#ping').html(latency + "ms");
+    $('#debugger').html(latency + "ms");
 });
 
 

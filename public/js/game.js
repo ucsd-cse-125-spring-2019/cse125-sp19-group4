@@ -10,8 +10,6 @@ class Survivor {
         this.mass = 500;
         this.maxJump = 2;
         this.jumpSpeed = 8;
-        this.damage = 10;
-        this.health = 100; // set to a default value
         this.model = 'player';
         this.skills = {
             0: {
@@ -24,16 +22,16 @@ class Survivor {
             }
         }
         this.status = {
-            'STATUS_health': 100,
+            'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
-            'STATUS_attackPoint': 10,
+            'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
         }
     }
 
     onHit(damage) {
-        this.health -= damage;
+        this.status.STATUS_curHealth -= damage;
     }
 }
 
@@ -68,16 +66,16 @@ class God {
             }
         }
         this.status = {
-            'STATUS_health': 100,
+            'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
-            'STATUS_attackPoint': 10,
+            'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 20,
         }
     }
 
     onHit(damage) {
-        this.health -= damage;
+        this.status.STATUS_curHealth -= damage;
     }
 }
 
@@ -95,20 +93,18 @@ class Slime {
         this.direction = [0, 0, 1]; // facing (x, y, z)
         this.mass = 100;
         this.movementSpeed = 8;
-        this.damage = 10;
-        this.health = 30; // set to a default value
         this.model = 'slime';
         this.status = {
-            'STATUS_health': 30,
-            'STATUS_curHealth': 100,
-            'STATUS_attackPoint': 10,
+            'STATUS_maxHealth': 30,
+            'STATUS_curHealth': 30,
+            'STATUS_damage': 10,
             'STATUS_defense': 0,
             'STATUS_speed': 5,
         }
     }
 
     onHit(damage) {
-        this.health -= damage;
+        this.status.STATUS_curHealth -= damage;
     }
 }
 
@@ -303,11 +299,13 @@ class GameInstance {
 
             // the bullet hit enemy
             if (typeof attackee !== 'undefined') {
-                attackee.onHit(attacker.damage);
-                console.log(attackee.health);
+                attackee.onHit(attacker.status.STATUS_damage);
+                console.log('damage:',attacker.status.STATUS_damage,attackee.status.STATUS_curHealth);
 
-                if (attackee.health <= 0) {
+                if (attackee.status.STATUS_curHealth <= 0) {
                     gameInstance.toClean.push(attackee.name);
+                    console.log(attackee.name + 'died');
+                    
                 }
             }
             gameInstance.toClean.push(bulletName);
@@ -321,12 +319,13 @@ class GameInstance {
     cleanup() {
         const gameInstance = this;
         this.toClean.forEach(function (name) {
-            if (typeof gameInstance.objects[name] !== 'undefined')
+            if (typeof gameInstance.objects[name] !== 'undefined') {
                 delete gameInstance.objects[name];
+            }
         });
         this.physicsEngine.cleanup(this.toClean);
         this.toClean.length = 0;
-        this.meleeId = 0; // Each melee would only last 1 step
+        // this.meleeId = 0; // Each melee would only last 1 step
     }
 }
 

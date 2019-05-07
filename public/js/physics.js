@@ -33,7 +33,8 @@ class PhysicsEngine {
     }
 
     addPlayer(name, mass = 20, position = { x: 0, y: 0, z: 0 }, maxJump) {
-        const ballShape = new CANNON.Sphere(2);
+        const radius = 2;
+        const ballShape = new CANNON.Sphere(radius);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
@@ -43,7 +44,7 @@ class PhysicsEngine {
             linearDamping: 0.5,
             // type: CANNON.Body.KINEMATIC
         });
-        playerBody.position.set(position.x, position.y + 1, position.z);
+        playerBody.position.set(position.x, position.y + radius, position.z);
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
         this.obj[name] = playerBody;
@@ -57,13 +58,14 @@ class PhysicsEngine {
     }
 
     addSlime(name, mass = 5, position = { x: 0, y: 0, z: 0 }) {
-        const ballShape = new CANNON.Sphere(1);
+        const radius = 1;
+        const ballShape = new CANNON.Sphere(radius);
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: ballShape,
             linearDamping: 0.9,
         });
-        slimeBody.position.set(position.x, position.y + 1, position.z);
+        slimeBody.position.set(position.x, position.y + radius, position.z);
         slimeBody.jumps = 0;
         slimeBody.role = 'enemy';
         slimeBody.name = name;
@@ -210,6 +212,9 @@ class PhysicsEngine {
             if (e.body.role === 'enemy') {
                 console.log("Collide with enenmy");
                 bulletBody.to = e.body.name; // TODO: Change to array?
+            } else if (e.body.role === 'player') {
+                console.log("Collide with player");
+                bulletBody.to = e.body.name;
             }
             engine.hits.push(bulletId);
         });
