@@ -45,13 +45,17 @@ class OBJObject {
         }
     }
 
-    render(gl, transformMatrix) {
+    render(gl, transformMatrix, viewPosition) {
         gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix);
 
         gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.vertexBuffer);
         gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, this.mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
         
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.normalBuffer);
+        gl.vertexAttribPointer(this.programInfo.attribLocations.normal, this.mesh.normalBuffer.itemSize, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(this.programInfo.attribLocations.normal);
+
         gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.textureBuffer);
         gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, this.mesh.textureBuffer.itemSize, gl.FLOAT, false, 0, 0);
         if (this.mesh.textureBuffer.numItems) {
@@ -77,7 +81,7 @@ class OBJObject {
                 gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, [1,1,1]);
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1,1,1]);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1,1,1]);
-                gl.uniform3fv(this.programInfo.uniformLocations.viewPosition, [0,10,0]);
+                gl.uniform3fv(this.programInfo.uniformLocations.viewPosition, viewPosition);
                 gl.activeTexture(gl.TEXTURE0 + this.texture_index);
                 gl.bindTexture(gl.TEXTURE_2D, this.texture);
                 gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
