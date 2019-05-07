@@ -82,7 +82,7 @@ class God {
 class Item {
     constructor() {
         this.name = 'Item';
-        this.position = [0, 0, 0];
+        this.position = [0, 0, 0]; 
     }
 }
 
@@ -134,7 +134,7 @@ class Tree {
 }
 
 class GameInstance {
-    constructor(max_survivors = 3, physicsEngine) {
+    constructor(max_survivors = 3) {
         this.max_survivors = max_survivors;
         this.survivorCount = 0;
         this.slimeCount = 0;
@@ -223,7 +223,6 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, { x: -10, y: 20, z: 1 }, survivor.maxJump);
             return true;
         }
         return false;
@@ -242,7 +241,7 @@ class GameInstance {
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 
-    move(name, direction) {
+    move(name, direction, deltaTime) {
         const obj = this.objects[name];
         const speed = obj.status.STATUS_speed;
         this.physicsEngine.updateVelocity(name, direction, speed);

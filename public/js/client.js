@@ -181,6 +181,8 @@ function main() {
     // look up uniform locations.
     const programInfo = {
         program: shaderProgram,
+        vsname: vsFilename,
+        fsname: fsFilename,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
@@ -203,14 +205,14 @@ function main() {
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl); 
     
-    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/castle1.obj", "", false, 0, programInfo);
+    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
     model_ref['male'] = new OBJObject(gl, "male", "/public/model/male.obj", "", false, 1, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, 2, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/playerWithTexture.obj", "/public/model/playerWithTexture.mtl", true, 6, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
     model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, 4, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
-    models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
+    models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.clone(transform_ref['castle']) };
     models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
@@ -357,8 +359,7 @@ function drawScene(gl, programInfo, models, camera) {
     // start drawing the square.
     Object.keys(models).forEach(function (name) {
         const model = models[name];
-        // console.log(name);
-        model.m.render(gl, model.t);
+        model.m.render(gl, model.t, camera.Position);
     });
 }
 
