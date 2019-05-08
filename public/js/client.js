@@ -206,8 +206,8 @@ function main() {
     // const buffers = initCubeBuffers(gl); 
     
     model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
-    model_ref['male'] = new OBJObject(gl, "male", "/public/model/male.obj", "", false, 1, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/playerWithTexture.obj", "/public/model/playerWithTexture.mtl", true, 6, programInfo);
+    model_ref['male'] = new OBJObject(gl, "male", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 1, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 6, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
     model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, 4, programInfo);
 
