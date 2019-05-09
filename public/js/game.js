@@ -82,7 +82,7 @@ class God {
 class Item {
     constructor() {
         this.name = 'Item';
-        this.position = [0, 0, 0]; 
+        this.position = [0, 0, 0];
     }
 }
 
@@ -154,7 +154,7 @@ class GameInstance {
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
         this.insertObjListAndMap(slime);
-        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0);
+        this.physicsEngine.addSlime(slime.name, slime.mass, { x: -20, y: 10, z: 0 }, 0);
         const tree = new Tree();
         this.insertObjListAndMap(tree);
     }
@@ -223,6 +223,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, { x: -10, y: 20, z: 1 }, survivor.maxJump);
             return true;
         }
         return false;
@@ -241,7 +242,7 @@ class GameInstance {
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 
-    move(name, direction, deltaTime) {
+    move(name, direction) {
         const obj = this.objects[name];
         const speed = obj.status.STATUS_speed;
         this.physicsEngine.updateVelocity(name, direction, speed);
@@ -299,12 +300,12 @@ class GameInstance {
             // the bullet hit enemy
             if (typeof attackee !== 'undefined') {
                 attackee.onHit(attacker.status.STATUS_damage);
-                console.log('damage:',attacker.status.STATUS_damage,attackee.status.STATUS_curHealth);
+                console.log('damage:', attacker.status.STATUS_damage, attackee.status.STATUS_curHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
                     gameInstance.toClean.push(attackee.name);
                     console.log(attackee.name + 'died');
-                    
+
                 }
             }
             gameInstance.toClean.push(bulletName);

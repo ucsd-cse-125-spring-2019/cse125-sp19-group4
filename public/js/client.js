@@ -203,10 +203,10 @@ function main() {
     };
     // Tell WebGL to use our program when drawing
     gl.useProgram(shaderProgram);
-    
+
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl); 
-    
+
     model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
     model_ref['male'] = new OBJObject(gl, "male", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 1, programInfo);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 2, programInfo);
@@ -224,7 +224,7 @@ function main() {
     function render(now) {
         now *= 0.001;
         const deltaTime = now - then;
-        
+
         then = now;
 
         // Camera Rotation
@@ -289,7 +289,7 @@ function main() {
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
         }
-        
+
         // Attack
         if (Key.isDown('MELEE')) {
             delete Key._pressed['MELEE'];
@@ -533,7 +533,7 @@ const mouseDown = function (e) {
 const mouseMove = function (e) {
     x = e.pageX;
     y = e.pageY;
-    
+
 };
 
 /*================= Keyboard events ======================*/
@@ -658,7 +658,7 @@ function handleSkill(uid, skillNum) {
             // case 1:
             //     break;
             default:
-                // do nothing
+            // do nothing
         }
     }
     // const skillsParams = {};
