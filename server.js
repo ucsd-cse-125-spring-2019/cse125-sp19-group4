@@ -15,14 +15,6 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/texture_demo', function (req, res) {
-    res.sendFile(__dirname + '/public/html/texture.html');
-});
-
-app.get('/cube_demo', function (req, res) {
-    res.sendFile(__dirname + '/public/html/demo.html');
-});
-
 // TODO: read from config
 const max_survivors = 1;
 const physicsEngine = new physics();

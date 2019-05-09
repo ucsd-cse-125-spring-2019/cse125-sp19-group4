@@ -300,11 +300,11 @@ class GameInstance {
             // the bullet hit enemy
             if (typeof attackee !== 'undefined') {
                 attackee.onHit(attacker.status.STATUS_damage);
-                console.log('damage:', attacker.status.STATUS_damage, attackee.status.STATUS_curHealth);
+                console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
                     gameInstance.toClean.push(attackee.name);
-                    console.log(attackee.name + 'died');
+                    console.log(attackee.name, 'died');
 
                 }
             }

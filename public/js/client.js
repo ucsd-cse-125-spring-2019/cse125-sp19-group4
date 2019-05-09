@@ -17,7 +17,7 @@ glMatrix.vec3.negate(NEG_FACE, FACE);
 const model_ref = {};
 
 const transform_ref = {
-    'castle': glMatrix.mat4.create(),
+    'terrain': glMatrix.mat4.create(),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
@@ -122,7 +122,7 @@ socket.on('game_status', function (msg) {
     });
 
     Object.keys(models).forEach(function (name) {
-        if (name === 'castle' || name === 'male' || name === 'f16') {
+        if (name === 'terrain' || name === 'male' || name === 'f16') {
 
         } else if (typeof data[name] === 'undefined') {
             delete models[name];
@@ -207,7 +207,7 @@ function main() {
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl); 
 
-    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
     model_ref['male'] = new OBJObject(gl, "male", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 1, programInfo);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 2, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
@@ -216,7 +216,7 @@ function main() {
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, 6, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
-    models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.clone(transform_ref['castle']) };
+    models['terrain'] = { m: model_ref['terrain'], t: glMatrix.mat4.clone(transform_ref['terrain']) };
     models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
@@ -319,7 +319,6 @@ function main() {
             const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
             glMatrix.mat4.multiply(models['casting'].t, translation, cast_models[casting].t);
         }
-        const temptime = Date.now();
         drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);

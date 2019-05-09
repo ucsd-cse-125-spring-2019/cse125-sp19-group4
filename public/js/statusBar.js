@@ -2,13 +2,13 @@
 const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;"
 
 if (!String.prototype.format) {
-    String.prototype.format = function() {
+    String.prototype.format = function () {
         var args = arguments;
-        return this.replace(/{(\d+)}/g, function(match, number) { 
-        return typeof args[number] != 'undefined'
-            ? args[number]
-            : match
-        ;
+        return this.replace(/{(\d+)}/g, function (match, number) {
+            return typeof args[number] != 'undefined'
+                ? args[number]
+                : match
+                ;
         });
     };
 }
@@ -22,8 +22,8 @@ function isStatusValid(status) {
 
 /* -------------------------Initialize status bar--------------------------- */
 function createStatusItem(statusName, initialValue) {
-    let div = document.createElement("div");   
-    let imgSrc = "/public/images/" + statusName +".png";
+    let div = document.createElement("div");
+    let imgSrc = "/public/images/" + statusName + ".png";
 
     let img = document.createElement("img");
     img.src = imgSrc;
@@ -33,7 +33,7 @@ function createStatusItem(statusName, initialValue) {
     img.title = statusName;
 
 
-    let text = document.createElement("span"); 
+    let text = document.createElement("span");
     text.id = statusName;
     text.innerHTML = initialValue;
     text.style = "display: inline-block; vertical-align: middle; margin: 0px 5px; color:#B4AE6C;";
@@ -45,7 +45,7 @@ function createStatusItem(statusName, initialValue) {
 
 function InitializeStatus(status) {
     //------------------------health bar---------------------------
-    let div = document.createElement("div"); 
+    let div = document.createElement("div");
     let img = document.createElement("img");
     img.src = "/public/images/STATUS_maxHealth.png";
     img.height = 20;
@@ -77,7 +77,7 @@ function InitializeStatus(status) {
     ul.id = "statusList";
     ul.style = "margin: 0px;";
     document.getElementById("statusBar").appendChild(ul);
-    
+
     for (let i in status) {
         if (isStatusValid(i)) {
             createStatusItem(i, status[i])
@@ -93,7 +93,7 @@ function InitializeSkills(skills) {
         let skill = document.createElement('div');
         let mask = document.createElement('div'); // cooldown mask
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
-                     "bottom: 0; opacity: 0.8";
+            "bottom: 0; opacity: 0.8";
         mask.id = i;
         skill.innerHTML = skills[i].name;
         skill.className += "skill";
@@ -139,4 +139,4 @@ function coolDownUpdate(skills) {
 
 
 
-export {coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate}
+export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate }
