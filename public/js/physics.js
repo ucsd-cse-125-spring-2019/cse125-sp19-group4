@@ -162,13 +162,12 @@ class PhysicsEngine {
         
         const engine = this;
         attackBody.addEventListener("collide", function(e) {
+            console.log("Melee hit:", name, "->", e.body.name);
             if (e.body.role === 'enemy') {
-                console.log("Collide with enenmy");
                 attackBody.to = e.body.name; // TODO: Change to array?
                 engine.hits.push(meleeId);
             }
             else if (e.body.role === 'player') {
-                console.log("Collide with player");
             }
         })   
     }
@@ -209,11 +208,10 @@ class PhysicsEngine {
 
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
+            console.log("Bullet hit:", name, "->", e.body.name);
             if (e.body.role === 'enemy') {
-                console.log("Collide with enenmy");
                 bulletBody.to = e.body.name; // TODO: Change to array?
             } else if (e.body.role === 'player') {
-                console.log("Collide with player");
                 bulletBody.to = e.body.name;
             }
             engine.hits.push(bulletId);

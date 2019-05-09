@@ -154,7 +154,7 @@ class GameInstance {
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
         this.insertObjListAndMap(slime);
-        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0);
+        this.physicsEngine.addSlime(slime.name, slime.mass, { x: -20, y: 10, z: 0 }, 0);
         const tree = new Tree();
         this.insertObjListAndMap(tree);
     }
@@ -300,12 +300,12 @@ class GameInstance {
             // the bullet hit enemy
             if (typeof attackee !== 'undefined') {
                 attackee.onHit(attacker.status.STATUS_damage);
-                console.log('damage:',attacker.status.STATUS_damage,attackee.status.STATUS_curHealth);
+                console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
                     gameInstance.toClean.push(attackee.name);
-                    console.log(attackee.name + 'died');
-                    
+                    console.log(attackee.name, 'died');
+
                 }
             }
             gameInstance.toClean.push(bulletName);

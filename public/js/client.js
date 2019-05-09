@@ -17,7 +17,7 @@ glMatrix.vec3.negate(NEG_FACE, FACE);
 const model_ref = {};
 
 const transform_ref = {
-    'castle': glMatrix.mat4.create(),
+    'terrain': glMatrix.mat4.create(),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
@@ -122,7 +122,9 @@ socket.on('game_status', function (msg) {
     });
 
     Object.keys(models).forEach(function (name) {
-        if (typeof data[name] === 'undefined') {
+        if (name === 'terrain' || name === 'male' || name === 'f16') {
+
+        } else if (typeof data[name] === 'undefined') {
             delete models[name];
         }
     })
@@ -181,9 +183,12 @@ function main() {
     // look up uniform locations.
     const programInfo = {
         program: shaderProgram,
+        vsname: vsFilename,
+        fsname: fsFilename,
         attribLocations: {
             vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
             textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
+            normal: gl.getAttribLocation(shaderProgram, 'normal'),
         },
         uniformLocations: {
             projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
@@ -193,24 +198,25 @@ function main() {
             ambientColor: gl.getUniformLocation(shaderProgram, "uAmbientColor"),
             diffuseColor: gl.getUniformLocation(shaderProgram, "uDiffuseColor"),
             specularColor: gl.getUniformLocation(shaderProgram, "uSpecularColor"),
+            viewPosition: gl.getUniformLocation(shaderProgram, "ViewPosition"),
         },
     };
     // Tell WebGL to use our program when drawing
     gl.useProgram(shaderProgram);
 
     // Here's where we call the routine that builds all the objects we'll be drawing.
-    // const buffers = initCubeBuffers(gl);
+    // const buffers = initCubeBuffers(gl); 
 
-    model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/castle.obj", "", false, programInfo);
-    model_ref['male'] = new OBJObject(gl, "male", "/public/model/male.obj", "", false, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, programInfo);
-    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, programInfo);
-    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model.obj", "/public/model/f16-texture.bmp", false, programInfo);
-    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, programInfo);
-    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "", false, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
+    model_ref['male'] = new OBJObject(gl, "male", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 1, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 2, programInfo);
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
+    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, 4, programInfo);
+    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, 5, programInfo);
+    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, 6, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
-    // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
+    models['terrain'] = { m: model_ref['terrain'], t: glMatrix.mat4.clone(transform_ref['terrain']) };
     models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
@@ -218,7 +224,7 @@ function main() {
     function render(now) {
         now *= 0.001;
         const deltaTime = now - then;
-        
+
         then = now;
 
         // Camera Rotation
@@ -282,9 +288,8 @@ function main() {
 
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
-            // console.log(direction);
         }
-        
+
         // Attack
         if (Key.isDown('MELEE')) {
             delete Key._pressed['MELEE'];
@@ -314,7 +319,6 @@ function main() {
             const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
             glMatrix.mat4.multiply(models['casting'].t, translation, cast_models[casting].t);
         }
-        const temptime = Date.now();
         drawScene(gl, programInfo, models, camera);
 
         requestAnimationFrame(render);
@@ -354,12 +358,11 @@ function drawScene(gl, programInfo, models, camera) {
         programInfo.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix);
-
     // Now move the drawing position a bit to where we want to
     // start drawing the square.
     Object.keys(models).forEach(function (name) {
         const model = models[name];
-        model.m.render(gl, model.t);
+        model.m.render(gl, model.t, camera.Position);
     });
 }
 
@@ -529,7 +532,7 @@ const mouseDown = function (e) {
 const mouseMove = function (e) {
     x = e.pageX;
     y = e.pageY;
-    
+
 };
 
 /*================= Keyboard events ======================*/
@@ -540,7 +543,7 @@ const Key = {
     jumped: false,
 
     cmd: {
-        32: 'JUMP',         // space
+        32: 'JUMP',         // SPACE
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
         39: 'RIGHT',        // right arrow
@@ -654,7 +657,7 @@ function handleSkill(uid, skillNum) {
             // case 1:
             //     break;
             default:
-                // do nothing
+            // do nothing
         }
     }
     // const skillsParams = {};
