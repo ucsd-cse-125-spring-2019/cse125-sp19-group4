@@ -14,7 +14,7 @@ if (!String.prototype.format) {
 }
 
 /* ---------------------------- helper functions --------------------------- */
-const invalidStatus = ['STATUS_health', 'STATUS_curHealth']
+const invalidStatus = ['STATUS_maxHealth', 'STATUS_curHealth']
 function isStatusValid(status) {
     return invalidStatus.indexOf(status) < 0;
 }
@@ -47,7 +47,7 @@ function InitializeStatus(status) {
     //------------------------health bar---------------------------
     let div = document.createElement("div"); 
     let img = document.createElement("img");
-    img.src = "/public/images/STATUS_health.png";
+    img.src = "/public/images/STATUS_maxHealth.png";
     img.height = 20;
     img.weight = 20;
     img.style = "vertical-align: middle; margin: 2px";
@@ -61,7 +61,7 @@ function InitializeStatus(status) {
     healthBar.id = "healthBar";
     healthBar.className += "progress-bar";
     healthBar.role = "progressbar";
-    healthBar.style = healthBarStyle.format(40)
+    healthBar.style = healthBarStyle.format(60);
     healthBar["aria-valuemin"] = "0";
     healthBar["aria-valuemax"] = "100";
     healthBar["aria-valuenow"] = "50";
@@ -118,7 +118,10 @@ function timerUpdate(milisecs) {
 
 function statusUpdate(status) {
     for (let i in status) {
-        if (isStatusValid(i)) {
+        if (i === 'STATUS_curHealth') {
+            document.getElementById('healthBar').style = healthBarStyle.format(status[i]);
+
+        } else if (isStatusValid(i)) {
             document.getElementById(i).innerHTML = status[i];
         }
     }

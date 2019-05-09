@@ -2,8 +2,8 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    // pingInterval: 2000,
-    // pingTimeout: 1500,
+    pingInterval: 10000,
+    pingTimeout: 3000,
 });
 const path = require('path');
 const game = require('./public/js/game.js');
@@ -24,7 +24,7 @@ app.get('/cube_demo', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 0;
+const max_survivors = 1;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 
@@ -32,7 +32,8 @@ const inputs = [];
 const movementEvents = {};
 const jumpEvents = {};
 const skillEvents = {};
-
+const shootEvents = {};
+const meleeEvents = {};
 
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
@@ -84,6 +85,14 @@ io.on('connection', function (socket) {
         }
         const direction = JSON.parse(msg);
         movementEvents[gameInstance.socketidToPlayer[socket.id].name] = direction;
+    });
+
+    socket.on('shoot', function () {
+        shootEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
+    });
+
+    socket.on('melee', function () {
+        meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
     socket.on('jump', function () {
@@ -174,8 +183,34 @@ function game_start() {
             }
         });
 
-        // step and update objects
+        // Handle attacks
+        if (typeof shootEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.shoot(gameInstance.god.name, shootEvents[gameInstance.god.name]);
+            delete shootEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof shootEvents[survivor.name] !== 'undefined') {
+                gameInstance.shoot(survivor.name);
+                delete shootEvents[survivor.name];
+            }
+        });
+        if (typeof meleeEvents[gameInstance.god.name] !== 'undefined') {
+            gameInstance.melee(gameInstance.god.name, meleeEvents[gameInstance.god.name]);
+            delete meleeEvents[gameInstance.god.name];
+        }
+        gameInstance.survivors.forEach(function (survivor) {
+            if (typeof meleeEvents[survivor.name] !== 'undefined') {
+                gameInstance.melee(survivor.name);
+                delete meleeEvents[survivor.name];
+            }
+        });
+
+        // Step and update objects
         physicsEngine.world.step(deltaTime * 0.001);
+
+        // Handle all the damage incurred in current step and clean up physics engine 
+        gameInstance.handleDamage();
+        gameInstance.cleanup();
         Object.keys(physicsEngine.obj).forEach(function (name) {
             gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - 1, physicsEngine.obj[name].position.z];
         });

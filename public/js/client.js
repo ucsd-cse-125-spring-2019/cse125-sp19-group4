@@ -18,10 +18,12 @@ const model_ref = {};
 
 const transform_ref = {
     'castle': glMatrix.mat4.create(),
+    'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
     'slime': glMatrix.mat4.create(),
     'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'tree': glMatrix.mat4.create()
 };
 
 const models = {};
@@ -118,6 +120,12 @@ socket.on('game_status', function (msg) {
         glMatrix.mat4.multiply(models[name].t, transformation, transform_ref[obj.model]);
 
     });
+
+    Object.keys(models).forEach(function (name) {
+        if (typeof data[name] === 'undefined') {
+            delete models[name];
+        }
+    })
 });
 
 socket.on('tiktok', (miliseconds) => {
@@ -126,7 +134,7 @@ socket.on('tiktok', (miliseconds) => {
 
 socket.on('pong', (latency) => {
     // console.log(socket.id, 'Ping:', latency, 'ms');
-    $('#ping').html(latency + "ms");
+    $('#debugger').html(latency + "ms");
 });
 
 
@@ -198,6 +206,8 @@ function main() {
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player.obj", "", false, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, programInfo);
     model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model.obj", "/public/model/f16-texture.bmp", false, programInfo);
+    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, programInfo);
+    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "", false, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
     // models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.create() };
@@ -273,6 +283,16 @@ function main() {
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
             // console.log(direction);
+        }
+        
+        // Attack
+        if (Key.isDown('MELEE')) {
+            delete Key._pressed['MELEE'];
+            socket.emit('melee');
+        }
+        else if (Key.isDown('SHOOT')) {
+            delete Key._pressed['SHOOT'];
+            socket.emit('shoot');
         }
 
         // Skill
@@ -527,7 +547,9 @@ const Key = {
         40: 'DOWN',         // down arrow
         65: 'LEFT',         // A
         68: 'RIGHT',        // D
-        69: 'ROTRIGHT',     // E     
+        69: 'ROTRIGHT',     // E
+        74: 'SHOOT',        // J   
+        75: 'MELEE',        // K  
         81: 'ROTLEFT',      // Q
         83: 'DOWN',         // S
         87: 'UP',           // W

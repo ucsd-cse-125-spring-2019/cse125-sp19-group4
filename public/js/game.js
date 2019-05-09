@@ -22,12 +22,16 @@ class Survivor {
             }
         }
         this.status = {
-            'STATUS_health': 100,
+            'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
-            'STATUS_attackPoint': 10,
+            'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
         }
+    }
+
+    onHit(damage) {
+        this.status.STATUS_curHealth -= damage;
     }
 }
 
@@ -62,12 +66,16 @@ class God {
             }
         }
         this.status = {
-            'STATUS_health': 100,
+            'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
-            'STATUS_attackPoint': 10,
+            'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 20,
         }
+    }
+
+    onHit(damage) {
+        this.status.STATUS_curHealth -= damage;
     }
 }
 
@@ -84,14 +92,19 @@ class Slime {
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
         this.mass = 100;
+        this.movementSpeed = 8;
         this.model = 'slime';
         this.status = {
-            'STATUS_health': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_attackPoint': 10,
+            'STATUS_maxHealth': 30,
+            'STATUS_curHealth': 30,
+            'STATUS_damage': 10,
             'STATUS_defense': 0,
             'STATUS_speed': 5,
         }
+    }
+
+    onHit(damage) {
+        this.status.STATUS_curHealth -= damage;
     }
 }
 
@@ -102,6 +115,23 @@ class Tile {
     }
 }
 
+class Bullet {
+    constructor(position, direction, bulletId) {
+        this.name = 'Bullet ' + bulletId;
+        this.position = position;
+        this.direction = direction;
+        this.model = 'bullet';
+    }
+}
+
+class Tree {
+    constructor() {
+        this.name = 'Tree';
+        this.position = [20, 0, -20];
+        this.direction = [0, 0, -1];
+        this.model = 'tree';
+    }
+}
 
 class GameInstance {
     constructor(max_survivors = 3, physicsEngine) {
@@ -115,12 +145,18 @@ class GameInstance {
         this.survivors = [];
         this.objects = {};                    // store all objects (players, trees, etc) on the map
         this.initializeMap();                 // build this.map
+        this.physicsEngine = physicsEngine;
+        this.bulletId = 0;
+        this.meleeId = 0;
+        this.toClean = [];
+
         // testing
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
         this.insertObjListAndMap(slime);
-        this.physicsEngine = physicsEngine;
-        this.physicsEngine.addSlime(slime.name, slime.mass, { x: -20, y: 10, z: 0 }, 0)
+        this.physicsEngine.addSlime(slime.name, slime.mass, {x: -20, y: 10, z: 0}, 0);
+        const tree = new Tree();
+        this.insertObjListAndMap(tree);
     }
 
     insertObjListAndMap(obj) {
@@ -221,6 +257,7 @@ class GameInstance {
         this.physicsEngine.stopMovement(name);
     }
 
+    // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
         const obj = this.objects[name];
         let { skillNum } = skillParams;
@@ -230,6 +267,65 @@ class GameInstance {
         }
         skill.curCoolDown = skill.coolDown;
         skill.function(this, skillParams);
+    }
+
+    /**
+     * TODO: Add more attack forms besides bullet
+     * Create a bullet for the attacker
+     * @param {string} name the name of object that initiates the attack
+     */
+    shoot(name) {
+        const player = this.objects[name];
+        const bullet = new Bullet(player.position, player.direction, this.bulletId++);
+        this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
+        this.physicsEngine.shoot(name, player.direction, 30, bullet.name);
+    }
+
+    melee(name) {
+        const player = this.objects[name];
+        const meleeId = "Melee " + (this.meleeId++);
+        this.physicsEngine.melee(name, player.direction, meleeId);
+    }
+
+    /**
+     * Run through 'hits' to handle all the damage in current step 
+     */
+    handleDamage() {
+        const gameInstance = this;
+        this.physicsEngine.hits.forEach(function (bulletName) {
+            const bullet = gameInstance.physicsEngine.obj[bulletName];
+            const attacker = gameInstance.objects[bullet.from];
+            const attackee = gameInstance.objects[bullet.to];
+
+            // the bullet hit enemy
+            if (typeof attackee !== 'undefined') {
+                attackee.onHit(attacker.status.STATUS_damage);
+                console.log('damage:',attacker.status.STATUS_damage,attackee.status.STATUS_curHealth);
+
+                if (attackee.status.STATUS_curHealth <= 0) {
+                    gameInstance.toClean.push(attackee.name);
+                    console.log(attackee.name + 'died');
+                    
+                }
+            }
+            gameInstance.toClean.push(bulletName);
+        });
+    }
+
+    /**
+     * Clean up all the instances that are to be removed from the world
+     * e.g. dead monster, bullets
+     */
+    cleanup() {
+        const gameInstance = this;
+        this.toClean.forEach(function (name) {
+            if (typeof gameInstance.objects[name] !== 'undefined') {
+                delete gameInstance.objects[name];
+            }
+        });
+        this.physicsEngine.cleanup(this.toClean);
+        this.toClean.length = 0;
+        // this.meleeId = 0; // Each melee would only last 1 step
     }
 }
 
