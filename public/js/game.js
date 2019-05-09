@@ -134,7 +134,7 @@ class Tree {
 }
 
 class GameInstance {
-    constructor(max_survivors = 3) {
+    constructor(max_survivors = 3, physicsEngine) {
         this.max_survivors = max_survivors;
         this.survivorCount = 0;
         this.slimeCount = 0;

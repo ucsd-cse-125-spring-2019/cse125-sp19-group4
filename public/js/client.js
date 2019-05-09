@@ -122,7 +122,9 @@ socket.on('game_status', function (msg) {
     });
 
     Object.keys(models).forEach(function (name) {
-        if (typeof data[name] === 'undefined') {
+        if (name === 'castle' || name === 'male' || name === 'f16') {
+
+        } else if (typeof data[name] === 'undefined') {
             delete models[name];
         }
     })
@@ -207,9 +209,11 @@ function main() {
     
     model_ref['castle'] = new OBJObject(gl, "castle", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
     model_ref['male'] = new OBJObject(gl, "male", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 1, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 6, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 2, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
     model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, 4, programInfo);
+    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, 5, programInfo);
+    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, 6, programInfo);
 
     models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
     models['castle'] = { m: model_ref['castle'], t: glMatrix.mat4.clone(transform_ref['castle']) };
@@ -540,6 +544,7 @@ const Key = {
     jumped: false,
 
     cmd: {
+        32: 'JUMP',         // SPACE
         37: 'LEFT',         // left arrow
         38: 'UP',           // up arrow
         39: 'RIGHT',        // right arrow
