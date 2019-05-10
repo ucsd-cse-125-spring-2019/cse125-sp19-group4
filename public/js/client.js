@@ -84,6 +84,7 @@ $('#SurvivorButton').click(function () {
 });
 
 socket.on('game_status', function (msg) {
+    const start = Date.now();
     const data = JSON.parse(msg);
     const player = data[uid];
     camera.setPosition(player.position);
@@ -127,7 +128,11 @@ socket.on('game_status', function (msg) {
         } else if (typeof data[name] === 'undefined') {
             delete models[name];
         }
-    })
+    });
+    const end = Date.now();
+    $('#processing').html(end - start);
+    $('#bytes').html(msg.length);
+    
 });
 
 socket.on('tiktok', (miliseconds) => {
@@ -136,7 +141,7 @@ socket.on('tiktok', (miliseconds) => {
 
 socket.on('pong', (latency) => {
     // console.log(socket.id, 'Ping:', latency, 'ms');
-    $('#debugger').html(latency + "ms");
+    $('#ping').html(latency);
 });
 
 
@@ -222,8 +227,9 @@ function main() {
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
-        now *= 0.001;
-        const deltaTime = now - then;
+        const deltaTime = (now - then) / 1000;
+        $('#fps').html(Math.floor(1 / deltaTime));
+        $('#render').html(Math.ceil(deltaTime * 1000));
 
         then = now;
 
@@ -288,6 +294,8 @@ function main() {
 
         if (move) {
             socket.emit('movement', JSON.stringify(direction));
+        } else {
+            socket.emit('movement', JSON.stringify('stay'));
         }
 
         // Attack
