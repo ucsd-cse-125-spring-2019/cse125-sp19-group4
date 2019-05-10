@@ -82,10 +82,16 @@ class PhysicsEngine {
         groundBody.role = 'ground';
     }
 
-    addTree() {
+    addTree(name, radius = 1, position = {x: 20, y: 0, z: -20}) {
         // tree should be static 
-        // const treeShape = new CANNON.Cube();
-        const treeBody = new CANNON.Body();
+        const treeShape = new CANNON.Cylinder(radius, radius, radius*2, 10);
+        const treeBody = new CANNON.Body({
+            mass: 0,
+            shape: treeShape
+        });
+        treeBody.position.set(position.x, position.y, position.z);
+        this.world.add(treeBody);
+        this.obj[name] = treeBody;
     }
 
     updateVelocity(name, direction, speed) {
