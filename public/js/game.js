@@ -1,4 +1,5 @@
 const glMatrix = require('gl-Matrix');
+const gameProfession = require('./GameProfession')
 
 /** Helper class */
 class Survivor {
@@ -12,6 +13,7 @@ class Survivor {
         this.jumpSpeed = 8;
         this.model = 'player';
         this.radius = 2;
+        this.profession = null;
         this.skills = {
             0: {
                 'name': 'SKILL_1',
@@ -22,13 +24,7 @@ class Survivor {
                 },
             }
         }
-        this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 10,
-        }
+        this.status = null;
     }
 
     onHit(damage) {
@@ -52,6 +48,7 @@ class God {
                 'name': 'Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'function': function (game, params) {
                     const position = params.position;
                     if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
@@ -152,6 +149,13 @@ class GameInstance {
         this.bulletId = 0;
         this.meleeId = 0;
         this.toClean = [];
+        this.playerCount = {
+            'GodCount': 0,
+            'FighterCount': 0,
+            'ArcherCount': 0,
+            'HealerCount': 0,
+            'BuilderCount': 0
+        }
 
         // testing
         const slime = new Slime(this.slimeCount);
@@ -207,6 +211,7 @@ class GameInstance {
 
     joinAsGod(socketid) {
         if (typeof this.god === 'undefined') {
+            this.playerCount.GodCount += 1;
             this.god = new God(socketid);
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
@@ -218,9 +223,11 @@ class GameInstance {
         return false;
     };
 
-    joinAsSurvivor(socketid) {
+    joinAsSurvivor(socketid, msg) {
         if (this.survivors.length < this.max_survivors) {
+            this.playerCount[msg + "Count"] += 1;
             const survivor = new Survivor(socketid, this.survivorCount);
+            gameProfession.initializeProfession(survivor, msg);
             this.survivorCount++;
             this.survivors.push(survivor);
             this.clientSockets.push(socketid);
