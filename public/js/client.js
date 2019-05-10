@@ -26,7 +26,7 @@ const transform_ref = {
     'tree': glMatrix.mat4.create()
 };
 
-const models = {};
+const objects = {};
 const cast_models = [];
 
 let x = 0;
@@ -97,8 +97,8 @@ socket.on('game_status', function (msg) {
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
-        if (typeof models[name] === 'undefined') {
-            models[name] = { m: model_ref[obj.model], t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+        if (typeof objects[name] === 'undefined') {
+            objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
         // update face
         const dot = glMatrix.vec3.dot(obj.direction, FACE);
@@ -118,15 +118,15 @@ socket.on('game_status', function (msg) {
         glMatrix.mat4.fromTranslation(translation, obj.position);
         const transformation = glMatrix.mat4.create();
         glMatrix.mat4.multiply(transformation, translation, rotation);
-        glMatrix.mat4.multiply(models[name].t, transformation, transform_ref[obj.model]);
+        glMatrix.mat4.multiply(objects[name].t, transformation, transform_ref[obj.model]);
 
     });
 
-    Object.keys(models).forEach(function (name) {
+    Object.keys(objects).forEach(function (name) {
         if (name === 'terrain' || name === 'male' || name === 'f16') {
 
         } else if (typeof data[name] === 'undefined') {
-            delete models[name];
+            delete objects[name];
         }
     });
     const end = Date.now();
@@ -220,10 +220,10 @@ function main() {
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, 5, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, 6, programInfo);
 
-    models['male'] = { m: model_ref['male'], t: glMatrix.mat4.clone(transform_ref['male']) };
-    models['terrain'] = { m: model_ref['terrain'], t: glMatrix.mat4.clone(transform_ref['terrain']) };
-    models['f16'] = { m: model_ref['f16'], t: glMatrix.mat4.clone(transform_ref['f16']) };
-    cast_models[0] = { m: model_ref['slime'], t: glMatrix.mat4.clone(transform_ref['slime']) };
+    objects['male'] = { m: 'male', t: glMatrix.mat4.clone(transform_ref['male']) };
+    objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
+    objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
+    cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
@@ -310,8 +310,8 @@ function main() {
 
         // Skill
         if (casting >= 0) {
-            if (typeof models['casting'] === 'undefined') {
-                models['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
+            if (typeof objects['casting'] === 'undefined') {
+                objects['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
             }
             const normal = [0.0, 1.0, 0.0];
             const center = [0.0, 0.0, 0.0];
@@ -325,9 +325,9 @@ function main() {
                 glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
             }
             const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
-            glMatrix.mat4.multiply(models['casting'].t, translation, cast_models[casting].t);
+            glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
         }
-        drawScene(gl, programInfo, models, camera);
+        drawScene(gl, programInfo, objects, camera);
 
         requestAnimationFrame(render);
     }
@@ -339,11 +339,11 @@ function main() {
  * Draw the scene.
  * @param  {WebGLRenderingContext} gl
  * @param  {Object} programInfo
- * @param  {Object} models
+ * @param  {Object} objects
  * transformation
  * @param  {Camera} camera
  */
-function drawScene(gl, programInfo, models, camera) {
+function drawScene(gl, programInfo, objects, camera) {
     gl.clearColor(200.0, 200.0, 200.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
@@ -366,11 +366,19 @@ function drawScene(gl, programInfo, models, camera) {
         programInfo.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix);
-    // Now move the drawing position a bit to where we want to
-    // start drawing the square.
-    Object.keys(models).forEach(function (name) {
-        const model = models[name];
-        model.m.render(gl, model.t, camera.Position);
+    gl.uniform3fv(programInfo.uniformLocations.viewPosition, camera.Position);
+    
+
+    const to_render = {};
+    Object.keys(objects).forEach(function (obj_name) {
+        const obj = objects[obj_name];
+        if (typeof to_render[obj.m] === 'undefined') {
+            to_render[obj.m] = [];
+        }
+        to_render[obj.m].push(obj.t);
+    });
+    Object.keys(to_render).forEach(function (m) {
+        model_ref[m].render(gl, to_render[m]);
     });
 }
 
@@ -528,7 +536,7 @@ const mouseDown = function (e) {
             if (casting >= 0) {
                 casting = -1;
                 console.log('stop casting');
-                delete models['casting'];
+                delete objects['casting'];
             }
             break;
         default:

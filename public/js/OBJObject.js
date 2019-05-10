@@ -45,9 +45,7 @@ class OBJObject {
         }
     }
 
-    render(gl, transformMatrix, viewPosition) {
-        gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix);
-
+    render(gl, transformMatrix_array) {
         gl.bindBuffer(gl.ARRAY_BUFFER, this.mesh.vertexBuffer);
         gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, this.mesh.vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
@@ -73,19 +71,24 @@ class OBJObject {
                 gl.activeTexture(gl.TEXTURE0 + i + this.texture_index);
                 gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i]["diffuse"]);
                 gl.uniform1i(this.programInfo.uniformLocations.uSampler, i + this.texture_index);
-                gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+                transformMatrix_array.forEach((t) => {
+                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                    gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+                });
             }
         } else {
+            gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, [1, 1, 1]);
+            gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1, 1, 1]);
+            gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1, 1, 1]);
+            gl.activeTexture(gl.TEXTURE0 + this.texture_index);
+            gl.bindTexture(gl.TEXTURE_2D, this.texture);
+            gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
             for (let i = 0; i < this.num_material; ++i) {
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
-                gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, [1,1,1]);
-                gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1,1,1]);
-                gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1,1,1]);
-                gl.uniform3fv(this.programInfo.uniformLocations.viewPosition, viewPosition);
-                gl.activeTexture(gl.TEXTURE0 + this.texture_index);
-                gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
-                gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+                transformMatrix_array.forEach((t) => {
+                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                    gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+                });
             }
         }
     }
