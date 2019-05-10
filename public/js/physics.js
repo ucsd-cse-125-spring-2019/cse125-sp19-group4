@@ -32,8 +32,7 @@ class PhysicsEngine {
         this.meleeList = [];
     }
 
-    addPlayer(name, mass = 20, position = { x: 0, y: 0, z: 0 }, maxJump) {
-        const radius = 2;
+    addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump) {
         const ballShape = new CANNON.Sphere(radius);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
@@ -57,8 +56,7 @@ class PhysicsEngine {
         })
     }
 
-    addSlime(name, mass = 5, position = { x: 0, y: 0, z: 0 }) {
-        const radius = 1;
+    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }) {
         const ballShape = new CANNON.Sphere(radius);
         const slimeBody = new CANNON.Body({
             mass: mass,

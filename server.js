@@ -16,7 +16,7 @@ app.get('/', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 1;
+const max_survivors = 0;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 
@@ -137,17 +137,23 @@ function game_start() {
 
         // Handle Movements
         if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
-            gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
+            if (movementEvents[gameInstance.god.name] === 'stay') {
+                gameInstance.stay(gameInstance.god.name);
+            } else {
+                gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
+
+            }
             delete movementEvents[gameInstance.god.name];
-        } else {
-            gameInstance.stay(gameInstance.god.name);
         }
         gameInstance.survivors.forEach(function (survivor) {
             if (typeof movementEvents[survivor.name] !== 'undefined') {
-                gameInstance.move(survivor.name, movementEvents[survivor.name]);
+                if (movementEvents[survivor.name] === 'stay') {
+                    gameInstance.stay(survivor.name);
+                } else {
+                    gameInstance.move(survivor.name, movementEvents[survivor.name]);
+
+                }
                 delete movementEvents[survivor.name];
-            } else {
-                gameInstance.stay(survivor.name);
             }
         });
 
@@ -204,7 +210,7 @@ function game_start() {
         gameInstance.handleDamage();
         gameInstance.cleanup();
         Object.keys(physicsEngine.obj).forEach(function (name) {
-            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - 1, physicsEngine.obj[name].position.z];
+            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - gameInstance.objects[name].radius, physicsEngine.obj[name].position.z];
         });
 
         const broadcast_status = JSON.stringify(gameInstance.objects);

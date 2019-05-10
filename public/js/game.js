@@ -11,6 +11,7 @@ class Survivor {
         this.maxJump = 2;
         this.jumpSpeed = 8;
         this.model = 'player';
+        this.radius = 2;
         this.skills = {
             0: {
                 'name': 'SKILL_1',
@@ -45,6 +46,7 @@ class God {
         this.maxJump = 10;
         this.jumpSpeed = 10;
         this.model = 'player';
+        this.radius = 2;
         this.skills = {
             0: {
                 'name': 'Slime',
@@ -61,7 +63,7 @@ class God {
                     slime.position[1] += 2;
                     game.slimeCount++;
                     game.insertObjListAndMap(slime);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, { x: position[0], y: position[1], z: position[2] }, 0)
+                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, { x: position[0], y: position[1], z: position[2] }, 0)
                 },
             }
         }
@@ -94,6 +96,7 @@ class Slime {
         this.mass = 100;
         this.movementSpeed = 8;
         this.model = 'slime';
+        this.radius = 2;
         this.status = {
             'STATUS_maxHealth': 30,
             'STATUS_curHealth': 30,
@@ -154,7 +157,7 @@ class GameInstance {
         const slime = new Slime(this.slimeCount);
         this.slimeCount++;
         this.insertObjListAndMap(slime);
-        this.physicsEngine.addSlime(slime.name, slime.mass, { x: -20, y: 10, z: 0 }, 0);
+        this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, { x: -20, y: 10, z: 0 }, 0);
         const tree = new Tree();
         this.insertObjListAndMap(tree);
     }
@@ -208,7 +211,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
-            this.physicsEngine.addPlayer(this.god.name, this.god.mass, { x: 0, y: 10, z: 0 }, this.god.maxJump);
+            this.physicsEngine.addPlayer(this.god.name, this.god.mass, this.god.radius, { x: 0, y: 10, z: 0 }, this.god.maxJump);
 
             return true;
         }
@@ -223,7 +226,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, { x: -10, y: 20, z: 1 }, survivor.maxJump);
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, { x: -10, y: 20, z: 1 }, survivor.maxJump);
             return true;
         }
         return false;
