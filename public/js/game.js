@@ -294,6 +294,25 @@ class GameInstance {
         this.physicsEngine.melee(name, player.direction, meleeId);
     }
 
+    // ==================================== Before Step ===================================
+    beforeStep() {
+        this.updateMonsterAttack();
+    }
+
+    /**
+     * Called before each step to update monster direction
+     */
+    updateMonsterAttack() {
+        this.physicsEngine.updateMonsterAttack();
+    }
+
+    // ==================================== After Step ===================================
+    afterStep() {
+        this.handleSlimeExplosion();
+        this.handleDamage();
+        this.cleanup();
+    }
+
     /**
      * Run through 'hits' to handle all the damage in current step 
      */
@@ -317,6 +336,19 @@ class GameInstance {
             }
             gameInstance.toClean.push(bulletName);
         });
+    }
+
+    /**
+     * Handle slime explosion damage when slime hits player
+     */
+    handleSlimeExplosion() {
+        const gameInstance = this;
+        this.physicsEngine.slimeExplosion.forEach(function (e) {
+            const attackee = gameInstance.objects[e.attacking.name];
+            const slime = gameInstance.objects[e.name];
+            attackee.onHit(slime.status.STATUS_damage);
+            gameInstance.toClean.push(slime.name);
+        })
     }
 
     /**

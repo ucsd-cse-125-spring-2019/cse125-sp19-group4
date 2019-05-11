@@ -204,11 +204,10 @@ function game_start() {
         });
 
         // Step and update objects
+        gameInstance.beforeStep();
         physicsEngine.world.step(deltaTime * 0.001);
+        gameInstance.afterStep();
 
-        // Handle all the damage incurred in current step and clean up physics engine 
-        gameInstance.handleDamage();
-        gameInstance.cleanup();
         Object.keys(physicsEngine.obj).forEach(function (name) {
             gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - gameInstance.objects[name].radius, physicsEngine.obj[name].position.z];
         });
