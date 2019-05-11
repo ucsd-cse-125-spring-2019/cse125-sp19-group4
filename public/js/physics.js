@@ -30,9 +30,12 @@ class PhysicsEngine {
 
         // Store all melees in current step
         this.meleeList = [];
+
+        // Store player bodies for reference
+        this.survivors = [];
     }
 
-    addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump) {
+    addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {
         const ballShape = new CANNON.Sphere(radius);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
@@ -47,13 +50,14 @@ class PhysicsEngine {
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
         this.obj[name] = playerBody;
-        playerBody.role = 'player';
+        playerBody.role = isGod? 'god' : 'survivor';
         playerBody.name = name;
         playerBody.addEventListener('collide', function(e){
             // console.log("Collided with: " + e.body.role);
             // console.log("e.contact.bi.role: " + e.contact.bi.role);
             // console.log("e.contact.bj.role: " + e.contact.bj.role);
         })
+        if (!isGod) this.survivors.push(playerBody); 
     }
 
     addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3) {
@@ -171,7 +175,8 @@ class PhysicsEngine {
                 attackBody.to = e.body.name; // TODO: Change to array?
                 engine.hits.push(meleeId);
             }
-            else if (e.body.role === 'player') {
+            else if (e.body.role === 'survivor') {
+                console.log("Collide with survivor");
             }
         })   
     }
