@@ -285,7 +285,7 @@ class GameInstance {
         const player = this.objects[name];
         const bullet = new Bullet(player.position, player.direction, this.bulletId++);
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, player.direction, 30, bullet.name);
+        this.physicsEngine.shoot(name, player.direction, 20, bullet.name);
     }
 
     melee(name) {

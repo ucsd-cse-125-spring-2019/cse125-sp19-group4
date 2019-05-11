@@ -71,7 +71,7 @@ class PhysicsEngine {
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: ballShape,
-            linearDamping: 0.9,
+            linearDamping: 0.4,
         });
         slimeBody.position.set(position.x, position.y + radius, position.z);
         slimeBody.jumps = 0;
@@ -214,7 +214,7 @@ class PhysicsEngine {
         const bulletBody = new CANNON.Body({
             mass: 0.1,
             shape: ballShape,
-            linearDamping: 0.7    
+            linearDamping: 0.5    
         });
 
         // Set the velocity and its position
