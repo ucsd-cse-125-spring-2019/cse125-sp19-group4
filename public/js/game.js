@@ -63,7 +63,8 @@ class God {
                     slime.position[1] += 2;
                     game.slimeCount++;
                     game.insertObjListAndMap(slime);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, { x: position[0], y: position[1], z: position[2] }, 0)
+                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
+                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed);
                 },
             }
         }

@@ -71,6 +71,7 @@ class PhysicsEngine {
         slimeBody.jumps = 0;
         slimeBody.role = 'enemy';
         slimeBody.name = name;
+        slimeBody.movementSpeed = speed;
         this.world.add(slimeBody);
         this.obj[name] = slimeBody;
     }
