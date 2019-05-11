@@ -12,7 +12,7 @@ class PhysicsEngine {
 
         this.groundMaterial = new CANNON.Material("groundMaterial");
         // Adjust constraint equation parameters for ground/ground contact
-        var ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
+        let ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
             friction: 0.2,
             restitution: 0.3,
             contactEquationStiffness: 1e8,
@@ -56,7 +56,7 @@ class PhysicsEngine {
         })
     }
 
-    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }) {
+    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3) {
         const ballShape = new CANNON.Sphere(radius);
         const slimeBody = new CANNON.Body({
             mass: mass,
@@ -212,10 +212,11 @@ class PhysicsEngine {
 
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
-            console.log("Bullet hit:", name, "->", e.body.name);
+            console.log("Bullet hit:", name, "->", e.body.role);
             if (e.body.role === 'enemy') {
                 bulletBody.to = e.body.name; // TODO: Change to array?
-            } else if (e.body.role === 'player') {
+            } else if (e.body.role === 'survivor') {
+                console.log("Collide with survivor");
                 bulletBody.to = e.body.name;
             }
             engine.hits.push(bulletId);
