@@ -92,7 +92,6 @@ const Builder = {
 
 function initializeProfession(survivor, msg) {
     let profession = null;
-    console.log(msg)
     switch(msg) {
         case "Fighter":
             profession = Fighter;
