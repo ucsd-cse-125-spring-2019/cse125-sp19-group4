@@ -224,6 +224,16 @@ class PhysicsEngine {
     }
 
     /**
+     * Similar to melee, but the created bounding box does not apply 
+     * force to the collided object
+     * @param {string} name 
+     * @param {array} direction 
+     * @param {number} interactId 
+     */  
+    interact(name, direction, interactId) {
+        // interactBody.collisionResponse = 0;
+    }
+    /**
      * Clean up the physics engine
      * @param {array} toDestroy list containing all instances to delete from physics engine
      */
