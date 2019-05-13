@@ -505,6 +505,7 @@ class GameInstance {
      * e.g. dead monster, bullets
      */
     cleanup() {
+        this.physicsEngine.cleanup(this.toClean);
         const gameInstance = this;
         this.toClean.forEach(function (name) {
             if (typeof gameInstance.objects[name] !== 'undefined') {
