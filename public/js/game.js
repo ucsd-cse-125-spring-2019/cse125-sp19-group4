@@ -145,7 +145,11 @@ class Slime {
         direction[1] = 0;
         glMatrix.vec3.normalize(direction, direction);
         //TODO: Assume slime only stays on plane ground
-        game.move(this.name, direction);
+        if (minDistance < slime.minDistanceFromPlayer) 
+            game.move(this.name, direction, true);
+        else 
+            game.move(this.name, direction, false)
+        
         this.attacking = closestSurvivor;
     }
 
@@ -306,10 +310,13 @@ class GameInstance {
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 
-    move(name, direction) {
+    move(name, direction, updateDirectionOnly=false) {
         const obj = this.objects[name];
         const speed = obj.status.STATUS_speed;
-        this.physicsEngine.updateVelocity(name, direction, speed);
+        if (updateDirectionOnly) 
+            this.physicsEngine.updateVelocity(name, direction, 0);
+        else
+            this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
     }
 
@@ -358,6 +365,8 @@ class GameInstance {
     beforeStep() {
         this.clearKeys();
         this.slimesChase();
+        this.updateAttackTimer();
+        this.slimesAttack();
     }
 
     /**
@@ -370,6 +379,34 @@ class GameInstance {
                 game.objects[name].chase(game);
             });
         }
+    }
+
+    /**
+     * Called before each step to initiate slime attack
+     */
+    slimesAttack() {
+        const game = this;
+        if (this.survivors.length > 0) {
+            this.slimes.forEach(function (name) {
+                const object = game.objects[name];
+                if (object.attackTimer == object.attackInterval) {
+                    if (game.objects[name].attackMode === 'shoot') {
+                        game.shoot(name);
+                        object.attackTimer --;
+                    }
+                } 
+            });
+        }
+    }
+
+    /** Helper: Update attack timer for each object*/ 
+    updateAttackTimer() {
+        const game = this;
+        this.slimes.forEach(function (name) {
+            const object = game.objects[name];
+            if (object.attackTimer < 0) object.attackTimer = object.attackInterval;
+            else if (object.attackTimer < object.attackInterval) object.attackTimer --; 
+        })
     }
 
     // ==================================== After Step ===================================
@@ -401,6 +438,13 @@ class GameInstance {
                 console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
+                    // Remove slime from slimes list
+                    if (gameInstance.objects[attackee.name] instanceof Slime) {
+                        const index = gameInstance.slimes.indexOf(attackee.name);
+                        if (index > -1) {
+                            gameInstance.slimes.splice(index, 1);
+                        }
+                    }
                     gameInstance.toClean.push(attackee.name);
                     const index = gameInstance.slimes.indexOf(attackee.name);
                     if (index > -1) {
