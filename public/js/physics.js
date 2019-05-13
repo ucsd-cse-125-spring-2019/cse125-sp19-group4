@@ -207,7 +207,7 @@ class PhysicsEngine {
      */
     shoot(name, direction, shootingSpeed, bulletId, radius) {
         glMatrix.vec3.normalize(direction, direction);
-        const player = this.obj[name];
+        const object = this.obj[name];
 
         //Represent the attack as an object
         const ballShape = new CANNON.Sphere(radius);
@@ -218,13 +218,13 @@ class PhysicsEngine {
         });
 
         // Set the velocity and its position
-        bulletBody.velocity.set(direction[0] * shootingSpeed,
-            direction[1] * shootingSpeed,
-            direction[2] * shootingSpeed);
-        const x = player.position.x + direction[0] * (player.shapes[0].radius + ballShape.radius);
-        const y = player.position.y + direction[1] * (ballShape.radius) + 1.5;
-        const z = player.position.z + direction[2] * (player.shapes[0].radius + ballShape.radius);
-        bulletBody.position.set(x, y, z);
+        bulletBody.velocity.set( direction[0] * shootingSpeed,
+                                 direction[1] * shootingSpeed,
+                                 direction[2] * shootingSpeed );
+        const x = object.position.x + direction[0] * (object.shapes[0].radius+ballShape.radius);
+        const y = object.position.y + direction[1] * (ballShape.radius) + 1.5;
+        const z = object.position.z + direction[2] * (object.shapes[0].radius+ballShape.radius);
+        bulletBody.position.set(x, y, z); 
         this.world.add(bulletBody);
 
         // Store bullet information
