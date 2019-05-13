@@ -62,6 +62,26 @@ class God {
                         { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
                 },
             },
+            1: {
+                'name': 'Shooting Slime',
+                'coolDown': 1,
+                'curCoolDown': 0,
+                'function': function (game, params) {
+                    const position = params.position;
+                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
+                        console.log('Slime() out of the world');
+                        return;
+                    }
+                    const slime = new Slime(game.slimeCount,"shoot");
+                    slime.position = position;
+                    slime.position[1] += 2;
+                    game.slimeCount++;
+                    game.insertObjListAndMap(slime);
+                    game.slimes.push(slime.name);
+                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
+                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+                },
+            },
         };
         this.status = {
             'STATUS_maxHealth': 100,
