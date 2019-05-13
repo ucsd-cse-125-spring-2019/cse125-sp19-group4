@@ -347,23 +347,26 @@ class GameInstance {
      */
     handleDamage() {
         const gameInstance = this;
-        this.physicsEngine.hits.forEach(function (bulletName) {
-            const bullet = gameInstance.physicsEngine.obj[bulletName];
-            const attacker = gameInstance.objects[bullet.from];
-            const attackee = gameInstance.objects[bullet.to];
+        this.physicsEngine.hits.forEach(function (hit_name) {
+            const hit = gameInstance.physicsEngine.obj[hit_name];
+            const attacker = gameInstance.objects[hit.from];
+            const attackee = gameInstance.objects[hit.to];
 
-            // the bullet hit enemy
+            // the melee/bullet hit enemy
             if (typeof attackee !== 'undefined') {
                 attackee.onHit(attacker.status.STATUS_damage);
                 console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
                     gameInstance.toClean.push(attackee.name);
+                    const index = gameInstance.slimes.indexOf(attackee.name);
+                    if (index > -1) {
+                        gameInstance.slimes.splice(index, 1);
+                    }
                     console.log(attackee.name, 'died');
-
                 }
             }
-            gameInstance.toClean.push(bulletName);
+            gameInstance.toClean.push(hit_name);
         });
     }
 
