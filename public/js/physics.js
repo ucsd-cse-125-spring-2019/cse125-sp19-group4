@@ -85,12 +85,10 @@ class PhysicsEngine {
         const engine = this;
         slimeBody.addEventListener("collide", function (e) { 
             if (e.body.role === 'survivor') {
-                engine.slimeExplosion.push(slimeBody);
+                engine.slimeExplosion.push({ name: slimeBody.name, attacking: e.body.name });
             }
         })
 
-        // Find the closest player as attackee
-        if (this.survivors.length > 0) this.findClosestSurvivorAndSetAttackee(name);
     }
 
     addGroundPlane() {
@@ -257,13 +255,6 @@ class PhysicsEngine {
         // interactBody.collisionResponse = 0;
     }
 
-    updateMonsterAttack() {
-        const engine = this;
-        Object.keys(this.monsters).forEach(function (name) {
-            if (engine.survivors.length > 0) engine.findClosestSurvivorAndSetAttackee(name);
-        });
-    }
-
     /**
      * Clean up the physics engine
      * @param {array} toDestroy list containing all instances to delete from physics engine
@@ -274,8 +265,7 @@ class PhysicsEngine {
             if (typeof engine.monsters[e.name] !== 'undefined') {
                 delete engine.monsters[e.name];
             }
-        })
-        this.slimeExplosion.length = 0;
+        });
         toDestroy.forEach(function (e) {
             if (typeof engine.obj[e] !== 'undefined') {
                 engine.world.removeBody(engine.obj[e]);
@@ -291,29 +281,6 @@ class PhysicsEngine {
         this.meleeList.length = 0;
         this.hits.length = 0;
         this.slimeExplosion.length = 0;
-    }
-
-    // ==================================== Helper Method ===================================
-    /**
-     * Find the closest survivor and set it to be the attackee of object given by name
-     * @param {string} name 
-     */
-    findClosestSurvivorAndSetAttackee(name) {
-        const body = this.obj[name];
-        let closestPlayer; 
-        let minDistance = Number.MAX_VALUE;
-        this.survivors.forEach(function (e) {
-            const distance = body.position.distanceTo(e.position);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestPlayer = e;
-            }
-        });
-        const direction = closestPlayer.position.vsub(body.position);
-        direction.normalize();
-        //TODO: Assume slime only stays on plane ground
-        body.velocity.set(direction.x * body.movementSpeed, 0, direction.z * body.movementSpeed);
-        body.attacking = closestPlayer;
     }
 }
 

@@ -136,71 +136,35 @@ function game_start() {
         gameInstance.decrementCoolDown(1/tick_rate);
 
         // Handle Movements
-        if (typeof movementEvents[gameInstance.god.name] !== 'undefined') {
-            if (movementEvents[gameInstance.god.name] === 'stay') {
-                gameInstance.stay(gameInstance.god.name);
+        Object.keys(movementEvents).forEach((name) => {
+            if (movementEvents[name] === 'stay') {
+                gameInstance.stay(name);
             } else {
-                gameInstance.move(gameInstance.god.name, movementEvents[gameInstance.god.name]);
-
+                gameInstance.move(name, movementEvents[name]);
             }
-            delete movementEvents[gameInstance.god.name];
-        }
-        gameInstance.survivors.forEach(function (survivor) {
-            if (typeof movementEvents[survivor.name] !== 'undefined') {
-                if (movementEvents[survivor.name] === 'stay') {
-                    gameInstance.stay(survivor.name);
-                } else {
-                    gameInstance.move(survivor.name, movementEvents[survivor.name]);
-
-                }
-                delete movementEvents[survivor.name];
-            }
+            delete movementEvents[name];
         });
 
         // Handle jumps
-        if (typeof jumpEvents[gameInstance.god.name] !== 'undefined') {
-            gameInstance.jump(gameInstance.god.name);
-            delete jumpEvents[gameInstance.god.name];
-        }
-        gameInstance.survivors.forEach(function (survivor) {
-            if (typeof jumpEvents[survivor.name] !== 'undefined') {
-                gameInstance.jump(survivor.name);
-                delete jumpEvents[survivor.name];
-            }
+        Object.keys(jumpEvents).forEach((name) => {
+            gameInstance.jump(name);
+            delete jumpEvents[name];
         });
 
         // Handle skill
-        if (typeof skillEvents[gameInstance.god.name] !== 'undefined') {
-            gameInstance.handleSkill(gameInstance.god.name, skillEvents[gameInstance.god.name]);
-            delete skillEvents[gameInstance.god.name];
-        }
-        gameInstance.survivors.forEach(function (survivor) {
-            if (typeof skillEvents[survivor.name] !== 'undefined') {
-                gameInstance.handleSkill(survivor.name, skillEvents[survivor.name]);
-                delete skillEvents[survivor.name];
-            }
+        Object.keys(skillEvents).forEach((name) => {
+            gameInstance.handleSkill(name, skillEvents[name]);
+            delete skillEvents[name];
         });
 
         // Handle attacks
-        if (typeof shootEvents[gameInstance.god.name] !== 'undefined') {
-            gameInstance.shoot(gameInstance.god.name, shootEvents[gameInstance.god.name]);
-            delete shootEvents[gameInstance.god.name];
-        }
-        gameInstance.survivors.forEach(function (survivor) {
-            if (typeof shootEvents[survivor.name] !== 'undefined') {
-                gameInstance.shoot(survivor.name);
-                delete shootEvents[survivor.name];
-            }
+        Object.keys(shootEvents).forEach((name) => {
+            gameInstance.shoot(name, shootEvents[name]);
+            delete shootEvents[name];
         });
-        if (typeof meleeEvents[gameInstance.god.name] !== 'undefined') {
-            gameInstance.melee(gameInstance.god.name, meleeEvents[gameInstance.god.name]);
-            delete meleeEvents[gameInstance.god.name];
-        }
-        gameInstance.survivors.forEach(function (survivor) {
-            if (typeof meleeEvents[survivor.name] !== 'undefined') {
-                gameInstance.melee(survivor.name);
-                delete meleeEvents[survivor.name];
-            }
+        Object.keys(meleeEvents).forEach((name) => {
+            gameInstance.melee(name, meleeEvents[name]);
+            delete meleeEvents[name];
         });
 
         // Step and update objects
