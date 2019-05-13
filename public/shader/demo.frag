@@ -10,6 +10,7 @@ uniform sampler2D uSampler;
 uniform vec3 uAmbientColor;
 uniform vec3 uDiffuseColor;
 uniform vec3 uSpecularColor;
+uniform float uShininess;
 uniform vec3 ViewPosition;
 
 out vec4 finalColor;
@@ -18,9 +19,9 @@ vec3 doLight(vec3 normal, vec3 viewDir, vec3 fragPos) {
     float att = 1.0;
     vec3 LightDir = vec3(0, -1, 0);
     LightDir = normalize(LightDir);
+    float diff = max(dot(normal, -LightDir), 0.0);
     vec3 reflectDir = reflect(LightDir, normal);
-    float diff = 2.0 * max(dot(normal, LightDir), 0.0);
-    float spec = pow(dot(reflectDir, viewDir), 2.0);
+    float spec = pow(max(dot(reflectDir, viewDir), 0.0), 2.0); // uShininess
     vec3 diffuse = uDiffuseColor * diff;
     vec3 specular = uSpecularColor * spec;
     vec3 ambient = uAmbientColor;
@@ -30,6 +31,5 @@ vec3 doLight(vec3 normal, vec3 viewDir, vec3 fragPos) {
 void main() {
     vec3 ViewDir = normalize(ViewPosition - vVertexPosition);
     vec3 Color = doLight(vNormal, ViewDir, vVertexPosition);
-    //vec3 Color = uAmbientColor + uDiffuseColor + uSpecularColor;
-    finalColor = texture(uSampler, vTextureCoord) * vec4(Color/2.0, 1.0);;
+    finalColor = texture(uSampler, vTextureCoord) * vec4(Color / 3.0, 1.0);;
 }
