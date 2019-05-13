@@ -16,7 +16,7 @@ app.get('/', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 2;
+const max_survivors = 0;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 
@@ -150,7 +150,6 @@ function game_start() {
             } else {
                 gameInstance.move(name, movementEvents[name]);
             }
-            delete movementEvents[name];
         });
 
         // Handle jumps
