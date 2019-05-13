@@ -74,15 +74,31 @@ socket.on('wait for game begin', function (msg) {
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
-    $('#queue').html(msg);
+    const {playerCount, statusString} = JSON.parse(msg);
+    for (let i in playerCount) {
+        $('#' + i).html(playerCount[i]);
+    }
+    $('#numStatus').html(statusString);
 });
 
 $('#GodButton').click(function () {
     socket.emit("play as god");
 });
 
-$('#SurvivorButton').click(function () {
-    socket.emit("play as survivor");
+$('#FighterButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Fighter"));
+});
+
+$('#HealerButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Healer"));
+});
+
+$('#ArcherButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Archer"));
+});
+
+$('#BuilderButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Builder"));
 });
 
 socket.on('game_status', function (msg) {

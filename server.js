@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    pingInterval: 10000,
+    pingInterval: 30,
     pingTimeout: 3000,
 });
 const path = require('path');
@@ -30,8 +30,8 @@ const meleeEvents = {};
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
 
-    socket.on('play as survivor', function () {
-        if (!gameInstance.joinAsSurvivor(socket.id)) {
+    socket.on('play as survivor', function (msg) {
+        if (!gameInstance.joinAsSurvivor(socket.id, JSON.parse(msg))) {
             io.to(socket.id).emit('role already taken', 'Only three survivors are supported');
         }
         else {
@@ -44,8 +44,12 @@ io.on('connection', function (socket) {
                 });
             }
             else {
+                let status = {
+                    playerCount: gameInstance.playerCount,
+                    statusString: gameInstance.numPlayersStatusToString()
+                }
                 gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('wait for game begin', gameInstance.numPlayersStatusToString());
+                    io.to(socket).emit('wait for game begin', JSON.stringify(status));
                 });
             }
         }
@@ -64,8 +68,12 @@ io.on('connection', function (socket) {
                 });
             }
             else {
+                let status = {
+                    playerCount: gameInstance.playerCount,
+                    statusString: gameInstance.numPlayersStatusToString()
+                }
                 gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('wait for game begin', gameInstance.numPlayersStatusToString());
+                    io.to(socket).emit('wait for game begin', JSON.stringify(status));
                 });
             }
         }
