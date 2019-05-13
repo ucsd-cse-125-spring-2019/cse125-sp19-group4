@@ -51,16 +51,15 @@ class God {
                         console.log('Slime() out of the world');
                         return;
                     }
-                    const slime = new Slime(game.slimeCount);
+                    const slime = new Slime(game.slimeCount, "explode");
                     game.toSend.push(slime.name);
-
                     slime.position = position;
                     slime.position[1] += 2;
                     game.slimeCount++;
                     game.insertObjListAndMap(slime);
                     game.slimes.push(slime.name);
                     game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed);
+                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
                 },
             },
         };
@@ -91,7 +90,7 @@ class Item {
 }
 
 class Slime {
-    constructor(sid) {
+    constructor(sid, attackMode) {
         this.name = 'Slime ' + sid;
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1]; // facing (x, y, z)
@@ -107,6 +106,15 @@ class Slime {
             'STATUS_speed': 5,
         };
         this.attacking = {};
+        this.attackMode = attackMode;
+        this.attackInterval = 60;
+        this.attackTimer = this.attackInterval;
+        if (attackMode === 'explore')
+            this.minDistanceFromPlayer = 0;
+        else if (attackMode === 'shoot') {
+            this.minDistanceFromPlayer = 10;
+            this.shootingSpeed = 20;
+        }
         this.KEYS = ['model', 'position', 'direction', 'status'];
         Utils.recursiveSetPropertiesFilter(this);
     }
@@ -131,6 +139,7 @@ class Slime {
                 closestSurvivor = s;
             }
         });
+       
         const direction = glMatrix.vec3.create();
         glMatrix.vec3.subtract(direction, closestSurvivor.position, this.position);
         direction[1] = 0;

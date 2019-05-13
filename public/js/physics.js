@@ -66,7 +66,7 @@ class PhysicsEngine {
         if (!isGod) this.survivors.push(playerBody);
     }
 
-    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3) {
+    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3, attackMode) {
         const ballShape = new CANNON.Sphere(radius);
         const slimeBody = new CANNON.Body({
             mass: mass,
@@ -82,12 +82,14 @@ class PhysicsEngine {
         this.obj[name] = slimeBody;
         this.monsters[name] = slimeBody;
 
-        const engine = this;
-        slimeBody.addEventListener("collide", function (e) {
-            if (e.body.role === 'survivor') {
-                engine.slimeExplosion.push({ name: slimeBody.name, attacking: e.body.name });
-            }
-        })
+        if (attackMode === 'explode'){
+            const engine = this;
+            slimeBody.addEventListener("collide", function (e) { 
+                if (e.body.role === 'survivor') {
+                    engine.slimeExplosion.push({ name: slimeBody.name, attacking: e.body.name });
+                }
+            })
+        }
 
     }
 
