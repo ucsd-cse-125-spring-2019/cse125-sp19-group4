@@ -63,7 +63,9 @@ class God {
                     slime.position[1] += 2;
                     game.slimeCount++;
                     game.insertObjListAndMap(slime);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, { x: position[0], y: position[1], z: position[2] }, 0)
+                    game.slimes.push(slime.name);
+                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
+                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed);
                 },
             },
         };
@@ -103,12 +105,36 @@ class Slime {
             'STATUS_damage': 10,
             'STATUS_defense': 0,
             'STATUS_speed': 5,
-        }
+        };
+        this.attacking = null;
     }
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
     }
+
+    /**
+     * Find the closest survivor and set it to be the attackee of object given by name
+     */
+    chase(game) {
+        const slime = this;
+        let closestSurvivor;
+        let minDistance = Number.MAX_VALUE;
+        game.survivors.forEach(function (s) {
+            const distance = glMatrix.vec3.distance(slime.position, s.position);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestSurvivor = s;
+            }
+        });
+        const direction = glMatrix.vec3.create();
+        glMatrix.vec3.subtract(direction, closestSurvivor.position, this.position);
+        glMatrix.vec3.normalize(direction, direction);
+        //TODO: Assume slime only stays on plane ground
+        game.move(this.name, direction);
+        this.attacking = closestSurvivor;
+    }
+
 }
 
 class Tile {
@@ -128,9 +154,9 @@ class Bullet {
 }
 
 class Tree {
-    constructor() {
-        this.name = 'Tree';
-        this.position = [10, 0, 0];
+    constructor(treeId) {
+        this.name = 'Tree ' + treeId;
+        this.position = [20, 0, -20];
         this.direction = [0, 0, -1];
         this.model = 'tree';
     }
@@ -141,25 +167,29 @@ class GameInstance {
         this.max_survivors = max_survivors;
         this.survivorCount = 0;
         this.slimeCount = 0;
+        this.treeId = 0;
         this.worldHalfWidth = 500;
         this.worldHalfHeight = 500;
         this.clientSockets = [];
         this.socketidToPlayer = {};
         this.survivors = [];
-        this.objects = {};                    // store all objects (players, trees, etc) on the map
+        this.objects = {};                    // store all objects (players, slimes, trees, etc) on the map
+        this.slimes = [];
         this.initializeMap();                 // build this.map
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
         this.meleeId = 0;
+        this.interactId = 0;
         this.toClean = [];
 
         // testing
-        const slime = new Slime(this.slimeCount);
-        this.slimeCount++;
-        this.insertObjListAndMap(slime);
-        this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, { x: -20, y: 10, z: 0 }, 0);
-        const tree = new Tree();
+        // const slime = new Slime(this.slimeCount);
+        // this.slimeCount++;
+        // this.insertObjListAndMap(slime);
+        // this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, {x: -20, y: 10, z: 0}, slime.status.STATUS_speed);
+        const tree = new Tree(this.treeId++);
         this.insertObjListAndMap(tree);
+        this.physicsEngine.addTree(tree.name);
     }
 
     insertObjListAndMap(obj) {
@@ -211,7 +241,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
-            this.physicsEngine.addPlayer(this.god.name, this.god.mass, this.god.radius, { x: 0, y: 10, z: 0 }, this.god.maxJump);
+            this.physicsEngine.addPlayer(this.god.name, this.god.mass, this.god.radius, { x: 0, y: 10, z: 0 }, this.god.maxJump, true);
 
             return true;
         }
@@ -226,7 +256,7 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, { x: -10, y: 20, z: 1 }, survivor.maxJump);
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, { x: -10, y: 20, z: 1 }, survivor.maxJump, false);
             return true;
         }
         return false;
@@ -281,13 +311,37 @@ class GameInstance {
         const player = this.objects[name];
         const bullet = new Bullet(player.position, player.direction, this.bulletId++);
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, player.direction, 30, bullet.name);
+        this.physicsEngine.shoot(name, player.direction, 20, bullet.name);
     }
 
     melee(name) {
         const player = this.objects[name];
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, player.direction, meleeId);
+    }
+
+    // ==================================== Before Step ===================================
+    beforeStep() {
+        this.slimesChase();
+    }
+
+    /**
+     * Called before each step to update slimes direction
+     */
+    slimesChase() {
+        const game = this;
+        if (this.survivors.length > 0) {
+            this.slimes.forEach(function (name) {
+                game.objects[name].chase(game);
+            });
+        }
+    }
+
+    // ==================================== After Step ===================================
+    afterStep() {
+        this.handleSlimeExplosion();
+        this.handleDamage();
+        this.cleanup();
     }
 
     /**
@@ -313,6 +367,29 @@ class GameInstance {
             }
             gameInstance.toClean.push(bulletName);
         });
+    }
+
+    /**
+     * Handle slime explosion damage when slime hits player
+     */
+    handleSlimeExplosion() {
+        const gameInstance = this;
+        this.physicsEngine.slimeExplosion.forEach(function (e) {
+            const attackee = gameInstance.objects[e.attacking];
+            const slime = gameInstance.objects[e.name];
+            attackee.onHit(slime.status.STATUS_damage);
+            const index = gameInstance.slimes.indexOf(e.name);
+            if (index > -1) {
+                gameInstance.slimes.splice(index, 1);
+            }
+            gameInstance.toClean.push(slime.name);
+            console.log(attackee.name, 'lost', slime.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
+
+            if (attackee.status.STATUS_curHealth <= 0) {
+                gameInstance.toClean.push(attackee.name);
+                console.log(attackee.name, 'died');
+            }
+        })
     }
 
     /**

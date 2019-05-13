@@ -12,7 +12,7 @@ class PhysicsEngine {
 
         this.groundMaterial = new CANNON.Material("groundMaterial");
         // Adjust constraint equation parameters for ground/ground contact
-        var ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
+        let ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
             friction: 0.2,
             restitution: 0.3,
             contactEquationStiffness: 1e8,
@@ -30,9 +30,18 @@ class PhysicsEngine {
 
         // Store all melees in current step
         this.meleeList = [];
+
+        // Store player bodies for reference
+        this.survivors = [];
+
+        // Store all monsters for reference
+        this.monsters = {};
+
+        // Store slime explosion
+        this.slimeExplosion = [];
     }
 
-    addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump) {
+    addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {
         const ballShape = new CANNON.Sphere(radius);
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
@@ -47,28 +56,39 @@ class PhysicsEngine {
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
         this.obj[name] = playerBody;
-        playerBody.role = 'player';
+        playerBody.role = isGod? 'god' : 'survivor';
         playerBody.name = name;
         playerBody.addEventListener('collide', function(e){
             // console.log("Collided with: " + e.body.role);
             // console.log("e.contact.bi.role: " + e.contact.bi.role);
             // console.log("e.contact.bj.role: " + e.contact.bj.role);
         })
+        if (!isGod) this.survivors.push(playerBody); 
     }
 
-    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }) {
+    addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3) {
         const ballShape = new CANNON.Sphere(radius);
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: ballShape,
-            linearDamping: 0.9,
+            linearDamping: 0.4,
         });
         slimeBody.position.set(position.x, position.y + radius, position.z);
         slimeBody.jumps = 0;
         slimeBody.role = 'enemy';
         slimeBody.name = name;
+        slimeBody.movementSpeed = speed;
         this.world.add(slimeBody);
         this.obj[name] = slimeBody;
+        this.monsters[name] = slimeBody;
+
+        const engine = this;
+        slimeBody.addEventListener("collide", function (e) { 
+            if (e.body.role === 'survivor') {
+                engine.slimeExplosion.push({ name: slimeBody.name, attacking: e.body.name });
+            }
+        })
+
     }
 
     addGroundPlane() {
@@ -82,10 +102,16 @@ class PhysicsEngine {
         groundBody.role = 'ground';
     }
 
-    addTree() {
+    addTree(name, radius = 1, position = {x: 20, y: 0, z: -20}) {
         // tree should be static 
-        // const treeShape = new CANNON.Cube();
-        const treeBody = new CANNON.Body();
+        const treeShape = new CANNON.Cylinder(radius, radius, radius*2, 10);
+        const treeBody = new CANNON.Body({
+            mass: 0,
+            shape: treeShape
+        });
+        treeBody.position.set(position.x, position.y, position.z);
+        this.world.add(treeBody);
+        this.obj[name] = treeBody;
     }
 
     updateVelocity(name, direction, speed) {
@@ -165,7 +191,8 @@ class PhysicsEngine {
                 attackBody.to = e.body.name; // TODO: Change to array?
                 engine.hits.push(meleeId);
             }
-            else if (e.body.role === 'player') {
+            else if (e.body.role === 'survivor') {
+                console.log("Collide with survivor");
             }
         })   
     }
@@ -185,7 +212,7 @@ class PhysicsEngine {
         const bulletBody = new CANNON.Body({
             mass: 0.1,
             shape: ballShape,
-            linearDamping: 0.7    
+            linearDamping: 0.5    
         });
 
         // Set the velocity and its position
@@ -206,14 +233,26 @@ class PhysicsEngine {
 
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
-            console.log("Bullet hit:", name, "->", e.body.name);
+            console.log("Bullet hit:", name, "->", e.body.role);
             if (e.body.role === 'enemy') {
                 bulletBody.to = e.body.name; // TODO: Change to array?
-            } else if (e.body.role === 'player') {
+            } else if (e.body.role === 'survivor') {
+                console.log("Collide with survivor");
                 bulletBody.to = e.body.name;
             }
             engine.hits.push(bulletId);
         });
+    }
+
+    /**
+     * Similar to melee, but the created bounding box does not apply 
+     * force to the collided object
+     * @param {string} name 
+     * @param {array} direction 
+     * @param {number} interactId 
+     */  
+    interact(name, direction, interactId) {
+        // interactBody.collisionResponse = 0;
     }
 
     /**
@@ -222,6 +261,11 @@ class PhysicsEngine {
      */
     cleanup(toDestroy) {
         const engine = this;
+        this.slimeExplosion.forEach(function (e) {
+            if (typeof engine.monsters[e.name] !== 'undefined') {
+                delete engine.monsters[e.name];
+            }
+        });
         toDestroy.forEach(function (e) {
             if (typeof engine.obj[e] !== 'undefined') {
                 engine.world.removeBody(engine.obj[e]);
@@ -236,6 +280,7 @@ class PhysicsEngine {
         }); 
         this.meleeList.length = 0;
         this.hits.length = 0;
+        this.slimeExplosion.length = 0;
     }
 }
 
