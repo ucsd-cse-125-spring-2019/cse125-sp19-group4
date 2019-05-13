@@ -13,6 +13,6 @@ out highp vec3 vNormal;
 void main() {
     gl_Position = uProjectionMatrix * uModelViewMatrix * uTransformMatrix * aVertexPosition;
     vTextureCoord = aTextureCoord;
-    vVertexPosition = vec3(gl_Position);
+    vVertexPosition = vec3(gl_Position/gl_Position.w);
     vNormal = normal;
 }

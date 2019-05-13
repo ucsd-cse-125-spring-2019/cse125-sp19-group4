@@ -20,8 +20,8 @@ class Survivor {
                 'function': function () {
                     // TODO
                 },
-            }
-        }
+            },
+        };
         this.status = {
             'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
@@ -65,8 +65,8 @@ class God {
                     game.insertObjListAndMap(slime);
                     game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, { x: position[0], y: position[1], z: position[2] }, 0)
                 },
-            }
-        }
+            },
+        };
         this.status = {
             'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
@@ -130,7 +130,7 @@ class Bullet {
 class Tree {
     constructor() {
         this.name = 'Tree';
-        this.position = [20, 0, -20];
+        this.position = [10, 0, 0];
         this.direction = [0, 0, -1];
         this.model = 'tree';
     }

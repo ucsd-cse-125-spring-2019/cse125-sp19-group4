@@ -17,20 +17,22 @@ glMatrix.vec3.negate(NEG_FACE, FACE);
 const model_ref = {};
 
 const transform_ref = {
-    'terrain': glMatrix.mat4.create(),
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
     'slime': glMatrix.mat4.create(),
     'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'tree': glMatrix.mat4.create()
+    'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
 const objects = {};
 const cast_models = [];
 
-let x = 0;
-let y = 0;
+const texture_counter = {i: 0};
+
+const mouse_pos = {x: 0, y:0};
+
 const cursor = glMatrix.vec3.create();
 
 
@@ -203,6 +205,7 @@ function main() {
             ambientColor: gl.getUniformLocation(shaderProgram, "uAmbientColor"),
             diffuseColor: gl.getUniformLocation(shaderProgram, "uDiffuseColor"),
             specularColor: gl.getUniformLocation(shaderProgram, "uSpecularColor"),
+            shininess: gl.getUniformLocation(shaderProgram, "uShininess"),
             viewPosition: gl.getUniformLocation(shaderProgram, "ViewPosition"),
         },
     };
@@ -212,15 +215,13 @@ function main() {
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl); 
 
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainWithObjects.obj", "", false, 0, programInfo);
-    model_ref['male'] = new OBJObject(gl, "male", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 1, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, 2, programInfo);
-    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, 3, programInfo);
-    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, 4, programInfo);
-    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, 5, programInfo);
-    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, 6, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrain2.obj", "/public/model/terrain2.mtl", true, texture_counter, programInfo);
+    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
+    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
+    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
+    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
 
-    objects['male'] = { m: 'male', t: glMatrix.mat4.clone(transform_ref['male']) };
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
@@ -316,7 +317,7 @@ function main() {
             const normal = [0.0, 1.0, 0.0];
             const center = [0.0, 0.0, 0.0];
 
-            const ray = camera.getRay(x, y);
+            const ray = camera.getRay(mouse_pos.x, mouse_pos.y);
             const denominator = glMatrix.vec3.dot(normal, ray.dir);
             if (Math.abs(denominator) > 0.00001) {
                 const difference = glMatrix.vec3.create();
@@ -546,8 +547,8 @@ const mouseDown = function (e) {
 };
 
 const mouseMove = function (e) {
-    x = e.pageX;
-    y = e.pageY;
+    mouse_pos.x = e.pageX;
+    mouse_pos.y = e.pageY;
 
 };
 
