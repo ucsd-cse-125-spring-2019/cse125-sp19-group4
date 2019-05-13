@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    pingInterval: 30,
+    pingInterval: 2000,
     pingTimeout: 3000,
 });
 const path = require('path');
@@ -16,7 +16,7 @@ app.get('/', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 1;
+const max_survivors = 2;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 

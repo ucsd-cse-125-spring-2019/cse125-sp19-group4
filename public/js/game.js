@@ -14,17 +14,8 @@ class Survivor {
         this.model = 'player';
         this.radius = 2;
         this.profession = null;
-        this.skills = {
-            0: {
-                'name': 'SKILL_1',
-                'coolDown': 10,
-                'curCoolDown': 0,
-                'function': function () {
-                    // TODO
-                },
-            },
-        };
-        this.status = null;
+        this.skills = {};
+        this.status = {};
     }
 
     onHit(damage) {
