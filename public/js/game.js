@@ -367,18 +367,18 @@ class GameInstance {
      * @param {string} name the name of object that initiates the attack
      */
     shoot(name) {
-        const object = this.objects[name];
-        const bullet = new Bullet(object.position, object.direction, this.bulletId++);
+        const initiator = this.objects[name];
+        const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, object.direction, 40, bullet.name, bullet.radius);
+        this.physicsEngine.shoot(name, initiator.direction, 40, bullet.name, bullet.radius);
     }
 
     melee(name) {
-        const player = this.objects[name];
+        const initiator = this.objects[name];
         const meleeId = "Melee " + (this.meleeId++);
-        this.physicsEngine.melee(name, player.direction, meleeId);
+        this.physicsEngine.melee(name, initiator.direction, meleeId);
     }
 
     // ==================================== Before Step ===================================
