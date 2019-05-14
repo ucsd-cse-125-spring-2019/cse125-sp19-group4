@@ -8,6 +8,7 @@ const io = require('socket.io')(http, {
 const path = require('path');
 const game = require('./public/js/game.js');
 const physics = require('./public/js/physics.js');
+const Utils = require('./public/js/utils.js');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -27,6 +28,7 @@ const skillEvents = {};
 const shootEvents = {};
 const meleeEvents = {};
 
+
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
 
@@ -36,12 +38,7 @@ io.on('connection', function (socket) {
         }
         else {
             if (gameInstance.checkEnoughPlayer()) {
-                // Game begins, notify all participants to enter
-                game_start();
-                startTime = Date.now();
-                gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
-                });
+                enterGame();
             }
             else {
                 let status = {
@@ -61,11 +58,7 @@ io.on('connection', function (socket) {
         }
         else {
             if (gameInstance.checkEnoughPlayer()) {
-                // Game begins, notify all participants to enter
-                game_start();
-                gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
-                });
+                enterGame();
             }
             else {
                 let status = {
@@ -127,13 +120,24 @@ http.listen(8080, function () {
 // Server loop
 // server loop tick rate, in Hz
 const tick_rate = 60;
+
+function enterGame() {
+    // Game begins, notify all participants to enter
+    game_start();
+    gameInstance.clientSockets.forEach(function (socket) {
+        data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
+        io.to(socket).emit('enter game', JSON.stringify(data));
+    });
+}
+
+let elapse = 0;
+
 function game_start() {
     const gameStartTime = Date.now();
     let then = Date.now();
-    let elapse = 0;
 
     setInterval(function () {
-        let start = Date.now();
+        const start = Date.now();
         const deltaTime = start - then;
         then = start;
         inputs.forEach(function (e) {
@@ -142,6 +146,7 @@ function game_start() {
         inputs.length = 0;
 
         gameInstance.decrementCoolDown(1/tick_rate);
+        gameInstance.beforeStep();
 
         // Handle Movements
         Object.keys(movementEvents).forEach((name) => {
@@ -175,22 +180,33 @@ function game_start() {
         });
 
         // Step and update objects
-        gameInstance.beforeStep();
         physicsEngine.world.step(deltaTime * 0.001);
+        Object.keys(gameInstance.objects).forEach(function (name) {
+            gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
+        });
         gameInstance.afterStep();
 
-        Object.keys(physicsEngine.obj).forEach(function (name) {
-            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - gameInstance.objects[name].radius, physicsEngine.obj[name].position.z];
+        const toSend = {};
+        gameInstance.toSend.forEach(name => {
+            toSend[name] = gameInstance.objects[name];
         });
 
-        const broadcast_status = JSON.stringify(gameInstance.objects);
-        
-        io.emit('game_status', broadcast_status);
         let end = Date.now();
-        elapse = end - start;
-        duration = end - gameStartTime;
-        io.emit('tiktok', JSON.stringify(duration));
+        duration = Math.floor((end - gameStartTime) / 1000);
         
+        const broadcast_status = {
+            data: toSend,
+            time: duration,
+            toClean: gameInstance.toClean,
+            debug: {looptime: elapse},
+        }
+
+        const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
+        io.emit('game_status', msg);
+
+        gameInstance.afterSend();
+        elapse = Date.now() - start;
+
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
         }
