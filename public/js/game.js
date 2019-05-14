@@ -22,6 +22,7 @@ class Survivor {
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
+        this.KEYS.push('status');
     }
 }
 
@@ -72,6 +73,7 @@ class God {
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
+        this.KEYS.push('status');
     }
 }
 
@@ -99,10 +101,12 @@ class Slime {
             'STATUS_speed': 5,
         };
         this.attacking = null;
+        this.KEYS = ['position', 'direction', 'status'];
     }
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
+        this.KEYS.push('status');
     }
 
     /**
@@ -351,6 +355,10 @@ class GameInstance {
         this.cleanup();
     }
 
+    afterSend() {
+        this.toClean.length = 0;
+    }
+
     /**
      * Run through 'hits' to handle all the damage in current step 
      */
@@ -414,7 +422,7 @@ class GameInstance {
             }
         });
         this.physicsEngine.cleanup(this.toClean);
-        this.toClean.length = 0;
+        // this.toClean.length = 0; // moved to afterSend()
         // this.meleeId = 0; // Each melee would only last 1 step
     }
 
@@ -431,14 +439,14 @@ class GameInstance {
     clearKeys() {
         const omitables = {
             "direction": null,
-            "status": null
+            "status": null,
         }
         for (let obj in this.skillables) {
-            this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills")
+            this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills");
         }
         for (let obj in this.objects) {
             if ('KEYS' in this.objects[obj]) {
-                this.objects[obj].KEYS = this.objects[obj].KEYS.filter(item => !(item in omitables))
+                this.objects[obj].KEYS = this.objects[obj].KEYS.filter(item => !(item in omitables));
             }
         }
     }

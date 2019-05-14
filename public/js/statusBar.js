@@ -84,6 +84,7 @@ function InitializeStatus(status) {
         }
     }
     //------------------------everything else----------------------
+    statusUpdate(status);
 }
 
 

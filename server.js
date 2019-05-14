@@ -196,11 +196,14 @@ function game_start() {
         const broadcast_status = {
             data: gameInstance.objects,
             time: duration,
+            toClean: gameInstance.toClean,
         }
 
         const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
-        console.log(msg)
+        // console.log(msg)
         io.emit('game_status', msg);
+
+        gameInstance.afterSend();
 
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());

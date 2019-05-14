@@ -69,8 +69,10 @@ socket.on('enter game', function (msg) {
     const objs = data.objects; 
 
     uid = players[socket.id].name;
-    let player = players[socket.id];
+    const player = players[socket.id];
     console.log("my name is", uid);
+    console.log(player);
+    
     StatusBar.InitializeSkills(player.skills);
     StatusBar.InitializeStatus(player.status);
 
@@ -132,48 +134,49 @@ socket.on('game_status', function (msg) {
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
-
+        let transform = false;
         let direction = directions[name];
         if ('direction' in obj) {
             direction = obj.direction;
             directions[name] = obj.direction;
+            transform = true;
         }
         let position = positions[name];
         if ('position' in obj) {
             position = obj.position;
             positions[name] = obj.position
+            transform = true;
         }
 
         if (typeof objects[name] === 'undefined') { //TODO move this to other event
             objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
-        // update face
-        const dot = glMatrix.vec3.dot(direction, FACE);
-        const axis = glMatrix.vec3.create();
-        if (glMatrix.vec3.equals(direction, FACE)) {
-            axis[1] = 1.0;
-        } else if (glMatrix.vec3.equals(direction, NEG_FACE)) {
-            axis[1] = -1.0;
-        } else {
-            glMatrix.vec3.cross(axis, FACE, direction);
+        
+        if (transform) {
+            // update face
+            const dot = glMatrix.vec3.dot(direction, FACE);
+            const axis = glMatrix.vec3.create();
+            if (glMatrix.vec3.equals(direction, FACE)) {
+                axis[1] = 1.0;
+            } else if (glMatrix.vec3.equals(direction, NEG_FACE)) {
+                axis[1] = -1.0;
+            } else {
+                glMatrix.vec3.cross(axis, FACE, direction);
+            }
+            const angle = Math.acos(dot);
+            const rotation = glMatrix.mat4.create();
+            glMatrix.mat4.rotate(rotation, FACE_mat, angle, axis);
+            // update position
+            const translation = glMatrix.mat4.create();
+            glMatrix.mat4.fromTranslation(translation, position);
+            const transformation = glMatrix.mat4.create();
+            glMatrix.mat4.multiply(transformation, translation, rotation);
+            glMatrix.mat4.multiply(objects[name].t, transformation, transform_ref[objects[name].m]);
         }
-        const angle = Math.acos(dot);
-        const rotation = glMatrix.mat4.create();
-        glMatrix.mat4.rotate(rotation, FACE_mat, angle, axis)
-        // update position
-        const translation = glMatrix.mat4.create();
-        glMatrix.mat4.fromTranslation(translation, position);
-        const transformation = glMatrix.mat4.create();
-        glMatrix.mat4.multiply(transformation, translation, rotation);
-        glMatrix.mat4.multiply(objects[name].t, transformation, transform_ref[objects[name].m]);
     });
 
-    Object.keys(objects).forEach(function (name) {
-        if (name === 'terrain' || name === 'male' || name === 'f16') {
-
-        } else if (typeof data[name] === 'undefined') {
-            delete objects[name];
-        }
+    status.toClean.forEach(function (name) {
+        delete objects[name];
     });
     const end = Date.now();
     $('#processing').html(end - start);
