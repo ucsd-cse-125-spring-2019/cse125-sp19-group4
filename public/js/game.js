@@ -82,6 +82,26 @@ class God {
                         { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
                 },
             },
+            2: {
+                'name': 'Melee Slime',
+                'coolDown': 1,
+                'curCoolDown': 0,
+                'function': function (game, params) {
+                    const position = params.position;
+                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
+                        console.log('Slime() out of the world');
+                        return;
+                    }
+                    const slime = new Slime(game.slimeCount,"melee");
+                    slime.position = position;
+                    slime.position[1] += 2;
+                    game.slimeCount++;
+                    game.insertObjListAndMap(slime);
+                    game.slimes.push(slime.name);
+                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
+                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+                },
+            },
         };
         this.status = {
             'STATUS_maxHealth': 100,
@@ -129,12 +149,15 @@ class Slime {
         this.attackMode = attackMode;
         this.attackInterval = 60;
         this.attackTimer = this.attackInterval;
-        if (attackMode === 'explore')
+        if (attackMode === 'explode')
             this.minDistanceFromPlayer = 0;
         else if (attackMode === 'shoot') {
             this.minDistanceFromPlayer = 10;
             this.shootingSpeed = 20;
         }
+        else if (attackMode === 'melee')
+            this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime
+            
         this.KEYS = ['model', 'position', 'direction', 'status'];
         Utils.recursiveSetPropertiesFilter(this);
     }
@@ -412,8 +435,11 @@ class GameInstance {
                 if (object.attackTimer == object.attackInterval) {
                     if (game.objects[name].attackMode === 'shoot') {
                         game.shoot(name);
-                        object.attackTimer --;
                     }
+                    else if (game.objects[name].attackMode === 'melee') {
+                        game.melee(name);
+                    }
+                    object.attackTimer --;
                 } 
             });
         }
