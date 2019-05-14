@@ -106,11 +106,11 @@ function InitializeSkills(skills) {
 
 
 /* --------------------------all update functions--------------------------- */
-function timerUpdate(milisecs) {
-    let hour = Math.floor(milisecs / 3600000);
-    let minute = Math.floor(milisecs / 60000 % 60);
+function timerUpdate(second) {
+    let hour = Math.floor(second / 3600);
+    let minute = Math.floor(second / 60 % 60);
     minute = ("0" + minute).slice(-2)
-    let second = Math.floor(milisecs / 1000 % 60);
+    second = Math.floor(second  % 60);
     second = ("0" + second).slice(-2)
     let timeString = hour + ":" + minute + ":" + second;
     document.getElementById("timer").innerHTML = timeString;

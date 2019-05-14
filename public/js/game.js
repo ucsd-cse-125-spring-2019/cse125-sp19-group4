@@ -1,6 +1,5 @@
 const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
-const gameStarted = require('../../server.js').gameStarted
 
 /** Helper class */
 class Survivor {
@@ -32,8 +31,7 @@ class Survivor {
             'STATUS_speed': 10,
         }
 
-        this.KEYS = ['position', 'direction', 'model', 'skills', 'status'] // contain a list of property that we want to send to client
-        this.toJSON = gameStated? Utils.PropertiesFilter, undefined;
+        this.KEYS = ['position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
     }
 
     onHit(damage) {
@@ -82,8 +80,7 @@ class God {
             'STATUS_speed': 20,
         }
 
-        this.KEYS = ['position', 'direction', 'model', 'skills', 'status'] // contain a list of property that we want to send to client
-        this.toJSON = gameStated? Utils.PropertiesFilter, undefined;
+        this.KEYS = ['position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
     }
 
     onHit(damage) {
@@ -414,6 +411,12 @@ class GameInstance {
         this.physicsEngine.cleanup(this.toClean);
         this.toClean.length = 0;
         // this.meleeId = 0; // Each melee would only last 1 step
+    }
+
+    setToJSONFunctions() {
+        for (let key in this.objects) {
+            Utils.recursiveSetPropertiesFilter(this.objects[key]);
+        }
     }
 }
 

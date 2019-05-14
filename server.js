@@ -28,6 +28,16 @@ const skillEvents = {};
 const shootEvents = {};
 const meleeEvents = {};
 
+function enterGame() {
+    // Game begins, notify all participants to enter
+    game_start();
+    gameInstance.clientSockets.forEach(function (socket) {
+        data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
+        io.to(socket).emit('enter game', JSON.stringify(data));
+    });
+    gameInstance.setToJSONFunctions();
+}
+
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
 
@@ -37,12 +47,7 @@ io.on('connection', function (socket) {
         }
         else {
             if (gameInstance.checkEnoughPlayer()) {
-                // Game begins, notify all participants to enter
-                game_start();
-                startTime = Date.now();
-                gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer, Utils. stringifyReplacer));
-                });
+                enterGame();
             }
             else {
                 gameInstance.clientSockets.forEach(function (socket) {
@@ -58,12 +63,7 @@ io.on('connection', function (socket) {
         }
         else {
             if (gameInstance.checkEnoughPlayer()) {
-                // Game begins, notify all participants to enter
-                game_start();
-                gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer, Utils. stringifyReplacer));
-                });
-                gameStarted = false;
+                enterGame();
             }
             else {
                 gameInstance.clientSockets.forEach(function (socket) {
@@ -120,8 +120,8 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 1;
-const gameStarted = false;
+const tick_rate = 60;
+
 function game_start() {
     const gameStartTime = Date.now();
     let then = Date.now();
@@ -179,17 +179,19 @@ function game_start() {
             gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - gameInstance.objects[name].radius, physicsEngine.obj[name].position.z];
         });
 
-        const broadcast_status = JSON.stringify(gameInstance.objects, Utils.stringifyReplacer);
-        io.emit('game_status', broadcast_status);
         let end = Date.now();
         elapse = end - start;
-        duration = end - gameStartTime;
-        io.emit('tiktok', JSON.stringify(duration));
+        duration = (end - gameStartTime) / 1000;
         
+        const broadcast_status = {
+            data: gameInstance.objects,
+            time: duration,
+        }
+
+        io.emit('game_status', JSON.stringify(broadcast_status, Utils.stringifyReplacer));
+
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
         }
     }, 1000 / tick_rate);
 }
-
-exports.gameStarted = gameStarted;

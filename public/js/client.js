@@ -35,6 +35,9 @@ const mouse_pos = {x: 0, y:0};
 
 const cursor = glMatrix.vec3.create();
 
+const positions = {}
+const directions = {}
+
 
 // ============================ Network IO ================================
 
@@ -61,11 +64,20 @@ socket.on('enter game', function (msg) {
     main();
 
     const data = JSON.parse(msg);
-    uid = data[socket.id].name;
-    let player = data[socket.id];
+    const players = data.players;
+    const objs = data.objects; 
+
+    uid = players[socket.id].name;
+    let player = players[socket.id];
     console.log("my name is", uid);
     StatusBar.InitializeSkills(player.skills);
     StatusBar.InitializeStatus(player.status);
+
+    // Initialize models for all objects
+    Object.keys(objs).forEach(function (name) {
+        const obj = objs[name];
+        objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+    });
 });
 
 socket.on('wait for game begin', function (msg) {
@@ -87,7 +99,9 @@ $('#SurvivorButton').click(function () {
 
 socket.on('game_status', function (msg) {
     const start = Date.now();
-    const data = JSON.parse(msg);
+    const status = JSON.parse(msg);
+
+    const data = status.data;
     const player = data[uid];
     camera.setPosition(player.position);
     // console.log(player.position);
@@ -99,29 +113,42 @@ socket.on('game_status', function (msg) {
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
-        if (typeof objects[name] === 'undefined') {
+
+
+
+        let direction = directions[name];
+        if ('direction' in obj) {
+            direction = obj.direction;
+            directions[name] = obj.direction;
+        }
+        let position = positions[name];
+        if ('position' in obj) {
+            position = obj.position;
+            positions[name] = obj.position
+        }
+
+        if (typeof objects[name] === 'undefined') { //TODO move this to other event
             objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
         // update face
-        const dot = glMatrix.vec3.dot(obj.direction, FACE);
+        const dot = glMatrix.vec3.dot(direction, FACE);
         const axis = glMatrix.vec3.create();
-        if (glMatrix.vec3.equals(obj.direction, FACE)) {
+        if (glMatrix.vec3.equals(direction, FACE)) {
             axis[1] = 1.0;
-        } else if (glMatrix.vec3.equals(obj.direction, NEG_FACE)) {
+        } else if (glMatrix.vec3.equals(direction, NEG_FACE)) {
             axis[1] = -1.0;
         } else {
-            glMatrix.vec3.cross(axis, FACE, obj.direction);
+            glMatrix.vec3.cross(axis, FACE, direction);
         }
         const angle = Math.acos(dot);
         const rotation = glMatrix.mat4.create();
         glMatrix.mat4.rotate(rotation, FACE_mat, angle, axis)
         // update position
         const translation = glMatrix.mat4.create();
-        glMatrix.mat4.fromTranslation(translation, obj.position);
+        glMatrix.mat4.fromTranslation(translation, position);
         const transformation = glMatrix.mat4.create();
         glMatrix.mat4.multiply(transformation, translation, rotation);
-        glMatrix.mat4.multiply(objects[name].t, transformation, transform_ref[obj.model]);
-
+        glMatrix.mat4.multiply(objects[name].t, transformation, transform_ref[objects[name].m]);
     });
 
     Object.keys(objects).forEach(function (name) {
@@ -134,11 +161,9 @@ socket.on('game_status', function (msg) {
     const end = Date.now();
     $('#processing').html(end - start);
     $('#bytes').html(msg.length);
-    
-});
 
-socket.on('tiktok', (miliseconds) => {
-    StatusBar.timerUpdate(miliseconds);
+    StatusBar.timerUpdate(status.time);
+    
 });
 
 socket.on('pong', (latency) => {
