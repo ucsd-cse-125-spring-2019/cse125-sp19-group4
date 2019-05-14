@@ -235,7 +235,7 @@ class GameInstance {
                     this.skillables[obj].KEYS.push("skills");
                 } else if (skills[skill].curCoolDown < 0) {
                     skills[skill].curCoolDown = 0;
-                    this.sskillables[obj].KEYS.push("skills");
+                    this.skillables[obj].KEYS.push("skills");
                 }
             }
         }
@@ -287,7 +287,9 @@ class GameInstance {
         const speed = obj.status.STATUS_speed;
         this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
-        obj.KEYS.push('direction');
+        if ('KEYS' in obj) {
+            obj.KEYS.push('direction');
+        }
     }
 
     jump(name) {
@@ -427,12 +429,16 @@ class GameInstance {
     // at the begining of each loop, set all omitable properties to not be sent,
     // if those properties are modified during this cycle, add them back to send them.
     clearKeys() {
+        const omitables = {
+            "direction": null,
+            "status": null
+        }
         for (let obj in this.skillables) {
             this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills")
         }
         for (let obj in this.objects) {
             if ('KEYS' in this.objects[obj]) {
-                this.objects[obj].KEYS = this.objects[obj].KEYS.filter(item => item !== "direction")
+                this.objects[obj].KEYS = this.objects[obj].KEYS.filter(item => !(item in omitables))
             }
         }
     }
