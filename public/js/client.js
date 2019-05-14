@@ -124,13 +124,19 @@ socket.on('game_status', function (msg) {
 
     const data = status.data;
     const player = data[uid];
-    camera.setPosition(player.position);
-    // console.log(player.position);
-
-    // Update statusbar
-    StatusBar.statusUpdate(player.status);
-    StatusBar.coolDownUpdate(player.skills);
-
+    if (typeof player !== 'undefined') {
+        if (typeof player.position !== 'undefined') {
+            camera.setPosition(player.position);
+            // console.log(player.position);
+        }
+        // Update statusbar
+        if (typeof player.status !== 'undefined') {
+            StatusBar.statusUpdate(player.status);
+        }
+        if (typeof player.skills !== 'undefined') {
+            StatusBar.coolDownUpdate(player.skills);
+        }
+    }
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];

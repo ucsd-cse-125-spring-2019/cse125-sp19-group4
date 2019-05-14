@@ -14,15 +14,18 @@ class Survivor {
         this.jumpSpeed = 8;
         this.model = 'player';
         this.radius = 2;
-        this.KEYS = ['position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
+        this.KEYS = ['name', 'model', 'position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
         this.profession = null;
         this.skills = {};
         this.status = {};
+        this.toSend = true;
+        Utils.recursiveSetPropertiesFilter(this);
     }
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
         this.KEYS.push('status');
+        this.toSend = true;
     }
 }
 
@@ -50,6 +53,7 @@ class God {
                         return;
                     }
                     const slime = new Slime(game.slimeCount);
+
                     slime.position = position;
                     slime.position[1] += 2;
                     game.slimeCount++;
@@ -66,14 +70,17 @@ class God {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 20,
-        }
+        };
 
-        this.KEYS = ['position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
+        this.KEYS = ['name', 'model', 'position', 'direction', 'skills', 'status']; // contain a list of property that we want to send to client
+        this.toSend = true;
+        Utils.recursiveSetPropertiesFilter(this);
     }
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
         this.KEYS.push('status');
+        this.toSend = true;
     }
 }
 
@@ -100,13 +107,16 @@ class Slime {
             'STATUS_defense': 0,
             'STATUS_speed': 5,
         };
-        this.attacking = null;
-        this.KEYS = ['position', 'direction', 'status'];
+        this.attacking = {};
+        this.KEYS = ['model', 'position', 'direction', 'status'];
+        this.toSend = true;
+        Utils.recursiveSetPropertiesFilter(this);
     }
 
     onHit(damage) {
         this.status.STATUS_curHealth -= damage;
         this.KEYS.push('status');
+        this.toSend = true;
     }
 
     /**
@@ -152,9 +162,11 @@ class Bullet {
 class Tree {
     constructor(treeId) {
         this.name = 'Tree ' + treeId;
+        this.radius = 0;    // only to suppress error when assigning position from physics engine
         this.position = [20, 0, -20];
         this.direction = [0, 0, -1];
         this.model = 'tree';
+        this.toSend = false;
     }
 }
 
@@ -170,6 +182,8 @@ class GameInstance {
         this.socketidToPlayer = {};
         this.survivors = [];
         this.objects = {};                    // store all objects (players, slimes, trees, etc) on the map
+        this.positions = {};
+        this.directions = {};
         this.slimes = [];
         this.initializeMap();                 // build this.map
         this.physicsEngine = physicsEngine;
@@ -288,9 +302,6 @@ class GameInstance {
         const speed = obj.status.STATUS_speed;
         this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
-        if ('KEYS' in obj) {
-            obj.KEYS.push('direction');
-        }
     }
 
     jump(name) {
@@ -311,6 +322,7 @@ class GameInstance {
         }
         skill.curCoolDown = skill.coolDown;
         skill.function(this, skillParams);
+        obj.toSend = true;
     }
 
     /**
@@ -333,6 +345,7 @@ class GameInstance {
 
     // ==================================== Before Step ===================================
     beforeStep() {
+        this.clearKeys();
         this.slimesChase();
     }
 
@@ -353,6 +366,7 @@ class GameInstance {
         this.handleSlimeExplosion();
         this.handleDamage();
         this.cleanup();
+        this.comparePosition();
     }
 
     afterSend() {
@@ -426,27 +440,55 @@ class GameInstance {
         // this.meleeId = 0; // Each melee would only last 1 step
     }
 
-    // After status was sent the first time(everything in the status was sent), filter
-    // out some properties that are not needed
-    setToJSONFunctions() {
-        for (let key in this.objects) {
-            Utils.recursiveSetPropertiesFilter(this.objects[key]);
-        }
+    comparePosition() {
+        const objects = this.objects;
+        const positions = this.positions;
+        const directions = this.directions;
+        Object.keys(objects).forEach((name) => {
+            const obj = objects[name];
+            if (typeof obj.toSend === 'undefined') {
+                return;
+            }
+
+            if (typeof positions[name] === 'undefined' || typeof directions[name] === 'undefined') {
+                positions[name] = obj.position;
+                directions[name] = obj.direction;
+                obj.toSend = true;
+                if ('KEYS' in obj) {
+                    obj.KEYS.push('position');
+                    obj.KEYS.push('direction');
+                }
+                return;
+            }
+            if (!glMatrix.vec3.equals(positions[name], obj.position)) {
+                obj.toSend = true;
+                if ('KEYS' in obj) {
+                    obj.KEYS.push('position');
+                }
+            }
+            if (!glMatrix.vec3.equals(directions[name], obj.direction)) {
+                obj.toSend = true;
+                if ('KEYS' in obj) {
+                    obj.KEYS.push('direction');
+                }
+            }
+            positions[name] = obj.position;
+            directions[name] = obj.direction;
+        });
     }
 
     // at the begining of each loop, set all omitable properties to not be sent,
     // if those properties are modified during this cycle, add them back to send them.
     clearKeys() {
-        const omitables = {
-            "direction": null,
-            "status": null,
-        }
         for (let obj in this.skillables) {
             this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills");
         }
         for (let obj in this.objects) {
             if ('KEYS' in this.objects[obj]) {
-                this.objects[obj].KEYS = this.objects[obj].KEYS.filter(item => !(item in omitables));
+                this.objects[obj].KEYS.length = 0;
+            }
+            if (typeof this.objects[obj].toSend !== 'undefined') {
+                this.objects[obj].toSend = false;
             }
         }
     }

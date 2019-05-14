@@ -128,7 +128,6 @@ function enterGame() {
         data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
         io.to(socket).emit('enter game', JSON.stringify(data));
     });
-    gameInstance.setToJSONFunctions();
 }
 
 
@@ -146,8 +145,8 @@ function game_start() {
         });
         inputs.length = 0;
 
-        gameInstance.clearKeys();
         gameInstance.decrementCoolDown(1/tick_rate);
+        gameInstance.beforeStep();
 
         // Handle Movements
         Object.keys(movementEvents).forEach((name) => {
@@ -181,13 +180,13 @@ function game_start() {
         });
 
         // Step and update objects
-        gameInstance.beforeStep();
         physicsEngine.world.step(deltaTime * 0.001);
+        Object.keys(physicsEngine.obj).forEach(function (name) {
+            gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
+        });
         gameInstance.afterStep();
 
-        Object.keys(physicsEngine.obj).forEach(function (name) {
-            gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - gameInstance.objects[name].radius, physicsEngine.obj[name].position.z];
-        });
+        
 
         let end = Date.now();
         elapse = end - start;
@@ -200,7 +199,6 @@ function game_start() {
         }
 
         const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
-        // console.log(msg)
         io.emit('game_status', msg);
 
         gameInstance.afterSend();
