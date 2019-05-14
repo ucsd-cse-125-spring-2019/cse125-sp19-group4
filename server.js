@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    pingInterval: 10000,
+    pingInterval: 2000,
     pingTimeout: 3000,
 });
 const path = require('path');
@@ -17,7 +17,7 @@ app.get('/', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 1;
+const max_survivors = 0;
 const physicsEngine = new physics();
 const gameInstance = new game(max_survivors, physicsEngine);
 
@@ -32,8 +32,8 @@ const meleeEvents = {};
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
 
-    socket.on('play as survivor', function () {
-        if (!gameInstance.joinAsSurvivor(socket.id)) {
+    socket.on('play as survivor', function (msg) {
+        if (!gameInstance.joinAsSurvivor(socket.id, JSON.parse(msg))) {
             io.to(socket.id).emit('role already taken', 'Only three survivors are supported');
         }
         else {
@@ -41,8 +41,12 @@ io.on('connection', function (socket) {
                 enterGame();
             }
             else {
+                let status = {
+                    playerCount: gameInstance.playerCount,
+                    statusString: gameInstance.numPlayersStatusToString()
+                }
                 gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('wait for game begin', gameInstance.numPlayersStatusToString());
+                    io.to(socket).emit('wait for game begin', JSON.stringify(status));
                 });
             }
         }
@@ -57,8 +61,12 @@ io.on('connection', function (socket) {
                 enterGame();
             }
             else {
+                let status = {
+                    playerCount: gameInstance.playerCount,
+                    statusString: gameInstance.numPlayersStatusToString()
+                }
                 gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('wait for game begin', gameInstance.numPlayersStatusToString());
+                    io.to(socket).emit('wait for game begin', JSON.stringify(status));
                 });
             }
         }
@@ -148,7 +156,6 @@ function game_start() {
             } else {
                 gameInstance.move(name, movementEvents[name]);
             }
-            delete movementEvents[name];
         });
 
         // Handle jumps

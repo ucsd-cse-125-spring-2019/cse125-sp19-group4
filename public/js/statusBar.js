@@ -91,13 +91,21 @@ function InitializeSkills(skills) {
     for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
         let skill = document.createElement('div');
+        let img = document.createElement('img');
+        img.src = skills[i].iconPath;
+        img.style = "width: 100%; height: 100%"
+        img.title = skills[i].description;
         let mask = document.createElement('div'); // cooldown mask
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
-            "bottom: 0; opacity: 0.8";
-        mask.id = i;
-        skill.innerHTML = skills[i].name;
+                     "bottom: 0; opacity: 0.8";
+        let span = document.createElement('span');
+        span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%)";
+        span.id = i + 'Countdown';
+        mask.id = i + 'Mask';
         skill.className += "skill";
+        skill.appendChild(img);
         skill.appendChild(mask);
+        skill.appendChild(span);
         skillsBar.appendChild(skill);
     }
 }
@@ -130,8 +138,16 @@ function statusUpdate(status) {
 function coolDownUpdate(skills) {
     for (let skill in skills) {
         let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
-        let mask = document.getElementById(skill);
+        let mask = document.getElementById(skill + "Mask");
+        let span = document.getElementById(skill + "Countdown");
         mask.style.height = coolDownPercent + "%";
+        if (skills[skill].curCoolDown <= 0) {
+            span.innerHTML = "";
+        } else if (skills[skill].curCoolDown > 1) {
+            span.innerHTML = Math.round(skills[skill].curCoolDown) + "s";
+        } else {
+            span.innerHTML = Math.round(skills[skill].curCoolDown * 10) / 10 + "s";
+        }
     }
 }
 /* --------------------------all update functions--------------------------- */

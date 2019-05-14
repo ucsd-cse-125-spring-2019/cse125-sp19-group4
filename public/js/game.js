@@ -1,5 +1,6 @@
 const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
+const gameProfession = require('./GameProfession')
 
 /** Helper class */
 class Survivor {
@@ -13,25 +14,10 @@ class Survivor {
         this.jumpSpeed = 8;
         this.model = 'player';
         this.radius = 2;
-        this.skills = {
-            0: {
-                'name': 'SKILL_1',
-                'coolDown': 10,
-                'curCoolDown': 0,
-                'function': function () {
-                    // TODO
-                },
-            },
-        };
-        this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 10,
-        }
-
         this.KEYS = ['position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
+        this.profession = null;
+        this.skills = {};
+        this.status = {};
     }
 
     onHit(damage) {
@@ -55,6 +41,7 @@ class God {
                 'name': 'Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'function': function (game, params) {
                     const position = params.position;
                     if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
@@ -187,6 +174,13 @@ class GameInstance {
         this.interactId = 0;
         this.toClean = [];
         this.skillables = {};
+        this.playerCount = {
+            'GodCount': 0,
+            'FighterCount': 0,
+            'ArcherCount': 0,
+            'HealerCount': 0,
+            'BuilderCount': 0
+        }
 
         // testing
         // const slime = new Slime(this.slimeCount);
@@ -243,6 +237,7 @@ class GameInstance {
 
     joinAsGod(socketid) {
         if (typeof this.god === 'undefined') {
+            this.playerCount.GodCount += 1;
             this.god = new God(socketid);
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
@@ -254,9 +249,11 @@ class GameInstance {
         return false;
     };
 
-    joinAsSurvivor(socketid) {
+    joinAsSurvivor(socketid, msg) {
         if (this.survivors.length < this.max_survivors) {
+            this.playerCount[msg + "Count"] += 1;
             const survivor = new Survivor(socketid, this.survivorCount);
+            gameProfession.initializeProfession(survivor, msg);
             this.survivorCount++;
             this.survivors.push(survivor);
             this.clientSockets.push(socketid);
@@ -359,23 +356,26 @@ class GameInstance {
      */
     handleDamage() {
         const gameInstance = this;
-        this.physicsEngine.hits.forEach(function (bulletName) {
-            const bullet = gameInstance.physicsEngine.obj[bulletName];
-            const attacker = gameInstance.objects[bullet.from];
-            const attackee = gameInstance.objects[bullet.to];
+        this.physicsEngine.hits.forEach(function (hit_name) {
+            const hit = gameInstance.physicsEngine.obj[hit_name];
+            const attacker = gameInstance.objects[hit.from];
+            const attackee = gameInstance.objects[hit.to];
 
-            // the bullet hit enemy
+            // the melee/bullet hit enemy
             if (typeof attackee !== 'undefined') {
                 attackee.onHit(attacker.status.STATUS_damage);
                 console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
                     gameInstance.toClean.push(attackee.name);
+                    const index = gameInstance.slimes.indexOf(attackee.name);
+                    if (index > -1) {
+                        gameInstance.slimes.splice(index, 1);
+                    }
                     console.log(attackee.name, 'died');
-
                 }
             }
-            gameInstance.toClean.push(bulletName);
+            gameInstance.toClean.push(hit_name);
         });
     }
 

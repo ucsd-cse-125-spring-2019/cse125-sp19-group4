@@ -7,6 +7,7 @@ const UIdebug = true;
 
 const camera = new Camera();
 let uid = '';
+let prev_direction = glMatrix.vec3.create();
 
 const FACE_mat = glMatrix.mat4.create();
 glMatrix.mat4.fromYRotation(FACE_mat, glMatrix.glMatrix.toRadian(180));
@@ -88,15 +89,31 @@ socket.on('wait for game begin', function (msg) {
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
-    $('#queue').html(msg);
+    const {playerCount, statusString} = JSON.parse(msg);
+    for (let i in playerCount) {
+        $('#' + i).html(playerCount[i]);
+    }
+    $('#numStatus').html(statusString);
 });
 
 $('#GodButton').click(function () {
     socket.emit("play as god");
 });
 
-$('#SurvivorButton').click(function () {
-    socket.emit("play as survivor");
+$('#FighterButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Fighter"));
+});
+
+$('#HealerButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Healer"));
+});
+
+$('#ArcherButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Archer"));
+});
+
+$('#BuilderButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Builder"));
 });
 
 socket.on('game_status', function (msg) {
@@ -277,11 +294,9 @@ function main() {
 
         // Movement
         let direction = glMatrix.vec3.create();
-        let move = true;
 
         if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            move = false;
-            // do nothing
+            // direction = 'stay';
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
             glMatrix.vec3.negate(direction, camera.Right);
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('RIGHT')) {
@@ -291,8 +306,7 @@ function main() {
         } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             direction = camera.Foward;
         } else if (Key.isDown('UP') && Key.isDown('DOWN') || Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            move = false;
-            // do nothing
+            // direction = 'stay';
         } else if (Key.isDown('UP') && Key.isDown('RIGHT')) {
             glMatrix.vec3.add(direction, camera.Foward, camera.Right);
             glMatrix.vec3.normalize(direction, direction);
@@ -315,13 +329,16 @@ function main() {
         } else if (Key.isDown('RIGHT')) {
             direction = camera.Right;
         } else {
-            move = false;
+            // direction = 'stay';
         }
 
-        if (move) {
-            socket.emit('movement', JSON.stringify(direction));
-        } else {
-            socket.emit('movement', JSON.stringify('stay'));
+        if (!glMatrix.vec3.equals(prev_direction, direction)) {
+            if (glMatrix.vec3.equals(direction, glMatrix.vec3.create())) {
+                socket.emit('movement', JSON.stringify('stay'));
+            } else {
+                socket.emit('movement', JSON.stringify(direction));
+            }   
+            prev_direction = direction;
         }
 
         // Attack
