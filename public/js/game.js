@@ -18,14 +18,13 @@ class Survivor {
         this.profession = null;
         this.skills = {};
         this.status = {};
-        this.toSend = true;
         Utils.recursiveSetPropertiesFilter(this);
     }
 
-    onHit(damage) {
+    onHit(game, damage) {
         this.status.STATUS_curHealth -= damage;
         this.KEYS.push('status');
-        this.toSend = true;
+        game.toSend.push(this.name);
     }
 }
 
@@ -53,6 +52,7 @@ class God {
                         return;
                     }
                     const slime = new Slime(game.slimeCount);
+                    game.toSend.push(slime.name);
 
                     slime.position = position;
                     slime.position[1] += 2;
@@ -73,14 +73,13 @@ class God {
         };
 
         this.KEYS = ['name', 'model', 'position', 'direction', 'skills', 'status']; // contain a list of property that we want to send to client
-        this.toSend = true;
         Utils.recursiveSetPropertiesFilter(this);
     }
 
-    onHit(damage) {
+    onHit(game, damage) {
         this.status.STATUS_curHealth -= damage;
         this.KEYS.push('status');
-        this.toSend = true;
+        game.toSend.push(this.name);
     }
 }
 
@@ -109,14 +108,13 @@ class Slime {
         };
         this.attacking = {};
         this.KEYS = ['model', 'position', 'direction', 'status'];
-        this.toSend = true;
         Utils.recursiveSetPropertiesFilter(this);
     }
 
-    onHit(damage) {
+    onHit(game, damage) {
         this.status.STATUS_curHealth -= damage;
         this.KEYS.push('status');
-        this.toSend = true;
+        game.toSend.push(this.name);
     }
 
     /**
@@ -153,6 +151,7 @@ class Tile {
 class Bullet {
     constructor(position, direction, bulletId) {
         this.name = 'Bullet ' + bulletId;
+        this.radius = 0.2;
         this.position = position;
         this.direction = direction;
         this.model = 'bullet';
@@ -166,7 +165,6 @@ class Tree {
         this.position = [20, 0, -20];
         this.direction = [0, 0, -1];
         this.model = 'tree';
-        this.toSend = false;
     }
 }
 
@@ -184,6 +182,7 @@ class GameInstance {
         this.objects = {};                    // store all objects (players, slimes, trees, etc) on the map
         this.positions = {};
         this.directions = {};
+        this.toSend = [];
         this.slimes = [];
         this.initializeMap();                 // build this.map
         this.physicsEngine = physicsEngine;
@@ -200,12 +199,8 @@ class GameInstance {
             'BuilderCount': 0
         }
 
-        // testing
-        // const slime = new Slime(this.slimeCount);
-        // this.slimeCount++;
-        // this.insertObjListAndMap(slime);
-        // this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius, {x: -20, y: 10, z: 0}, slime.status.STATUS_speed);
         const tree = new Tree(this.treeId++);
+        this.toSend.push(tree.name);
         this.insertObjListAndMap(tree);
         this.physicsEngine.addTree(tree.name);
     }
@@ -257,6 +252,8 @@ class GameInstance {
         if (typeof this.god === 'undefined') {
             this.playerCount.GodCount += 1;
             this.god = new God(socketid);
+            this.toSend.push(this.god.name);
+
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
@@ -271,6 +268,8 @@ class GameInstance {
         if (this.survivors.length < this.max_survivors) {
             this.playerCount[msg + "Count"] += 1;
             const survivor = new Survivor(socketid, this.survivorCount);
+            this.toSend.push(survivor.name);
+
             gameProfession.initializeProfession(survivor, msg);
             this.survivorCount++;
             this.survivors.push(survivor);
@@ -322,7 +321,7 @@ class GameInstance {
         }
         skill.curCoolDown = skill.coolDown;
         skill.function(this, skillParams);
-        obj.toSend = true;
+        this.toSend.push(name);
     }
 
     /**
@@ -333,8 +332,10 @@ class GameInstance {
     shoot(name) {
         const player = this.objects[name];
         const bullet = new Bullet(player.position, player.direction, this.bulletId++);
+        this.toSend.push(bullet.name);
+
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, player.direction, 20, bullet.name);
+        this.physicsEngine.shoot(name, player.direction, 40, bullet.name, bullet.radius);
     }
 
     melee(name) {
@@ -371,6 +372,7 @@ class GameInstance {
 
     afterSend() {
         this.toClean.length = 0;
+        this.toSend.length = 0;
     }
 
     /**
@@ -385,7 +387,7 @@ class GameInstance {
 
             // the melee/bullet hit enemy
             if (typeof attackee !== 'undefined') {
-                attackee.onHit(attacker.status.STATUS_damage);
+                attackee.onHit(gameInstance, attacker.status.STATUS_damage);
                 console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
@@ -409,7 +411,7 @@ class GameInstance {
         this.physicsEngine.slimeExplosion.forEach(function (e) {
             const attackee = gameInstance.objects[e.attacking];
             const slime = gameInstance.objects[e.name];
-            attackee.onHit(slime.status.STATUS_damage);
+            attackee.onHit(gameInstance, slime.status.STATUS_damage);
             const index = gameInstance.slimes.indexOf(e.name);
             if (index > -1) {
                 gameInstance.slimes.splice(index, 1);
@@ -446,14 +448,10 @@ class GameInstance {
         const directions = this.directions;
         Object.keys(objects).forEach((name) => {
             const obj = objects[name];
-            if (typeof obj.toSend === 'undefined') {
-                return;
-            }
-
             if (typeof positions[name] === 'undefined' || typeof directions[name] === 'undefined') {
                 positions[name] = obj.position;
                 directions[name] = obj.direction;
-                obj.toSend = true;
+                this.toSend.push(name);
                 if ('KEYS' in obj) {
                     obj.KEYS.push('position');
                     obj.KEYS.push('direction');
@@ -461,13 +459,13 @@ class GameInstance {
                 return;
             }
             if (!glMatrix.vec3.equals(positions[name], obj.position)) {
-                obj.toSend = true;
+                this.toSend.push(name);
                 if ('KEYS' in obj) {
                     obj.KEYS.push('position');
                 }
             }
             if (!glMatrix.vec3.equals(directions[name], obj.direction)) {
-                obj.toSend = true;
+                this.toSend.push(name);
                 if ('KEYS' in obj) {
                     obj.KEYS.push('direction');
                 }
@@ -486,9 +484,6 @@ class GameInstance {
         for (let obj in this.objects) {
             if ('KEYS' in this.objects[obj]) {
                 this.objects[obj].KEYS.length = 0;
-            }
-            if (typeof this.objects[obj].toSend !== 'undefined') {
-                this.objects[obj].toSend = false;
             }
         }
     }

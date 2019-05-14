@@ -27,10 +27,6 @@ function stringifyReplacer(key, value) {
 // a KEYS property which is an array that contains the keys of all the properties you want to keep
 // of the object.
 function PropertiesFilter() {
-    if (this.toSend == false) {
-        return undefined;
-    }
-
     if (!('KEYS' in this)) {
         return this;
     }

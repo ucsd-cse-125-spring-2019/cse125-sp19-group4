@@ -130,14 +130,14 @@ function enterGame() {
     });
 }
 
+let elapse = 0;
 
 function game_start() {
     const gameStartTime = Date.now();
     let then = Date.now();
-    let elapse = 0;
 
     setInterval(function () {
-        let start = Date.now();
+        const start = Date.now();
         const deltaTime = start - then;
         then = start;
         inputs.forEach(function (e) {
@@ -181,27 +181,31 @@ function game_start() {
 
         // Step and update objects
         physicsEngine.world.step(deltaTime * 0.001);
-        Object.keys(physicsEngine.obj).forEach(function (name) {
+        Object.keys(gameInstance.objects).forEach(function (name) {
             gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
         });
         gameInstance.afterStep();
 
-        
+        const toSend = {};
+        gameInstance.toSend.forEach(name => {
+            toSend[name] = gameInstance.objects[name];
+        });
 
         let end = Date.now();
-        elapse = end - start;
         duration = Math.floor((end - gameStartTime) / 1000);
         
         const broadcast_status = {
-            data: gameInstance.objects,
+            data: toSend,
             time: duration,
             toClean: gameInstance.toClean,
+            debug: {looptime: elapse},
         }
 
         const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
         io.emit('game_status', msg);
 
         gameInstance.afterSend();
+        elapse = Date.now() - start;
 
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());

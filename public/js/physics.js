@@ -56,14 +56,14 @@ class PhysicsEngine {
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
         this.obj[name] = playerBody;
-        playerBody.role = isGod? 'god' : 'survivor';
+        playerBody.role = isGod ? 'god' : 'survivor';
         playerBody.name = name;
-        playerBody.addEventListener('collide', function(e){
+        playerBody.addEventListener('collide', function (e) {
             // console.log("Collided with: " + e.body.role);
             // console.log("e.contact.bi.role: " + e.contact.bi.role);
             // console.log("e.contact.bj.role: " + e.contact.bj.role);
         })
-        if (!isGod) this.survivors.push(playerBody); 
+        if (!isGod) this.survivors.push(playerBody);
     }
 
     addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3) {
@@ -71,7 +71,7 @@ class PhysicsEngine {
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: ballShape,
-            linearDamping: 0.4,
+            linearDamping: 0.9,
         });
         slimeBody.position.set(position.x, position.y + radius, position.z);
         slimeBody.jumps = 0;
@@ -83,7 +83,7 @@ class PhysicsEngine {
         this.monsters[name] = slimeBody;
 
         const engine = this;
-        slimeBody.addEventListener("collide", function (e) { 
+        slimeBody.addEventListener("collide", function (e) {
             if (e.body.role === 'survivor') {
                 engine.slimeExplosion.push({ name: slimeBody.name, attacking: e.body.name });
             }
@@ -102,9 +102,9 @@ class PhysicsEngine {
         groundBody.role = 'ground';
     }
 
-    addTree(name, radius = 1, position = {x: 20, y: 0, z: -20}) {
+    addTree(name, radius = 1, position = { x: 20, y: 0, z: -20 }) {
         // tree should be static 
-        const treeShape = new CANNON.Cylinder(radius, radius, radius*2, 10);
+        const treeShape = new CANNON.Cylinder(radius, radius, radius * 2, 10);
         const treeBody = new CANNON.Body({
             mass: 0,
             shape: treeShape
@@ -175,7 +175,7 @@ class PhysicsEngine {
         const x = player.position.x + direction[0].toFixed(5) * (player.shapes[0].radius + 0.5);
         const y = player.position.y;
         const z = player.position.z + direction[2].toFixed(5) * (player.shapes[0].radius + 0.5);
-        attackBody.position.set(x, y, z); 
+        attackBody.position.set(x, y, z);
         this.world.add(attackBody);
 
         // Store initiator infomation for the melee body
@@ -183,9 +183,9 @@ class PhysicsEngine {
         this.meleeList.push(meleeId);
         attackBody.role = 'melee';
         attackBody.from = name;
-        
+
         const engine = this;
-        attackBody.addEventListener("collide", function(e) {
+        attackBody.addEventListener("collide", function (e) {
             console.log("Melee hit:", name, "->", e.body.name);
             if (e.body.role === 'enemy') {
                 attackBody.to = e.body.name; // TODO: Change to array?
@@ -194,45 +194,45 @@ class PhysicsEngine {
             else if (e.body.role === 'survivor') {
                 console.log("Collide with survivor");
             }
-        })   
+        })
     }
-    
+
     /**
      * @param {string} name name of object shooting
      * @param {array} direction face direction
      * @param {number} shootingSpeed speed of shooting
      * @param {string} bulletId name of bullet in the format: bullet + id
      */
-    shoot(name, direction, shootingSpeed, bulletId) {
+    shoot(name, direction, shootingSpeed, bulletId, radius) {
         glMatrix.vec3.normalize(direction, direction);
         const player = this.obj[name];
 
         //Represent the attack as an object
-        const ballShape = new CANNON.Sphere(0.2);
+        const ballShape = new CANNON.Sphere(radius);
         const bulletBody = new CANNON.Body({
             mass: 0.1,
             shape: ballShape,
-            linearDamping: 0.5    
+            linearDamping: 0.1,
         });
 
         // Set the velocity and its position
-        bulletBody.velocity.set( direction[0] * shootingSpeed,
-                                 direction[1] * shootingSpeed,
-                                 direction[2] * shootingSpeed );
-        const x = player.position.x + direction[0] * (player.shapes[0].radius+ballShape.radius);
+        bulletBody.velocity.set(direction[0] * shootingSpeed,
+            direction[1] * shootingSpeed,
+            direction[2] * shootingSpeed);
+        const x = player.position.x + direction[0] * (player.shapes[0].radius + ballShape.radius);
         const y = player.position.y + direction[1] * (ballShape.radius) + 1.5;
-        const z = player.position.z + direction[2] * (player.shapes[0].radius+ballShape.radius);
-        bulletBody.position.set(x, y, z); 
+        const z = player.position.z + direction[2] * (player.shapes[0].radius + ballShape.radius);
+        bulletBody.position.set(x, y, z);
         this.world.add(bulletBody);
-    
+
         // Store bullet information
         this.obj[bulletId] = bulletBody;
-         // this.bullets.push(bulletBody);
+        // this.bullets.push(bulletBody);
         bulletBody.role = 'bullet';
         bulletBody.from = name; // shot 
 
         const engine = this;
-        bulletBody.addEventListener("collide", function(e) {
+        bulletBody.addEventListener("collide", function (e) {
             console.log("Bullet hit:", name, "->", e.body.role);
             if (e.body.role === 'enemy') {
                 bulletBody.to = e.body.name; // TODO: Change to array?
@@ -250,7 +250,7 @@ class PhysicsEngine {
      * @param {string} name 
      * @param {array} direction 
      * @param {number} interactId 
-     */  
+     */
     interact(name, direction, interactId) {
         // interactBody.collisionResponse = 0;
     }
@@ -277,7 +277,7 @@ class PhysicsEngine {
                 engine.world.removeBody(engine.obj[e]);
                 delete engine.obj[e];
             }
-        }); 
+        });
         this.meleeList.length = 0;
         this.hits.length = 0;
         this.slimeExplosion.length = 0;

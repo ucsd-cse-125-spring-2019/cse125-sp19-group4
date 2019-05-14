@@ -187,6 +187,7 @@ socket.on('game_status', function (msg) {
     const end = Date.now();
     $('#processing').html(end - start);
     $('#bytes').html(msg.length);
+    $('#server').html(status.debug.looptime);
 
     StatusBar.timerUpdate(status.time);
     
