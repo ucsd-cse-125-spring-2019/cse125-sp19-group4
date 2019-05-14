@@ -186,6 +186,7 @@ class GameInstance {
         this.meleeId = 0;
         this.interactId = 0;
         this.toClean = [];
+        this.skillables = {};
 
         // testing
         // const slime = new Slime(this.slimeCount);
@@ -226,15 +227,15 @@ class GameInstance {
     }
 
     decrementCoolDown(amount) {
-        for (let obj in this.objects) {
-            if (typeof this.objects[obj].skills !== 'undefined') {
-                let skills = this.objects[obj].skills;
-                for (let skill in skills) {
-                    if (skills[skill].curCoolDown > 0) {
-                        skills[skill].curCoolDown -= amount;
-                    } else if (skills[skill].curCoolDown <= 0) {
-                        skills[skill].curCoolDown = 0;
-                    }
+        for (let obj in this.skillables) {
+            let skills = this.skillables[obj].skills;
+            for (let skill in skills) {
+                if (skills[skill].curCoolDown > 0) {
+                    skills[skill].curCoolDown -= amount;
+                    this.skillables[obj].KEYS.push("skills");
+                } else if (skills[skill].curCoolDown < 0) {
+                    skills[skill].curCoolDown = 0;
+                    this.sskillables[obj].KEYS.push("skills");
                 }
             }
         }
@@ -247,7 +248,7 @@ class GameInstance {
             this.socketidToPlayer[socketid] = this.god;
             this.insertObjListAndMap(this.god);
             this.physicsEngine.addPlayer(this.god.name, this.god.mass, this.god.radius, { x: 0, y: 10, z: 0 }, this.god.maxJump, true);
-
+            this.skillables[this.god.name] = this.god
             return true;
         }
         return false;
@@ -262,6 +263,7 @@ class GameInstance {
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
             this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, { x: -10, y: 20, z: 1 }, survivor.maxJump, false);
+            this.skillables[survivor.name] = survivor;
             return true;
         }
         return false;
@@ -416,6 +418,14 @@ class GameInstance {
     setToJSONFunctions() {
         for (let key in this.objects) {
             Utils.recursiveSetPropertiesFilter(this.objects[key]);
+        }
+    }
+
+    // at the begining of each loop, set all omitable properties to not be sent,
+    // if those properties are modified during this cycle, add them back to send them.
+    clearKeys() {
+        for (let obj in this.skillables) {
+            this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills")
         }
     }
 }

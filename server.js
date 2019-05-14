@@ -136,6 +136,7 @@ function game_start() {
         });
         inputs.length = 0;
 
+        gameInstance.clearKeys();
         gameInstance.decrementCoolDown(1/tick_rate);
 
         // Handle Movements
@@ -187,6 +188,8 @@ function game_start() {
             data: gameInstance.objects,
             time: duration,
         }
+
+        console.log(JSON.stringify(broadcast_status, Utils.stringifyReplacer));
 
         io.emit('game_status', JSON.stringify(broadcast_status, Utils.stringifyReplacer));
 
