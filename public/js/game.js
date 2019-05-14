@@ -287,6 +287,7 @@ class GameInstance {
         const speed = obj.status.STATUS_speed;
         this.physicsEngine.updateVelocity(name, direction, speed);
         obj.direction = direction;
+        obj.KEYS.push('direction');
     }
 
     jump(name) {
@@ -415,6 +416,8 @@ class GameInstance {
         // this.meleeId = 0; // Each melee would only last 1 step
     }
 
+    // After status was sent the first time(everything in the status was sent), filter
+    // out some properties that are not needed
     setToJSONFunctions() {
         for (let key in this.objects) {
             Utils.recursiveSetPropertiesFilter(this.objects[key]);
@@ -426,6 +429,11 @@ class GameInstance {
     clearKeys() {
         for (let obj in this.skillables) {
             this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills")
+        }
+        for (let obj in this.objects) {
+            if ('KEYS' in this.objects[obj]) {
+                this.objects[obj].KEYS = this.objects[obj].KEYS.filter(item => item !== "direction")
+            }
         }
     }
 }

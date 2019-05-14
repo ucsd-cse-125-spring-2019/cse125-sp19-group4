@@ -77,6 +77,8 @@ socket.on('enter game', function (msg) {
     Object.keys(objs).forEach(function (name) {
         const obj = objs[name];
         objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+        directions[name] = obj.direction;
+        positions[name] = obj.position;
     });
 });
 
@@ -113,8 +115,6 @@ socket.on('game_status', function (msg) {
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
-
-
 
         let direction = directions[name];
         if ('direction' in obj) {

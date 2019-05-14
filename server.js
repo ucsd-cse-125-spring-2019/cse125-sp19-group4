@@ -28,15 +28,6 @@ const skillEvents = {};
 const shootEvents = {};
 const meleeEvents = {};
 
-function enterGame() {
-    // Game begins, notify all participants to enter
-    game_start();
-    gameInstance.clientSockets.forEach(function (socket) {
-        data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
-        io.to(socket).emit('enter game', JSON.stringify(data));
-    });
-    gameInstance.setToJSONFunctions();
-}
 
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
@@ -120,7 +111,18 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 60;
+const tick_rate = 2;
+
+function enterGame() {
+    // Game begins, notify all participants to enter
+    game_start();
+    gameInstance.clientSockets.forEach(function (socket) {
+        data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
+        io.to(socket).emit('enter game', JSON.stringify(data));
+    });
+    gameInstance.setToJSONFunctions();
+}
+
 
 function game_start() {
     const gameStartTime = Date.now();
@@ -182,16 +184,16 @@ function game_start() {
 
         let end = Date.now();
         elapse = end - start;
-        duration = (end - gameStartTime) / 1000;
+        duration = Math.floor((end - gameStartTime) / 1000);
         
         const broadcast_status = {
             data: gameInstance.objects,
             time: duration,
         }
 
-        console.log(JSON.stringify(broadcast_status, Utils.stringifyReplacer));
-
-        io.emit('game_status', JSON.stringify(broadcast_status, Utils.stringifyReplacer));
+        const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
+        console.log(msg)
+        io.emit('game_status', msg);
 
         if (elapse > 1000 / tick_rate) {
             console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
