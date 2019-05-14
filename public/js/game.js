@@ -1,4 +1,6 @@
 const glMatrix = require('gl-Matrix');
+const Utils = require('./utils.js')
+const gameStarted = require('../../server.js').gameStarted
 
 /** Helper class */
 class Survivor {
@@ -29,6 +31,9 @@ class Survivor {
             'STATUS_defense': 10,
             'STATUS_speed': 10,
         }
+
+        this.KEYS = ['position', 'direction', 'model', 'skills', 'status'] // contain a list of property that we want to send to client
+        this.toJSON = gameStated? Utils.PropertiesFilter, undefined;
     }
 
     onHit(damage) {
@@ -76,6 +81,9 @@ class God {
             'STATUS_defense': 10,
             'STATUS_speed': 20,
         }
+
+        this.KEYS = ['position', 'direction', 'model', 'skills', 'status'] // contain a list of property that we want to send to client
+        this.toJSON = gameStated? Utils.PropertiesFilter, undefined;
     }
 
     onHit(damage) {

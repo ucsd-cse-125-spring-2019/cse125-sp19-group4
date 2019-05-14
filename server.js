@@ -8,6 +8,7 @@ const io = require('socket.io')(http, {
 const path = require('path');
 const game = require('./public/js/game.js');
 const physics = require('./public/js/physics.js');
+const Utils = require('./public/js/utils.js');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
 
@@ -40,7 +41,7 @@ io.on('connection', function (socket) {
                 game_start();
                 startTime = Date.now();
                 gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
+                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer, Utils. stringifyReplacer));
                 });
             }
             else {
@@ -60,8 +61,9 @@ io.on('connection', function (socket) {
                 // Game begins, notify all participants to enter
                 game_start();
                 gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer));
+                    io.to(socket).emit('enter game', JSON.stringify(gameInstance.socketidToPlayer, Utils. stringifyReplacer));
                 });
+                gameStarted = false;
             }
             else {
                 gameInstance.clientSockets.forEach(function (socket) {
@@ -118,7 +120,8 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 60;
+const tick_rate = 1;
+const gameStarted = false;
 function game_start() {
     const gameStartTime = Date.now();
     let then = Date.now();
@@ -176,8 +179,7 @@ function game_start() {
             gameInstance.objects[name].position = [physicsEngine.obj[name].position.x, physicsEngine.obj[name].position.y - gameInstance.objects[name].radius, physicsEngine.obj[name].position.z];
         });
 
-        const broadcast_status = JSON.stringify(gameInstance.objects);
-        
+        const broadcast_status = JSON.stringify(gameInstance.objects, Utils.stringifyReplacer);
         io.emit('game_status', broadcast_status);
         let end = Date.now();
         elapse = end - start;
@@ -189,3 +191,5 @@ function game_start() {
         }
     }, 1000 / tick_rate);
 }
+
+exports.gameStarted = gameStarted;
