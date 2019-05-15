@@ -395,7 +395,7 @@ class GameInstance {
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, initiator.direction, 40, bullet.name, bullet.radius);
+        this.physicsEngine.shoot(name, initiator.direction, 20, bullet.name, bullet.radius);
     }
 
     melee(name) {
