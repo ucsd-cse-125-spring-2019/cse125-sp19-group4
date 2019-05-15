@@ -15,7 +15,7 @@ class Survivor {
         this.model = 'player';
         this.radius = 2;
         this.KEYS = ['name', 'model', 'position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
-        this.profession = null;
+        this.profession = {};
         this.skills = {};
         this.status = {};
         Utils.recursiveSetPropertiesFilter(this);
