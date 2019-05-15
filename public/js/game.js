@@ -133,6 +133,7 @@ class Slime {
         });
         const direction = glMatrix.vec3.create();
         glMatrix.vec3.subtract(direction, closestSurvivor.position, this.position);
+        direction[1] = 0;
         glMatrix.vec3.normalize(direction, direction);
         //TODO: Assume slime only stays on plane ground
         game.move(this.name, direction);
