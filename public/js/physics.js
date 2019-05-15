@@ -189,12 +189,11 @@ class PhysicsEngine {
         const engine = this;
         attackBody.addEventListener("collide", function (e) {
             console.log("Melee hit:", name, "->", e.body.name);
-            if (e.body.role === 'enemy') {
-                attackBody.to = e.body.name; // TODO: Change to array?
-                engine.hits.push(meleeId);
-            }
-            else if (e.body.role === 'survivor') {
-                console.log("Collide with survivor");
+            if (e.body.name != name) {
+                if (e.body.role === 'enemy' || e.body.role === 'survivor') {
+                    attackBody.to = e.body.name; // TODO: Change to array?
+                    engine.hits.push(meleeId);
+                }
             }
         })
     }
@@ -234,13 +233,15 @@ class PhysicsEngine {
         bulletBody.from = name; // shot 
 
         const engine = this;
-        bulletBody.addEventListener("collide", function (e) {
-            console.log("Bullet hit:", name, "->", e.body.role);
-            if (e.body.role === 'enemy') {
-                bulletBody.to = e.body.name; // TODO: Change to array?
-            } else if (e.body.role === 'survivor') {
-                console.log("Collide with survivor");
-                bulletBody.to = e.body.name;
+        bulletBody.addEventListener("collide", function(e) {
+            console.log("Bullet hit:", name, "->", e.body.name);
+            if (e.body.name != name) {
+                if (e.body.role === 'enemy') {
+                    bulletBody.to = e.body.name; // TODO: Change to array?
+                } else if (e.body.role === 'survivor') {
+                    console.log("Collide with survivor");
+                    bulletBody.to = e.body.name;
+                }
             }
             engine.hits.push(bulletId);
         });
