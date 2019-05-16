@@ -159,8 +159,9 @@ class PhysicsEngine {
      * @param {string} name name of object performing melee attack
      * @param {array} direction face direction
      * @param {string} meleeId a string representing the id of melee, format: Melee + id
+     * @param {number} damage damage of initiator when attacking
      */
-    melee(name, direction, meleeId) {
+    melee(name, direction, meleeId, damage) {
         glMatrix.vec3.normalize(direction, direction);
         const initiator = this.obj[name];
         // Represent the melee attack as an object
@@ -185,6 +186,7 @@ class PhysicsEngine {
         this.meleeList.push(meleeId);
         attackBody.role = 'melee';
         attackBody.from = name;
+        attackBody.damage = damage;
 
         const engine = this;
         attackBody.addEventListener("collide", function (e) {
@@ -202,9 +204,11 @@ class PhysicsEngine {
      * @param {string} name name of object shooting
      * @param {array} direction face direction
      * @param {number} shootingSpeed speed of shooting
+     * @param {number} damage shooting damage
      * @param {string} bulletId name of bullet in the format: bullet + id
+     * @param {number} radius radius of bullet
      */
-    shoot(name, direction, shootingSpeed, bulletId, radius) {
+    shoot(name, direction, shootingSpeed, damage, bulletId, radius) {
         glMatrix.vec3.normalize(direction, direction);
         const initiator = this.obj[name];
 
@@ -231,6 +235,7 @@ class PhysicsEngine {
         // this.bullets.push(bulletBody);
         bulletBody.role = 'bullet';
         bulletBody.from = name; // shot 
+        bulletBody.damage = damage;
 
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {

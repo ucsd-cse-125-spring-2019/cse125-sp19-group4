@@ -395,13 +395,13 @@ class GameInstance {
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, initiator.direction, 20, bullet.name, bullet.radius);
+        this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.STATUS_damage, bullet.name, bullet.radius);
     }
 
     melee(name) {
         const initiator = this.objects[name];
         const meleeId = "Melee " + (this.meleeId++);
-        this.physicsEngine.melee(name, initiator.direction, meleeId);
+        this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
     }
 
     // ==================================== Before Step ===================================
@@ -480,8 +480,9 @@ class GameInstance {
 
             // the melee/bullet hit enemy
             if (typeof attackee !== 'undefined') {
-                attackee.onHit(gameInstance, attacker.status.STATUS_damage);
-                console.log(attackee.name, 'lost', attacker.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
+                console.log(hit.from);
+                attackee.onHit(gameInstance, hit.damage);
+                console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
 
                 if (attackee.status.STATUS_curHealth <= 0) {
                     // Remove slime from slimes list
