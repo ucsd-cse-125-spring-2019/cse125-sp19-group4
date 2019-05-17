@@ -111,9 +111,10 @@ class PhysicsEngine {
         groundBody.role = 'ground';
     }
 
-    addTree(name, radius = 1, position = { x: 20, y: 0, z: -20 }) {
+    addTree(name, radius = 0.5, position = { x: 20, y: 0, z: -20 }) {
         // tree should be static 
-        const treeShape = new CANNON.Cylinder(radius, radius, radius * 2, 10);
+        const treeShape = new CANNON.Box(new CANNON.Vec3(radius, 20 * radius, radius));
+        // const treeShape = new CANNON.Cylinder(radius, radius, radius * 10, 10);
         const treeBody = new CANNON.Body({
             mass: 0,
             shape: treeShape
