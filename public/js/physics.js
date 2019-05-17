@@ -42,15 +42,15 @@ class PhysicsEngine {
     }
 
     addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {
-        // const ballShape = new CANNON.Sphere(radius);
-        const boxShape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
+        // const shape = new CANNON.Sphere(radius);
+        const shape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
         const mat = new CANNON.Material();
         const playerBody = new CANNON.Body({
             mass: mass,
-            shape: boxShape,
+            shape: shape,
             linearDamping: 0.5,
             material: mat,
             // type: CANNON.Body.KINEMATIC
@@ -74,12 +74,17 @@ class PhysicsEngine {
     }
 
     addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3, attackMode) {
-        const ballShape = new CANNON.Sphere(radius);
+        // const shape = new CANNON.Sphere(radius);
+        const shape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
+        const mat = new CANNON.Material();
         const slimeBody = new CANNON.Body({
             mass: mass,
-            shape: ballShape,
+            shape: shape,
             linearDamping: 0.9,
+            material: mat
         });
+        const mat_ground = new CANNON.ContactMaterial(this.groundMaterial, mat, { friction: 0, restitution: 0.01 });
+        this.world.addContactMaterial(mat_ground);
         slimeBody.position.set(position.x, position.y + radius, position.z);
         slimeBody.jumps = 0;
         slimeBody.role = 'enemy';
@@ -232,9 +237,12 @@ class PhysicsEngine {
         bulletBody.velocity.set( direction[0] * shootingSpeed,
                                  direction[1] * shootingSpeed,
                                  direction[2] * shootingSpeed );
-        const x = initiator.position.x + direction[0] * (initiator.shapes[0].radius+ballShape.radius);
+        // const x = initiator.position.x + direction[0] * (initiator.shapes[0].radius+ballShape.radius);
+        // const y = initiator.position.y + direction[1] * (ballShape.radius) + 1.5;
+        // const z = initiator.position.z + direction[2] * (initiator.shapes[0].radius+ballShape.radius);
+        const x = initiator.position.x + direction[0] * (1.414 * initiator.shapes[0].halfExtents.x + ballShape.radius);
         const y = initiator.position.y + direction[1] * (ballShape.radius) + 1.5;
-        const z = initiator.position.z + direction[2] * (initiator.shapes[0].radius+ballShape.radius);
+        const z = initiator.position.z + direction[2] * (1.414 * initiator.shapes[0].halfExtents.z + ballShape.radius);
         bulletBody.position.set(x, y, z); 
         this.world.add(bulletBody);
 
