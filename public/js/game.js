@@ -493,10 +493,6 @@ class GameInstance {
                         }
                     }
                     gameInstance.toClean.push(attackee.name);
-                    const index = gameInstance.slimes.indexOf(attackee.name);
-                    if (index > -1) {
-                        gameInstance.slimes.splice(index, 1);
-                    }
                     console.log(attackee.name, 'died');
                 }
             }
