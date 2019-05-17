@@ -14,7 +14,7 @@ class PhysicsEngine {
         // Adjust constraint equation parameters for ground/ground contact
         let ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
             friction: 0.2,
-            restitution: 0.3,
+            restitution: 0.9,
             contactEquationStiffness: 1e8,
             contactEquationRelaxation: 3,
             frictionEquationStiffness: 1e8,
@@ -23,7 +23,7 @@ class PhysicsEngine {
         // Add contact material to the world
         this.world.addContactMaterial(ground_ground_cm);
 
-        this.addGroundPlane();
+        this.addGroundPlane(this.groundMaterial);
 
         // Store all hits in current step
         this.hits = [];
@@ -42,16 +42,23 @@ class PhysicsEngine {
     }
 
     addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {
-        const ballShape = new CANNON.Sphere(radius);
+        // const ballShape = new CANNON.Sphere(radius);
+        const boxShape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
+        const mat = new CANNON.Material();
         const playerBody = new CANNON.Body({
             mass: mass,
-            shape: ballShape,
+            shape: boxShape,
             linearDamping: 0.5,
+            material: mat,
             // type: CANNON.Body.KINEMATIC
         });
+        const mat_mat = new CANNON.ContactMaterial(mat, mat, { restitution: 0 });
+        this.world.addContactMaterial(mat_mat);
+        const mat_ground = new CANNON.ContactMaterial(this.groundMaterial, mat, { friction: 0, restitution: 0.01 });
+        this.world.addContactMaterial(mat_ground);
         playerBody.position.set(position.x, position.y + radius, position.z);
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
@@ -93,10 +100,10 @@ class PhysicsEngine {
 
     }
 
-    addGroundPlane() {
+    addGroundPlane(material) {
         // Make a statis ground plane with mass 0
         const groundShape = new CANNON.Plane();
-        const groundBody = new CANNON.Body({ mass: 0, shape: groundShape });
+        const groundBody = new CANNON.Body({ mass: 0, shape: groundShape, material: material });
         groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
         groundBody.computeAABB();
         this.world.add(groundBody);
