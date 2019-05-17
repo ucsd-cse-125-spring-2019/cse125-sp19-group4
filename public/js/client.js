@@ -277,6 +277,8 @@ function main() {
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
+    cast_models[1] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
+    cast_models[2] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
@@ -529,6 +531,16 @@ const mouseDown = function (e) {
                 const skillsParams = { skillNum: 0, skillName: 'Slime', position: cursor };
                 socket.emit('skill', JSON.stringify(skillsParams));
             }
+            else if (casting == 1) {
+                console.log('shooting slime fired');
+                const skillsParams = { skillNum: 1, skillName: 'Shooting Slime', position: cursor };
+                socket.emit('skill', JSON.stringify(skillsParams));
+            }
+            else if (casting == 2) {
+                console.log('melee slime fired');
+                const skillsParams = { skillNum: 2, skillName: 'Melee Slime', position: cursor };
+                socket.emit('skill', JSON.stringify(skillsParams));
+            }
             break;
         case 3:
             // right click
@@ -669,8 +681,14 @@ function handleSkill(uid, skillNum) {
                 // Spawn Slime
                 casting = 0;
                 break;
-            // case 1:
-            //     break;
+            case 1:
+                // Generate Shooting Slime
+                casting = 1;
+                break;
+            case 2:
+                // Generate Melee Slime
+                casting = 2;
+                break;
             default:
             // do nothing
         }
