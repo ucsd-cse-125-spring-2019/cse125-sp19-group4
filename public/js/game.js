@@ -44,6 +44,7 @@ class God {
                 'name': 'Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'description': 'Spawn a Slime that chases survivors and explodes on contact',
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'function': function (game, params) {
                     const position = params.position;
@@ -66,6 +67,8 @@ class God {
                 'name': 'Shooting Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'description': 'Spawn a Slime that chases survivors and shoots them',
+                'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'function': function (game, params) {
                     const position = params.position;
                     if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
@@ -86,6 +89,8 @@ class God {
                 'name': 'Melee Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'description': 'Spawn a Slime that chases survivors and melee attacks them',
+                'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'function': function (game, params) {
                     const position = params.position;
                     if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {

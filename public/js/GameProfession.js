@@ -1,3 +1,5 @@
+const glMatrix = require('gl-Matrix');
+
 class Fighter {
     constructor() {
         this.profession = "Fighter";
@@ -22,7 +24,25 @@ class Archer {
             'STATUS_defense': 10,
             'STATUS_speed': 10,
         };
-        this.skills = {};
+        this.skills = {
+            0: {
+                'name': 'Shoot',
+                'coolDown': 0.5,
+                'curCoolDown': 0,
+                'description': 'Shoot an arrow',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, params) {
+                    const name = params.name;
+                    const cursor = params.cursor;
+                    const direction = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    direction[1] = 0;
+                    glMatrix.vec3.normalize(direction, direction);
+                    game.objects[name].direction = direction;
+                    game.shoot(name);
+                },
+            },
+        };
     }
 }
 

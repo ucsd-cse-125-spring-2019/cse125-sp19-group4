@@ -18,12 +18,12 @@ glMatrix.vec3.negate(NEG_FACE, FACE);
 const model_ref = {};
 
 const transform_ref = {
-    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'terrain': glMatrix.mat4.create(), //glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
     'slime': glMatrix.mat4.create(),
-    'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 };
 
@@ -126,6 +126,10 @@ socket.on('game_status', function (msg) {
     const player = data[uid];
     if (typeof player !== 'undefined') {
         if (typeof player.position !== 'undefined') {
+            // debugger
+            $('#x').html(player.position[0]);
+            $('#y').html(player.position[1]);
+            $('#z').html(player.position[2]);
             camera.setPosition(player.position);
             // console.log(player.position);
         }
@@ -267,15 +271,15 @@ function main() {
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl); 
 
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrain2.obj", "/public/model/terrain2.mtl", true, texture_counter, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
-    model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
+    // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
 
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
-    objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
+    // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[1] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[2] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
@@ -380,7 +384,9 @@ function main() {
                 glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
             }
             const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
-            glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
+            if (typeof objects['casting'] !== 'undefined') {
+                glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
+            }
         }
         drawScene(gl, programInfo, objects, camera);
 
@@ -526,21 +532,31 @@ const mouseDown = function (e) {
     switch (e.which) {
         case 1:
             // left click
-            if (casting == 0) {
-                console.log('slime fired');
-                const skillsParams = { skillNum: 0, skillName: 'Slime', position: cursor };
-                socket.emit('skill', JSON.stringify(skillsParams));
+            if (uid === 'God') {
+                if (casting == 0) {
+                    console.log('slime fired');
+                    const skillsParams = { skillNum: 0, position: cursor };
+                    socket.emit('skill', JSON.stringify(skillsParams));
+                }
+                else if (casting == 1) {
+                    console.log('shooting slime fired');
+                    const skillsParams = { skillNum: 1, position: cursor };
+                    socket.emit('skill', JSON.stringify(skillsParams));
+                }
+                else if (casting == 2) {
+                    console.log('melee slime fired');
+                    const skillsParams = { skillNum: 2, position: cursor };
+                    socket.emit('skill', JSON.stringify(skillsParams));
+                }
+            } else {
+                // survivors
+                if (casting == 0) {
+                    console.log('arrow fired');
+                    const skillsParams = { skillNum: 0, cursor: cursor, name: uid };
+                    socket.emit('skill', JSON.stringify(skillsParams));
+                }
             }
-            else if (casting == 1) {
-                console.log('shooting slime fired');
-                const skillsParams = { skillNum: 1, skillName: 'Shooting Slime', position: cursor };
-                socket.emit('skill', JSON.stringify(skillsParams));
-            }
-            else if (casting == 2) {
-                console.log('melee slime fired');
-                const skillsParams = { skillNum: 2, skillName: 'Melee Slime', position: cursor };
-                socket.emit('skill', JSON.stringify(skillsParams));
-            }
+            
             break;
         case 3:
             // right click
@@ -675,23 +691,21 @@ function chatBoxFade() {
 let casting = -1;
 
 function handleSkill(uid, skillNum) {
-    if (uid === "God") {
-        switch (skillNum) {
-            case 0:
-                // Spawn Slime
-                casting = 0;
-                break;
-            case 1:
-                // Generate Shooting Slime
-                casting = 1;
-                break;
-            case 2:
-                // Generate Melee Slime
-                casting = 2;
-                break;
-            default:
-            // do nothing
-        }
+    switch (skillNum) {
+        case 0:
+            // Spawn Slime
+            casting = 0;
+            break;
+        case 1:
+            // Generate Shooting Slime
+            casting = 1;
+            break;
+        case 2:
+            // Generate Melee Slime
+            casting = 2;
+            break;
+        default:
+        // do nothing
     }
     // const skillsParams = {};
     // socket.emit('skill', JSON.stringify(skillsParams));
