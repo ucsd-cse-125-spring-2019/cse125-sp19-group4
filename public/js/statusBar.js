@@ -129,7 +129,7 @@ function statusUpdate(status) {
     for (let i in status) {
         if (i === 'STATUS_curHealth') {
             document.getElementById('healthBar').style = healthBarStyle.format(status[i]);
-
+            document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
         } else if (isStatusValid(i)) {
             document.getElementById(i).innerHTML = status[i];
         }

@@ -1,229 +1,7 @@
 const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
-const gameProfession = require('./GameProfession')
-
-/** Helper class */
-class Survivor {
-    constructor(socketid, sid) {
-        this.name = 'Survivor ' + sid;
-        this.socketid = socketid;
-        this.position = [0, 0, 0]; // location (x, y, z)
-        this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.mass = 500;
-        this.maxJump = 2;
-        this.jumpSpeed = 8;
-        this.model = 'player';
-        this.radius = 2;
-        this.KEYS = ['name', 'model', 'position', 'direction', 'skills', 'status'] // contain a list of property that we want to send to client
-        this.profession = {};
-        this.skills = {};
-        this.status = {};
-        Utils.recursiveSetPropertiesFilter(this);
-    }
-
-    onHit(game, damage) {
-        this.status.STATUS_curHealth -= damage;
-        this.KEYS.push('status');
-        game.toSend.push(this.name);
-    }
-}
-
-class God {
-    constructor(socketid) {
-        this.name = 'God';
-        this.socketid = socketid;
-        this.position = [0, 0, 0];
-        this.direction = [0, 0, -1]; // facing (x, y, z)
-        this.mass = 500;
-        this.maxJump = 10;
-        this.jumpSpeed = 10;
-        this.model = 'player';
-        this.radius = 2;
-        this.skills = {
-            0: {
-                'name': 'Slime',
-                'coolDown': 1,
-                'curCoolDown': 0,
-                'iconPath': '/public/images/skills/SKILL_Slime.png',
-                'function': function (game, params) {
-                    const position = params.position;
-                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
-                        console.log('Slime() out of the world');
-                        return;
-                    }
-                    const slime = new Slime(game.slimeCount, "explode");
-                    game.toSend.push(slime.name);
-                    slime.position = position;
-                    slime.position[1] += 2;
-                    game.slimeCount++;
-                    game.insertObjListAndMap(slime);
-                    game.slimes.push(slime.name);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
-                },
-            },
-            1: {
-                'name': 'Shooting Slime',
-                'coolDown': 1,
-                'curCoolDown': 0,
-                'function': function (game, params) {
-                    const position = params.position;
-                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
-                        console.log('Slime() out of the world');
-                        return;
-                    }
-                    const slime = new Slime(game.slimeCount,"shoot");
-                    slime.position = position;
-                    slime.position[1] += 2;
-                    game.slimeCount++;
-                    game.insertObjListAndMap(slime);
-                    game.slimes.push(slime.name);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
-                },
-            },
-            2: {
-                'name': 'Melee Slime',
-                'coolDown': 1,
-                'curCoolDown': 0,
-                'function': function (game, params) {
-                    const position = params.position;
-                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
-                        console.log('Slime() out of the world');
-                        return;
-                    }
-                    const slime = new Slime(game.slimeCount,"melee");
-                    slime.position = position;
-                    slime.position[1] += 2;
-                    game.slimeCount++;
-                    game.insertObjListAndMap(slime);
-                    game.slimes.push(slime.name);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
-                },
-            },
-        };
-        this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 20,
-        };
-
-        this.KEYS = ['name', 'model', 'position', 'direction', 'skills', 'status']; // contain a list of property that we want to send to client
-        Utils.recursiveSetPropertiesFilter(this);
-    }
-
-    onHit(game, damage) {
-        this.status.STATUS_curHealth -= damage;
-        this.KEYS.push('status');
-        game.toSend.push(this.name);
-    }
-}
-
-class Item {
-    constructor() {
-        this.name = 'Item';
-        this.position = [0, 0, 0];
-    }
-}
-
-class Slime {
-    constructor(sid, attackMode) {
-        this.name = 'Slime ' + sid;
-        this.position = [0, 0, 0];
-        this.direction = [0, 0, 1]; // facing (x, y, z)
-        this.mass = 100;
-        this.movementSpeed = 8;
-        this.model = 'slime';
-        this.radius = 2;
-        this.status = {
-            'STATUS_maxHealth': 30,
-            'STATUS_curHealth': 30,
-            'STATUS_damage': 10,
-            'STATUS_defense': 0,
-            'STATUS_speed': 5,
-        };
-        this.attacking = {};
-        this.attackMode = attackMode;
-        this.attackInterval = 60;
-        this.attackTimer = this.attackInterval;
-        if (attackMode === 'explode')
-            this.minDistanceFromPlayer = 0;
-        else if (attackMode === 'shoot') {
-            this.minDistanceFromPlayer = 10;
-            this.shootingSpeed = 20;
-        }
-        else if (attackMode === 'melee')
-            this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime
-            
-        this.KEYS = ['model', 'position', 'direction', 'status'];
-        Utils.recursiveSetPropertiesFilter(this);
-    }
-
-    onHit(game, damage) {
-        this.status.STATUS_curHealth -= damage;
-        this.KEYS.push('status');
-        game.toSend.push(this.name);
-    }
-
-    /**
-     * Find the closest survivor and set it to be the attackee of object given by name
-     */
-    chase(game) {
-        const slime = this;
-        let closestSurvivor;
-        let minDistance = Number.MAX_VALUE;
-        game.survivors.forEach(function (s) {
-            const distance = glMatrix.vec3.distance(slime.position, s.position);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestSurvivor = s;
-            }
-        });
-       
-        const direction = glMatrix.vec3.create();
-        glMatrix.vec3.subtract(direction, closestSurvivor.position, this.position);
-        direction[1] = 0;
-        glMatrix.vec3.normalize(direction, direction);
-        //TODO: Assume slime only stays on plane ground
-        if (minDistance < slime.minDistanceFromPlayer) 
-            game.move(this.name, direction, true);
-        else 
-            game.move(this.name, direction, false)
-        
-        this.attacking = closestSurvivor;
-    }
-
-}
-
-class Tile {
-    constructor() {
-        this.type = '';
-        this.content = [];
-    }
-}
-
-class Bullet {
-    constructor(position, direction, bulletId) {
-        this.name = 'Bullet ' + bulletId;
-        this.radius = 0.2;
-        this.position = position;
-        this.direction = direction;
-        this.model = 'bullet';
-    }
-}
-
-class Tree {
-    constructor(treeId) {
-        this.name = 'Tree ' + treeId;
-        this.radius = 0;    // only to suppress error when assigning position from physics engine
-        this.position = [20, 0, -20];
-        this.direction = [0, 0, -1];
-        this.model = 'tree';
-    }
-}
+const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
+const { Item, Slime, Tile, Bullet, Tree } = require('./GameUnits.js').Units;
 
 class GameInstance {
     constructor(max_survivors = 3, physicsEngine) {
@@ -291,17 +69,18 @@ class GameInstance {
     }
 
     decrementCoolDown(amount) {
-        for (let obj in this.skillables) {
-            let skills = this.skillables[obj].skills;
+        for (let name in this.skillables) {
+            let skills = this.skillables[name].skills;
             for (let skill in skills) {
                 if (skills[skill].curCoolDown > 0) {
                     skills[skill].curCoolDown -= amount;
-                    this.skillables[obj].KEYS.push("skills");
+                    this.skillables[name].KEYS.push("skills");
                 } else if (skills[skill].curCoolDown < 0) {
                     skills[skill].curCoolDown = 0;
-                    this.skillables[obj].KEYS.push("skills");
+                    this.skillables[name].KEYS.push("skills");
                 }
             }
+            this.toSend.push(name)
         }
     }
 
@@ -327,7 +106,7 @@ class GameInstance {
             const survivor = new Survivor(socketid, this.survivorCount);
             this.toSend.push(survivor.name);
 
-            gameProfession.initializeProfession(survivor, msg);
+            initializeProfession(survivor, msg);
             this.survivorCount++;
             this.survivors.push(survivor);
             this.clientSockets.push(socketid);
@@ -379,9 +158,18 @@ class GameInstance {
         if (skill.curCoolDown > 0) { // not cooled down
             return;
         }
-        skill.curCoolDown = skill.coolDown;
-        skill.function(this, skillParams);
+
+        obj.KEYS.push("skills")
         this.toSend.push(name);
+        switch(skill.type) {
+            case SKILL_TYPE.SELF: 
+                skill.function(obj);
+                obj.KEYS.push("status")
+                break;
+            default: 
+                skill.function(this, skillParams);
+        }
+        skill.curCoolDown = skill.coolDown;
     }
 
     /**
@@ -583,6 +371,12 @@ class GameInstance {
             if ('KEYS' in this.objects[obj]) {
                 this.objects[obj].KEYS.length = 0;
             }
+        }
+    }
+
+    initializeFilterFunctions() {
+        for (let obj in this.objects) {
+            Utils.recursiveSetPropertiesFilter(this.objects[obj]);
         }
     }
 }

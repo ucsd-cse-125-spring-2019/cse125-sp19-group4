@@ -15,6 +15,8 @@ const FACE = [0.0, 0.0, -1.0];
 const NEG_FACE = glMatrix.vec3.create();
 glMatrix.vec3.negate(NEG_FACE, FACE);
 
+const player = {};
+
 const model_ref = {};
 
 const transform_ref = {
@@ -692,9 +694,12 @@ function handleSkill(uid, skillNum) {
             default:
             // do nothing
         }
+        return;
     }
-    // const skillsParams = {};
-    // socket.emit('skill', JSON.stringify(skillsParams));
+    const skillsParams = {
+        skillNum,
+    };
+    socket.emit('skill', JSON.stringify(skillsParams));
 }
 
 /*============================== End of Skill ===================================*/

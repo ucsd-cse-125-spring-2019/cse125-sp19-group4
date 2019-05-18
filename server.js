@@ -128,6 +128,7 @@ function enterGame() {
         data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
         io.to(socket).emit('enter game', JSON.stringify(data));
     });
+    gameInstance.initializeFilterFunctions();
 }
 
 let elapse = 0;
@@ -145,8 +146,8 @@ function game_start() {
         });
         inputs.length = 0;
 
-        gameInstance.decrementCoolDown(1/tick_rate);
         gameInstance.beforeStep();
+        gameInstance.decrementCoolDown(1/tick_rate);
 
         // Handle Movements
         Object.keys(movementEvents).forEach((name) => {
@@ -203,7 +204,6 @@ function game_start() {
 
         const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
         io.emit('game_status', msg);
-
         gameInstance.afterSend();
         elapse = Date.now() - start;
 
