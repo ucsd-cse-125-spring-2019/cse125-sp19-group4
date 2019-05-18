@@ -150,10 +150,11 @@ class GameInstance {
         this.physicsEngine.stopMovement(name);
     }
 
+
     // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
         const obj = this.objects[name];
-        let { skillNum } = skillParams;
+        let { skillNum, location } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
         if (skill.curCoolDown > 0) { // not cooled down
             return;
@@ -163,9 +164,17 @@ class GameInstance {
         this.toSend.push(name);
         switch(skill.type) {
             case SKILL_TYPE.SELF: 
-                skill.function(obj);
+                skill.function(obj, skillParams);
                 obj.KEYS.push("status")
                 break;
+
+            case SKILL_TYPE.LOCATION:
+                if (outOfWorld(location)) {
+                    console.log("skill out of world");
+                    return;
+                }
+                skill.function(this, skillParams);
+
             default: 
                 skill.function(this, skillParams);
         }
@@ -378,6 +387,23 @@ class GameInstance {
         for (let obj in this.objects) {
             Utils.recursiveSetPropertiesFilter(this.objects[obj]);
         }
+    }
+
+    putSlimeOnTheMap(slime) {
+        const position = slime.position;
+        this.toSend.push(slime.name)
+        this.slimeCount++;
+        this.insertObjListAndMap(slime);
+        this.slimes.push(slime.name);
+        this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
+            { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+    }
+
+
+    /********************* Utils function *********************/
+    outOfWorld(position) {
+        return Math.abs(Math.floor(position[0])) > this.worldHalfWidth ||
+               Math.abs(Math.floor(position[2])) > this.worldHalfHeight
     }
 }
 

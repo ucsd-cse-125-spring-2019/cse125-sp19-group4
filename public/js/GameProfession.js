@@ -49,61 +49,39 @@ class God {
                 'coolDown': 1,
                 'curCoolDown': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
+                'SKILL_TYPE': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
-                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
-                        console.log('Slime() out of the world');
-                        return;
-                    }
                     const slime = new Slime(game.slimeCount, "explode");
-                    game.toSend.push(slime.name);
                     slime.position = position;
                     slime.position[1] += 2;
-                    game.slimeCount++;
-                    game.insertObjListAndMap(slime);
-                    game.slimes.push(slime.name);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+                    game.putSlimeOnTheMap(slime);
                 },
             },
             1: {
                 'name': 'Shooting Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'SKILL_TYPE': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
-                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
-                        console.log('Slime() out of the world');
-                        return;
-                    }
-                    const slime = new Slime(game.slimeCount,"shoot");
+                    const slime = new Slime(game.slimeCount, "shoot");
                     slime.position = position;
                     slime.position[1] += 2;
-                    game.slimeCount++;
-                    game.insertObjListAndMap(slime);
-                    game.slimes.push(slime.name);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+                    game.putSlimeOnTheMap(slime);
                 },
             },
             2: {
                 'name': 'Melee Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'SKILL_TYPE': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
-                    if (Math.abs(Math.floor(position[0])) > game.worldHalfWidth || Math.abs(Math.floor(position[2])) > game.worldHalfHeight) {
-                        console.log('Slime() out of the world');
-                        return;
-                    }
-                    const slime = new Slime(game.slimeCount,"melee");
+                    const slime = new Slime(game.slimeCount, "melee");
                     slime.position = position;
                     slime.position[1] += 2;
-                    game.slimeCount++;
-                    game.insertObjListAndMap(slime);
-                    game.slimes.push(slime.name);
-                    game.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-                        { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+                    game.putSlimeOnTheMap(slime);
                 },
             },
         };
@@ -196,9 +174,6 @@ class Healer {
                 'curCoolDown': 0,
                 'description': 'a',
                 'iconPath': 'a',
-                'function': function () {
-                    // TODO
-                }, 
                 'type': SKILL_TYPE.SELF,
                 'function': function(mySelf) {
                     mySelf.status.STATUS_curHealth += 10;
@@ -253,7 +228,7 @@ function initializeProfession(survivor, msg) {
     survivor.profession = profession.profession;
     survivor.status = profession.status;
     for (i in survivor.skills) {
-        survivor.skills[i].KEYS = ['coolDonw', 'curCoolDown'];
+        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];
     }
 }
 
