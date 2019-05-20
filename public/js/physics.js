@@ -30,6 +30,7 @@ class PhysicsEngine {
         this.slimeExplosion = [];
     }
 
+    //----------------------------------------- World Setup --------------------------------
     defineMaterial() {
         this.groundMaterial = new CANNON.Material("groundMaterial");
         // Adjust constraint equation parameters for ground/ground contact
@@ -57,6 +58,19 @@ class PhysicsEngine {
         this.world.addContactMaterial(slime_player_cm);
     }
 
+    addGroundPlane(material) {
+        // Make a statis ground plane with mass 0
+        const groundShape = new CANNON.Plane();
+        const groundBody = new CANNON.Body({ mass: 0, shape: groundShape, material: material });
+        groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+        groundBody.computeAABB();
+        this.world.add(groundBody);
+        this.ground = groundBody;
+        groundBody.role = 'ground';
+    }
+    //----------------------------------------- End of World Setup --------------------------------
+
+    
     addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {
         // const shape = new CANNON.Sphere(radius);
         const shape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
@@ -112,17 +126,6 @@ class PhysicsEngine {
             })
         }
 
-    }
-
-    addGroundPlane(material) {
-        // Make a statis ground plane with mass 0
-        const groundShape = new CANNON.Plane();
-        const groundBody = new CANNON.Body({ mass: 0, shape: groundShape, material: material });
-        groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
-        groundBody.computeAABB();
-        this.world.add(groundBody);
-        this.ground = groundBody;
-        groundBody.role = 'ground';
     }
 
     addTree(name, radius = 0.5, position = { x: 20, y: 0, z: -20 }) {
