@@ -10,18 +10,7 @@ class PhysicsEngine {
         this.world.broadphase = new CANNON.NaiveBroadphase();
         this.world.solver.iterations = 10;
 
-        this.groundMaterial = new CANNON.Material("groundMaterial");
-        // Adjust constraint equation parameters for ground/ground contact
-        let ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
-            friction: 0.2,
-            restitution: 0.9,
-            contactEquationStiffness: 1e8,
-            contactEquationRelaxation: 3,
-            frictionEquationStiffness: 1e8,
-            frictionEquationRegularizationTime: 3,
-        });
-        // Add contact material to the world
-        this.world.addContactMaterial(ground_ground_cm);
+        this.defineMaterial();
 
         this.addGroundPlane(this.groundMaterial);
 
@@ -41,24 +30,46 @@ class PhysicsEngine {
         this.slimeExplosion = [];
     }
 
+    defineMaterial() {
+        this.groundMaterial = new CANNON.Material("groundMaterial");
+        // Adjust constraint equation parameters for ground/ground contact
+        let ground_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.groundMaterial, {
+            friction: 0.2,
+            restitution: 0.9,
+            contactEquationStiffness: 1e8,
+            contactEquationRelaxation: 3,
+            frictionEquationStiffness: 1e8,
+            frictionEquationRegularizationTime: 3,
+        });
+        // Add contact material to the world
+        this.world.addContactMaterial(ground_ground_cm);
+
+        this.playerMaterial = new CANNON.Material("playerMaterial");
+        const player_player_cm = new CANNON.ContactMaterial(this.playerMaterial, this.playerMaterial, { restitution: 0 });
+        this.world.addContactMaterial(player_player_cm);
+        const player_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.playerMaterial, { friction: 0, restitution: 0.01 });
+        this.world.addContactMaterial(player_ground_cm);
+
+        this.slimeMaterial = new CANNON.Material("slimeMaterial");
+        const slime_ground_cm = new CANNON.ContactMaterial(this.groundMaterial, this.slimeMaterial, { friction: 0, restitution: 0.01 });
+        this.world.addContactMaterial(slime_ground_cm);
+        const slime_player_cm = new CANNON.ContactMaterial(this.slimeMaterial, this.playerMaterial, { restitution: 0 });
+        this.world.addContactMaterial(slime_player_cm);
+    }
+
     addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {
         // const shape = new CANNON.Sphere(radius);
         const shape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
         // Kinematic Box
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
-        const mat = new CANNON.Material();
         const playerBody = new CANNON.Body({
             mass: mass,
             shape: shape,
             linearDamping: 0.5,
-            material: mat,
+            material: this.playerMaterial,
             // type: CANNON.Body.KINEMATIC
         });
-        const mat_mat = new CANNON.ContactMaterial(mat, mat, { restitution: 0 });
-        this.world.addContactMaterial(mat_mat);
-        const mat_ground = new CANNON.ContactMaterial(this.groundMaterial, mat, { friction: 0, restitution: 0.01 });
-        this.world.addContactMaterial(mat_ground);
         playerBody.position.set(position.x, position.y + radius, position.z);
         playerBody.jumps = maxJump;
         this.world.add(playerBody);
@@ -76,15 +87,13 @@ class PhysicsEngine {
     addSlime(name, mass = 5, radius, position = { x: 0, y: 0, z: 0 }, speed = 3, attackMode) {
         // const shape = new CANNON.Sphere(radius);
         const shape = new CANNON.Box(new CANNON.Vec3(radius, radius, radius));
-        const mat = new CANNON.Material();
         const slimeBody = new CANNON.Body({
             mass: mass,
             shape: shape,
             linearDamping: 0.9,
-            material: mat
+            material: this.slimeMaterial
         });
-        const mat_ground = new CANNON.ContactMaterial(this.groundMaterial, mat, { friction: 0, restitution: 0.01 });
-        this.world.addContactMaterial(mat_ground);
+
         slimeBody.position.set(position.x, position.y + radius, position.z);
         slimeBody.jumps = 0;
         slimeBody.role = 'enemy';
@@ -183,7 +192,6 @@ class PhysicsEngine {
             mass: 0,
             shape: attackShape,
         })
-
         // Set the position of the attack relative to the player
         // let x = initiator.position.x + Math.sign(direction[0].toFixed(5)) * (initiator.shapes[0].radius + 0.5);
         // let y = initiator.position.y + direction[1] * initiator.shapes[0].radius;
