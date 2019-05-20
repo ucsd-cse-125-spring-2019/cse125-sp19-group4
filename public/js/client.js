@@ -15,7 +15,7 @@ const FACE = [0.0, 0.0, -1.0];
 const NEG_FACE = glMatrix.vec3.create();
 glMatrix.vec3.negate(NEG_FACE, FACE);
 
-const player = {};
+let player = {};
 
 const model_ref = {};
 
@@ -71,9 +71,8 @@ socket.on('enter game', function (msg) {
     const objs = data.objects; 
 
     uid = players[socket.id].name;
-    const player = players[socket.id];
+    player = players[socket.id];
     console.log("my name is", uid);
-    console.log(player);
     
     StatusBar.InitializeSkills(player.skills);
     StatusBar.InitializeStatus(player.status);
@@ -528,20 +527,13 @@ const mouseDown = function (e) {
     switch (e.which) {
         case 1:
             // left click
-            if (casting == 0) {
-                console.log('slime fired');
-                const skillsParams = { skillNum: 0, skillName: 'Slime', position: cursor };
+            if (casting >= 0) {
+                console.log('skill ' + casting + ' fired');
+                const skillsParams = { skillNum: casting, position: cursor };
                 socket.emit('skill', JSON.stringify(skillsParams));
-            }
-            else if (casting == 1) {
-                console.log('shooting slime fired');
-                const skillsParams = { skillNum: 1, skillName: 'Shooting Slime', position: cursor };
-                socket.emit('skill', JSON.stringify(skillsParams));
-            }
-            else if (casting == 2) {
-                console.log('melee slime fired');
-                const skillsParams = { skillNum: 2, skillName: 'Melee Slime', position: cursor };
-                socket.emit('skill', JSON.stringify(skillsParams));
+                // TODO check out of range or do the checking on the server
+                delete objects["casting"];
+                casting = -1;
             }
             break;
         case 3:
@@ -677,30 +669,22 @@ function chatBoxFade() {
 let casting = -1;
 
 function handleSkill(uid, skillNum) {
-    if (uid === "God") {
-        switch (skillNum) {
-            case 0:
-                // Spawn Slime
-                casting = 0;
-                break;
-            case 1:
-                // Generate Shooting Slime
-                casting = 1;
-                break;
-            case 2:
-                // Generate Melee Slime
-                casting = 2;
-                break;
-            default:
-            // do nothing
-        }
-        return;
+    const skill = player.skills[skillNum]
+    switch (skill.type) {
+        case "LOCATION":
+            casting = skillNum;
+            break;
+        case "SELF":
+            const skillsParams = { skillNum };
+            socket.emit("skill", JSON.stringify(skillsParams));
+            break;
+        default:
+            console.log("SKILL DOESN'T HAVE A TYPE!!!!!")
+            return;
+
     }
-    const skillsParams = {
-        skillNum,
-    };
-    socket.emit('skill', JSON.stringify(skillsParams));
 }
+
 
 /*============================== End of Skill ===================================*/
 export { uid }

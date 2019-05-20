@@ -154,7 +154,7 @@ class GameInstance {
     // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
         const obj = this.objects[name];
-        let { skillNum, location } = skillParams;
+        let { skillNum, position } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
         if (skill.curCoolDown > 0) { // not cooled down
             return;
@@ -169,7 +169,7 @@ class GameInstance {
                 break;
 
             case SKILL_TYPE.LOCATION:
-                if (outOfWorld(location)) {
+                if (this.outOfWorld(position)) {
                     console.log("skill out of world");
                     return;
                 }

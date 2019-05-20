@@ -49,7 +49,7 @@ class God {
                 'coolDown': 1,
                 'curCoolDown': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
-                'SKILL_TYPE': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
                     const slime = new Slime(game.slimeCount, "explode");
@@ -62,7 +62,7 @@ class God {
                 'name': 'Shooting Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
-                'SKILL_TYPE': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
                     const slime = new Slime(game.slimeCount, "shoot");
@@ -75,7 +75,7 @@ class God {
                 'name': 'Melee Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
-                'SKILL_TYPE': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
                     const slime = new Slime(game.slimeCount, "melee");
