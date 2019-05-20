@@ -226,8 +226,7 @@ class Tree {
 }
 
 class GameInstance {
-    constructor(max_survivors = 3, physicsEngine) {
-        this.max_survivors = max_survivors;
+    constructor(config, physicsEngine) {
         this.survivorCount = 0;
         this.slimeCount = 0;
         this.treeId = 0;
@@ -260,6 +259,14 @@ class GameInstance {
         this.toSend.push(tree.name);
         this.insertObjListAndMap(tree);
         this.physicsEngine.addTree(tree.name);
+        this.loadConfig(config);
+    }
+
+    loadConfig(config) {
+        this.max_survivors = config.game.max_survivors;
+        this.treeLowerSize = parseInt(config.map.tree.lower_size);
+        this.treeUpperSize = parseInt(config.map.tree.upper_size);
+        this.treeNum = config.map.tree.num;
     }
 
     insertObjListAndMap(obj) {

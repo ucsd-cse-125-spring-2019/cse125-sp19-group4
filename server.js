@@ -6,6 +6,9 @@ const io = require('socket.io')(http, {
     pingTimeout: 3000,
 });
 const path = require('path');
+const fs = require('fs');
+const ini = require('ini');
+const config = ini.parse(fs.readFileSync('./config.ini', 'utf-8'))
 const game = require('./public/js/game.js');
 const physics = require('./public/js/physics.js');
 const Utils = require('./public/js/utils.js');
@@ -17,9 +20,8 @@ app.get('/', function (req, res) {
 });
 
 // TODO: read from config
-const max_survivors = 1;
 const physicsEngine = new physics();
-const gameInstance = new game(max_survivors, physicsEngine);
+const gameInstance = new game(config, physicsEngine);
 
 const inputs = [];
 const movementEvents = {};
