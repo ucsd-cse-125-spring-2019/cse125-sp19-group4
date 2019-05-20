@@ -1,7 +1,7 @@
 const CANNON = require('../lib/cannon.min.js');
 const glMatrix = require('gl-Matrix');
 class PhysicsEngine {
-    constructor() {
+    constructor(mapWidth, mapHeight) {
         this.obj = {};
 
         // Create the world
@@ -11,8 +11,10 @@ class PhysicsEngine {
         this.world.solver.iterations = 10;
 
         this.defineMaterial();
-
         this.addGroundPlane(this.groundMaterial);
+        this.mapWidth = mapWidth;
+        this.mapHeight = mapHeight;
+        this.addMapBoundary(mapWidth, mapHeight);
 
         // Store all hits in current step
         this.hits = [];
@@ -68,7 +70,28 @@ class PhysicsEngine {
         this.ground = groundBody;
         groundBody.role = 'ground';
     }
-    //----------------------------------------- End of World Setup --------------------------------
+
+    addMapBoundary(mapWidth, mapHeight) {
+        console.log("Map width:", mapWidth, "height:", mapHeight);
+        const wallThickness = 0.01;
+        // Add four boxes as walls around the map
+        const northBoundWallshape = new CANNON.Box(new CANNON.Vec3(mapWidth/2, 500, wallThickness));
+        const northWall = new CANNON.Body({ mass: 0, shape: northBoundWallshape });
+        northWall.position.set(0, 500, -mapHeight/2 - wallThickness);
+        this.world.add(northWall); 
+        const southWall = new CANNON.Body({ mass: 0, shape: northBoundWallshape });
+        southWall.position.set(0, 500, mapHeight/2 + wallThickness);
+        this.world.add(southWall); 
+
+        const eastBoundWallshape = new CANNON.Box(new CANNON.Vec3(wallThickness, 500, mapHeight/2));
+        const eastWall = new CANNON.Body({ mass: 0, shape: eastBoundWallshape });
+        eastWall.position.set(mapWidth/2 + wallThickness, 500, 0);
+        this.world.add(eastWall);     
+        const westWall = new CANNON.Body({ mass: 0, shape: eastBoundWallshape });
+        westWall.position.set(-mapWidth/2 - wallThickness, 500, 0);
+        this.world.add(westWall); 
+    }
+    //-------------------------------------- End of World Setup --------------------------------
 
     
     addPlayer(name, mass = 20, radius, position = { x: 0, y: 0, z: 0 }, maxJump, isGod = false) {

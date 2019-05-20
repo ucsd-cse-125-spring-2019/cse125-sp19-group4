@@ -20,7 +20,7 @@ app.get('/', function (req, res) {
 });
 
 // TODO: read from config
-const physicsEngine = new physics();
+const physicsEngine = new physics(config.map.width, config.map.height);
 const gameInstance = new game(config, physicsEngine);
 
 const inputs = [];
