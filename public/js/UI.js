@@ -110,6 +110,32 @@ function InitializeSkills(skills) {
         skillsBar.appendChild(skill);
     }
 }
+
+
+
+function InitializeTeammates(Survivors) {
+    let teammates = document.getElementById("teammatesBar");
+    for (let key in Survivors) {
+        let survivor = Survivors[key]
+        if (survivor.name === "God") {
+            continue;
+        }
+        let teammate = document.createElement('div');
+        teammate.className += "teammate"
+
+        let img = document.createElement('img');
+        img.src = survivor.iconPath;
+        img.style = "width: 100%; height: 100%"
+
+        let name = document.createElement('span');
+        name.style = "color: white; font-size: 8pt; white-space: nowrap;";
+        name.innerHTML = survivor.name;
+
+        teammate.appendChild(img);
+        teammate.appendChild(name)
+        teammatesBar.appendChild(teammate);
+    }
+}
 /* -------------------------Initialize status bar--------------------------- */
 
 
@@ -156,4 +182,4 @@ function coolDownUpdate(skills) {
 
 
 
-export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate }
+export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates }

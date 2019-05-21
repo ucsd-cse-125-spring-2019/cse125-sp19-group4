@@ -22,9 +22,16 @@
       /* ----------------------------------------Status Bar-------------------------------------- */
       #skillBarDiv {position: absolute; bottom: 5%; width: 50%; height: 60px; left: 25%; background-size: cover;
                     background-image: url('/public/images/background/BACKGROUND_skillbar.jpeg')}
-      #skillsBar {top: 50%; transform: translateY(-50%); position: absolute; }
+      #skillsBar {position: absolute; }
       .skill { display: inline-block; height: 40px; width: 40px; box-shadow: 0 0 3px; border: 2px solid saddlebrown;
                position: relative; margin: 5px 5px; background: #131F1C;}
+      /* ----------------------------------------Status Bar-------------------------------------- */
+
+      /* ----------------------------------------Status Bar-------------------------------------- */
+      #teammatesDiv {position: absolute; top: 10px; width: 50%; height: 60px; left: 10px; background-size: cover;}
+      #teammatesBar {position: absolute; }
+      .teammate { display: inline-block; height: 60px; width: 60px; box-shadow: 0 0 3px; border: 2px solid saddlebrown;
+                position: relative; margin: 0 10px 0 0; background: #131F1C;}
       /* ----------------------------------------Status Bar-------------------------------------- */
 
 
@@ -119,6 +126,9 @@
       <div id="skillBarDiv">
         <ul id="skillsBar"></ul>
       </div>
+      <div id="teammatesDiv">
+        <ul id="teammatesBar"></ul>
+      </div>
       <div id="messageBox">
         <ul id="messages"></ul>
         <form id="messageForm">
@@ -133,5 +143,5 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/public/js/OBJObject.js"></script>
   <script src="/public/js/client.js" type="module"></script>
-  <script src="/public/js/statusBar.js" type="module"></script>
+  <script src="/public/js/UI.js" type="module"></script>
 </html>

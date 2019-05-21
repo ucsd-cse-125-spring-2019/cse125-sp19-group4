@@ -107,6 +107,7 @@ class God {
 class Fighter {
     constructor() {
         this.profession = "Fighter";
+        this.iconPath = 'public/images/professions/PROFESSION_Fighter.jpg'
         this.status = {
             'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
@@ -129,12 +130,14 @@ class Archer {
             'STATUS_speed': 10,
         };
         this.skills = {};
+        this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg'
     }
 }
 
 class Healer {
     constructor() {
         this.profession = "Healer";
+        this.iconPath = 'public/images/professions/PROFESSION_Healer.jpg'
         this.status = {
             'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
@@ -191,12 +194,14 @@ class Healer {
                 }, 
             },
         };
+        
     }
 }
 
 class Builder {
     constructor() {
         this.profession = "Builder";
+        this.iconPath = 'public/images/professions/PROFESSION_Builder.jpg'
         this.status = {
             'STATUS_maxHealth': 100,
             'STATUS_curHealth': 100,
@@ -227,6 +232,7 @@ function initializeProfession(survivor, msg) {
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;
     survivor.status = profession.status;
+    survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
         survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];
     }

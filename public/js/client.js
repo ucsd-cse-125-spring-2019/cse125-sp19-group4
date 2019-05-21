@@ -1,7 +1,7 @@
 import getWrappedGL from '/public/util/debug.js';
 import readStringFrom from '/public/util/io.js';
 import Camera from '/public/js/camera.js'
-import * as StatusBar from '/public/js/statusBar.js'
+import * as UI from '/public/js/UI.js'
 
 const UIdebug = true;
 
@@ -74,8 +74,9 @@ socket.on('enter game', function (msg) {
     player = players[socket.id];
     console.log("my name is", uid);
     
-    StatusBar.InitializeSkills(player.skills);
-    StatusBar.InitializeStatus(player.status);
+    UI.InitializeSkills(player.skills);
+    UI.InitializeStatus(player.status);
+    UI.InitializeTeammates(players);
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
@@ -130,12 +131,12 @@ socket.on('game_status', function (msg) {
             camera.setPosition(player.position);
             // console.log(player.position);
         }
-        // Update statusbar
+        // Update UI
         if (typeof player.status !== 'undefined') {
-            StatusBar.statusUpdate(player.status);
+            UI.statusUpdate(player.status);
         }
         if (typeof player.skills !== 'undefined') {
-            StatusBar.coolDownUpdate(player.skills);
+            UI.coolDownUpdate(player.skills);
         }
     }
 
@@ -190,7 +191,7 @@ socket.on('game_status', function (msg) {
     $('#bytes').html(msg.length);
     $('#server').html(status.debug.looptime);
 
-    StatusBar.timerUpdate(status.time);
+    UI.timerUpdate(status.time);
     
 });
 
