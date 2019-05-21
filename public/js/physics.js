@@ -343,9 +343,7 @@ class PhysicsEngine {
         bulletBody.velocity.set( direction[0] * shootingSpeed,
                                  direction[1] * shootingSpeed,
                                  direction[2] * shootingSpeed );
-        // const x = initiator.position.x + direction[0] * (initiator.shapes[0].radius+ballShape.radius);
-        // const y = initiator.position.y + direction[1] * (ballShape.radius) + 1.5;
-        // const z = initiator.position.z + direction[2] * (initiator.shapes[0].radius+ballShape.radius);
+        bulletBody.velocity.vadd(initiator.velocity, bulletBody.velocity);
         const x = initiator.position.x + direction[0] * (1.414 * initiator.shapes[0].halfExtents.x + ballShape.radius);
         const y = initiator.position.y + direction[1] * (ballShape.radius) + 1.5;
         const z = initiator.position.z + direction[2] * (1.414 * initiator.shapes[0].halfExtents.z + ballShape.radius);
@@ -369,7 +367,7 @@ class PhysicsEngine {
                 if (e.body.role === 'enemy') {
                     bulletBody.to = e.body.name; // TODO: Change to array?
                 } else if (e.body.role === 'survivor') {
-                    console.log("Collide with survivor");
+                    // console.log("Collide with survivor");
                     bulletBody.to = e.body.name;
                 }
             }
