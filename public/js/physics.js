@@ -196,6 +196,16 @@ class PhysicsEngine {
         this.obj[name] = treeBody;
     }
 
+    /**
+     * This function would immunity of god
+     */
+    switchGodImmunity() {
+        const god = this.obj['God'];
+        const isImmune = god.body.collisionFilterMask === BOUNDARY;
+        god.body.collisionFilterMask = isImmune ? 
+            (SURVIVORS | ENVIRONMENT | BOUNDARY | BULLET | MELEE) : BOUNDARY;
+    }
+
     updateVelocity(name, direction, speed) {
         this.obj[name].velocity.x = direction[0] * speed;
         this.obj[name].velocity.z = direction[2] * speed;
