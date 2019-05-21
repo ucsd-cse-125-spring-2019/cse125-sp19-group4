@@ -90,12 +90,13 @@ class Bullet {
 }
 
 class Tree {
-    constructor(treeId) {
-        this.name = "Tree " + treeId;
-        this.radius = 0; // only to suppress error when assigning position from physics engine
+    constructor(treeId, size) {
+        this.name = 'Tree ' + treeId;
+        this.radius = 0;    // only to suppress error when assigning position from physics engine
         this.position = [20, 0, -20];
         this.direction = [0, 0, -1];
-        this.model = "tree";
+        this.model = 'tree';
+        this.size = size;
     }
 }
 
