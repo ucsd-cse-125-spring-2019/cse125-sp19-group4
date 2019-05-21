@@ -216,12 +216,13 @@ class Bullet {
 }
 
 class Tree {
-    constructor(treeId) {
+    constructor(treeId, size) {
         this.name = 'Tree ' + treeId;
         this.radius = 0;    // only to suppress error when assigning position from physics engine
         this.position = [20, 0, -20];
         this.direction = [0, 0, -1];
         this.model = 'tree';
+        this.size = size;
     }
 }
 
@@ -254,12 +255,8 @@ class GameInstance {
             'HealerCount': 0,
             'BuilderCount': 0
         }
-
-        const tree = new Tree(this.treeId++);
-        this.toSend.push(tree.name);
-        this.insertObjListAndMap(tree);
-        this.physicsEngine.addTree(tree.name);
         this.loadConfig(config);
+        this.generateEnvironment();
     }
 
     loadConfig(config) {
@@ -267,6 +264,18 @@ class GameInstance {
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
+    }
+
+    generateEnvironment() {
+        // Generate Tree
+        for (let i = 0; i < this.treeNum; i++) {
+            let diff = this.treeUpperSize - this.treeLowerSize + 1;
+            const size = Math.floor(Math.random() * diff) + this.treeLowerSize;
+            const tree = new Tree(this.treeId++, size);
+            this.toSend.push(tree.name);
+            this.insertObjListAndMap(tree);
+            this.physicsEngine.addTree(tree.name, true, tree.size);
+        }
     }
 
     insertObjListAndMap(obj) {

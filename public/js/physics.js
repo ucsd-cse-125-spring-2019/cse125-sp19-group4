@@ -181,9 +181,15 @@ class PhysicsEngine {
 
     }
 
-    addTree(name, radius = 0.5, position = { x: 20, y: 0, z: -20 }) {
+    addTree(name, random, size, radius = 0.5, position = { x: 20, y: 0, z: -20 }) {
+        if (random) {
+            // randomly generate tree position
+            position.x = Math.floor(Math.random() * (this.mapWidth - Math.ceil(radius)) + Math.ceil(radius)) - this.mapWidth/2;
+            position.y = 0;
+            position.z = Math.floor(Math.random() * (this.mapHeight - Math.ceil(radius)) + Math.ceil(radius)) - this.mapHeight/2;
+        }
         // tree should be static 
-        const treeShape = new CANNON.Box(new CANNON.Vec3(radius, 20 * radius, radius));
+        const treeShape = new CANNON.Box(new CANNON.Vec3(radius, size * 4 * radius, radius));
         // const treeShape = new CANNON.Cylinder(radius, radius, radius * 10, 10);
         const treeBody = new CANNON.Body({
             mass: 0,
