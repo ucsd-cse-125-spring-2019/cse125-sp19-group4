@@ -39,6 +39,7 @@ class God {
         this.jumpSpeed = 10;
         this.model = 'player';
         this.radius = 2;
+        this.canAttack = false; // Need to be switched on at endgame
         this.skills = {
             0: {
                 'name': 'Slime',
@@ -216,18 +217,18 @@ class Bullet {
 }
 
 class Tree {
-    constructor(treeId) {
+    constructor(treeId, size) {
         this.name = 'Tree ' + treeId;
         this.radius = 0;    // only to suppress error when assigning position from physics engine
         this.position = [20, 0, -20];
         this.direction = [0, 0, -1];
         this.model = 'tree';
+        this.size = size;
     }
 }
 
 class GameInstance {
-    constructor(max_survivors = 3, physicsEngine) {
-        this.max_survivors = max_survivors;
+    constructor(config, physicsEngine) {
         this.survivorCount = 0;
         this.slimeCount = 0;
         this.treeId = 0;
@@ -255,11 +256,27 @@ class GameInstance {
             'HealerCount': 0,
             'BuilderCount': 0
         }
+        this.loadConfig(config);
+        this.generateEnvironment();
+    }
 
-        const tree = new Tree(this.treeId++);
-        this.toSend.push(tree.name);
-        this.insertObjListAndMap(tree);
-        this.physicsEngine.addTree(tree.name);
+    loadConfig(config) {
+        this.max_survivors = config.game.max_survivors;
+        this.treeLowerSize = parseInt(config.map.tree.lower_size);
+        this.treeUpperSize = parseInt(config.map.tree.upper_size);
+        this.treeNum = config.map.tree.num;
+    }
+
+    generateEnvironment() {
+        // Generate Tree
+        for (let i = 0; i < this.treeNum; i++) {
+            let diff = this.treeUpperSize - this.treeLowerSize + 1;
+            const size = Math.floor(Math.random() * diff) + this.treeLowerSize;
+            const tree = new Tree(this.treeId++, size);
+            this.toSend.push(tree.name);
+            this.insertObjListAndMap(tree);
+            this.physicsEngine.addTree(tree.name, true, tree.size);
+        }
     }
 
     insertObjListAndMap(obj) {
@@ -391,6 +408,7 @@ class GameInstance {
      */
     shoot(name) {
         const initiator = this.objects[name];
+        if (name === 'God' && !initiator.canAttack) return;
         const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
         this.toSend.push(bullet.name);
 
@@ -400,6 +418,7 @@ class GameInstance {
 
     melee(name) {
         const initiator = this.objects[name];
+        if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
     }
