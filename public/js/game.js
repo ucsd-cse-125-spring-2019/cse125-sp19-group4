@@ -174,9 +174,10 @@ class GameInstance {
                     return;
                 }
                 skill.function(this, skillParams);
+                break;
 
             default: 
-                skill.function(this, skillParams);
+                console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
         skill.curCoolDown = skill.coolDown;
     }

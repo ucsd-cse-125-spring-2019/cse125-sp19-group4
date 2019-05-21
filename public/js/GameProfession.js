@@ -176,7 +176,7 @@ class Healer {
                 'iconPath': 'a',
                 'type': SKILL_TYPE.SELF,
                 'function': function(mySelf) {
-                    mySelf.status.STATUS_curHealth += 10;
+                    mySelf.status.STATUS_curHealth = 100;
                 }
             },
 
