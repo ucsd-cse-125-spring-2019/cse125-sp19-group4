@@ -180,7 +180,11 @@ socket.on('game_status', function (msg) {
             glMatrix.mat4.fromTranslation(translation, position);
             const transformation = glMatrix.mat4.create();
             glMatrix.mat4.multiply(transformation, translation, rotation);
-            glMatrix.mat4.multiply(objects[name].t, transformation, transform_ref[objects[name].m]);
+            let t = glMatrix.mat4.clone(transform_ref[objects[name].m]);
+            if (objects[name].m === 'tree') {
+                t = glMatrix.mat4.fromScaling(t, [obj.size, obj.size, obj.size]);
+            } 
+            glMatrix.mat4.multiply(objects[name].t, transformation, t);
         }
     });
 
