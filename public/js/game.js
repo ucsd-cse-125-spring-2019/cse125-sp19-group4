@@ -39,6 +39,7 @@ class God {
         this.jumpSpeed = 10;
         this.model = 'player';
         this.radius = 2;
+        this.canAttack = false; // Need to be switched on at endgame
         this.skills = {
             0: {
                 'name': 'Slime',
@@ -407,6 +408,7 @@ class GameInstance {
      */
     shoot(name) {
         const initiator = this.objects[name];
+        if (name === 'God' && !initiator.canAttack) return;
         const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
         this.toSend.push(bullet.name);
 
@@ -416,6 +418,7 @@ class GameInstance {
 
     melee(name) {
         const initiator = this.objects[name];
+        if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
     }
