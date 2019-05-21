@@ -472,6 +472,10 @@ class GameInstance {
 
     survivorHasDied(name) {
         this.deadSurvivors.push(name);
+        if (this.deadSurvivors.length == this.max_survivors) {
+            server.endGame(false);
+            return;
+        }
         server.notifySurvivorDied(name);
     }
 

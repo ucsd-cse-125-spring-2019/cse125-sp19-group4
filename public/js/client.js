@@ -111,6 +111,11 @@ socket.on('Survivor Died', function(msg) {
     }
 });
 
+socket.on('end game', function(msg) {
+    $('.game-area').html($('#endgame-template').html());
+    document.getElementById('endgame-message').innerHTML = msg;
+});
+
 $('#GodButton').click(function () {
     socket.emit("play as god");
 });

@@ -1,6 +1,7 @@
 module.exports = {
     notifySurvivorDied,
-    notifyAll
+    notifyAll,
+    endGame
 }
 
 const express = require('express');
@@ -139,85 +140,90 @@ function enterGame() {
 }
 
 let elapse = 0;
+let gameStartTime = null;
+let then = null;
+let interval = null;
 
 function game_start() {
-    const gameStartTime = Date.now();
-    let then = Date.now();
+    gameStartTime = Date.now();
+    then = Date.now();
 
-    setInterval(function () {
-        const start = Date.now();
-        const deltaTime = start - then;
-        then = start;
-        inputs.forEach(function (e) {
-            io.emit('chat message', e);
-        });
-        inputs.length = 0;
+    interval = setInterval(gameLoop, 1000 / tick_rate);
+}
 
-        gameInstance.beforeStep();
-        gameInstance.decrementCoolDown(1/tick_rate);
+function gameLoop() {
+    const start = Date.now();
+    const deltaTime = start - then;
+    then = start;
+    inputs.forEach(function (e) {
+        io.emit('chat message', e);
+    });
+    inputs.length = 0;
 
-        // Handle Movements
-        Object.keys(movementEvents).forEach((name) => {
-            if (movementEvents[name] === 'stay') {
-                gameInstance.stay(name);
-            } else {
-                gameInstance.move(name, movementEvents[name]);
-            }
-        });
+    gameInstance.beforeStep();
+    gameInstance.decrementCoolDown(1/tick_rate);
 
-        // Handle jumps
-        Object.keys(jumpEvents).forEach((name) => {
-            gameInstance.jump(name);
-            delete jumpEvents[name];
-        });
-
-        // Handle skill
-        Object.keys(skillEvents).forEach((name) => {
-            gameInstance.handleSkill(name, skillEvents[name]);
-            delete skillEvents[name];
-        });
-
-        // Handle attacks
-        Object.keys(shootEvents).forEach((name) => {
-            gameInstance.shoot(name, shootEvents[name]);
-            delete shootEvents[name];
-        });
-        Object.keys(meleeEvents).forEach((name) => {
-            gameInstance.melee(name, meleeEvents[name]);
-            delete meleeEvents[name];
-        });
-
-        // Step and update objects
-        physicsEngine.world.step(deltaTime * 0.001);
-        Object.keys(gameInstance.objects).forEach(function (name) {
-            gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
-        });
-        gameInstance.afterStep();
-
-        const toSend = {};
-        gameInstance.toSend.forEach(name => {
-            toSend[name] = gameInstance.objects[name];
-        });
-
-        let end = Date.now();
-        duration = Math.floor((end - gameStartTime) / 1000);
-        
-        const broadcast_status = {
-            data: toSend,
-            time: duration,
-            toClean: gameInstance.toClean,
-            debug: {looptime: elapse},
+    // Handle Movements
+    Object.keys(movementEvents).forEach((name) => {
+        if (movementEvents[name] === 'stay') {
+            gameInstance.stay(name);
+        } else {
+            gameInstance.move(name, movementEvents[name]);
         }
+    });
 
-        const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
-        io.emit('game_status', msg);
-        gameInstance.afterSend();
-        elapse = Date.now() - start;
+    // Handle jumps
+    Object.keys(jumpEvents).forEach((name) => {
+        gameInstance.jump(name);
+        delete jumpEvents[name];
+    });
 
-        if (elapse > 1000 / tick_rate) {
-            console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
-        }
-    }, 1000 / tick_rate);
+    // Handle skill
+    Object.keys(skillEvents).forEach((name) => {
+        gameInstance.handleSkill(name, skillEvents[name]);
+        delete skillEvents[name];
+    });
+
+    // Handle attacks
+    Object.keys(shootEvents).forEach((name) => {
+        gameInstance.shoot(name, shootEvents[name]);
+        delete shootEvents[name];
+    });
+    Object.keys(meleeEvents).forEach((name) => {
+        gameInstance.melee(name, meleeEvents[name]);
+        delete meleeEvents[name];
+    });
+
+    // Step and update objects
+    physicsEngine.world.step(deltaTime * 0.001);
+    Object.keys(gameInstance.objects).forEach(function (name) {
+        gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
+    });
+    gameInstance.afterStep();
+
+    const toSend = {};
+    gameInstance.toSend.forEach(name => {
+        toSend[name] = gameInstance.objects[name];
+    });
+
+    let end = Date.now();
+    duration = Math.floor((end - gameStartTime) / 1000);
+    
+    const broadcast_status = {
+        data: toSend,
+        time: duration,
+        toClean: gameInstance.toClean,
+        debug: {looptime: elapse},
+    }
+
+    const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)
+    io.emit('game_status', msg);
+    gameInstance.afterSend();
+    elapse = Date.now() - start;
+
+    if (elapse > 1000 / tick_rate) {
+        console.error('Warning: loop time ' + elapse.toString() + 'ms exceeds tick rate of ' + tick_rate.toString());
+    }
 }
 
 function notifyAll(msg, type) {
@@ -230,3 +236,11 @@ function notifySurvivorDied(name) {
     io.emit('Survivor Died', JSON.stringify({name}));
 }
 
+function endGame(survivorsWon) {
+    clearInterval(interval);
+    if (survivorsWon) {
+        io.emit('end game', 'Survivors won the game!');
+    } else {
+        io.emit('end game', 'God won the game!');
+    }
+}
