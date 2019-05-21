@@ -282,8 +282,8 @@ class PhysicsEngine {
 
         const engine = this;
         attackBody.addEventListener("collide", function (e) {
-            console.log("Melee hit:", name, "->", e.body.name);
-            if (e.body.name != name) {
+            if (e.body.name != name && e.body.role != engine.obj[name].role) {
+                console.log("Melee hit:", name, "->", e.body.name);
                 if (e.body.role === 'enemy' || e.body.role === 'survivor') {
                     attackBody.to = e.body.name; // TODO: Change to array?
                     engine.hits.push(meleeId);
@@ -346,7 +346,7 @@ class PhysicsEngine {
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
             console.log("Bullet hit:", name, "->", e.body.name);
-            if (e.body.name != name) {
+            if (e.body.name != name && e.body.role != engine.obj[name].role) {
                 if (e.body.role === 'enemy') {
                     bulletBody.to = e.body.name; // TODO: Change to array?
                 } else if (e.body.role === 'survivor') {
