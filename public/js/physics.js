@@ -362,6 +362,9 @@ class PhysicsEngine {
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
             console.log("Bullet hit:", name, "->", e.body.name);
+            if (typeof engine.obj[name] === 'undefined') {
+                return;
+            }
             if (e.body.name != name && e.body.role != engine.obj[name].role) {
                 if (e.body.role === 'enemy') {
                     bulletBody.to = e.body.name; // TODO: Change to array?
