@@ -74,8 +74,8 @@ socket.on('enter game', function (msg) {
     player = players[socket.id];
     console.log("my name is", uid);
     
-    UI.InitializeSkills(player.skills);
     UI.InitializeStatus(player.status);
+    UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
 
     // Initialize models for all objects

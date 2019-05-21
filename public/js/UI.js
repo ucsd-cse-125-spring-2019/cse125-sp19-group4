@@ -89,6 +89,12 @@ function InitializeStatus(status) {
 
 
 function InitializeSkills(skills) {
+    let skillBarDiv = document.createElement('div');
+    skillBarDiv.id = "skillBarDiv";
+    let skillsBar = document.createElement('ul');
+    skillsBar.id = "skillsBar";
+    skillBarDiv.appendChild(skillsBar);
+    document.getElementById("statusBar").appendChild(skillBarDiv);
     for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
         let skill = document.createElement('div');
@@ -100,7 +106,8 @@ function InitializeSkills(skills) {
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
                      "bottom: 0; opacity: 0.8";
         let span = document.createElement('span');
-        span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%)";
+        span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" + 
+                     "font-size: 10pt;";
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
         skill.className += "skill";
