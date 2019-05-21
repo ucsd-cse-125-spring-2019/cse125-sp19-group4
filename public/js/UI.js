@@ -61,7 +61,7 @@ function InitializeStatus(status) {
     healthBar.id = "healthBar";
     healthBar.className += "progress-bar";
     healthBar.role = "progressbar";
-    healthBar.style = healthBarStyle.format(60);
+    healthBar.style = healthBarStyle.format(100);
     healthBar["aria-valuemin"] = "0";
     healthBar["aria-valuemax"] = "100";
     healthBar["aria-valuenow"] = "50";
@@ -112,7 +112,7 @@ function InitializeSkills(skills) {
 }
 
 
-
+const teammatesName = []
 function InitializeTeammates(Survivors) {
     let teammates = document.getElementById("teammatesBar");
     for (let key in Survivors) {
@@ -120,6 +120,8 @@ function InitializeTeammates(Survivors) {
         if (survivor.name === "God") {
             continue;
         }
+        teammatesName.push(survivor.name)
+
         let teammate = document.createElement('div');
         teammate.className += "teammate"
 
@@ -135,7 +137,7 @@ function InitializeTeammates(Survivors) {
         healthBar.id = survivor.name + "healthBar";
         healthBar.className += "progress-bar";
         healthBar.role = "progressbar";
-        healthBar.style = healthBarStyle.format(60);
+        healthBar.style = healthBarStyle.format(100);
         healthBar["aria-valuemin"] = "0";
         healthBar["aria-valuemax"] = "100";
         healthBar["aria-valuenow"] = "50";
@@ -171,7 +173,10 @@ function timerUpdate(second) {
 function statusUpdate(status) {
     for (let i in status) {
         if (i === 'STATUS_curHealth') {
-            document.getElementById('healthBar').style = healthBarStyle.format(status[i]);
+            const curHealth = status.STATUS_curHealth;
+            const maxHealth = status.STATUS_maxHealth;
+            const width = Math.floor(curHealth / maxHealth * 100);
+            document.getElementById('healthBar').style = healthBarStyle.format(width);
             document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
         } else if (isStatusValid(i)) {
             document.getElementById(i).innerHTML = status[i];
@@ -194,9 +199,26 @@ function coolDownUpdate(skills) {
         }
     }
 }
+
+function teammatesUpdate(data) {
+    for (let i in teammatesName) {
+        const name = teammatesName[i];
+        if (name in data) {
+            const player = data[name];
+            if ('status' in player) {
+                const curHealth = player.status.STATUS_curHealth;
+                const maxHealth = player.status.STATUS_maxHealth;
+                const width = Math.floor(curHealth / maxHealth * 100);
+                document.getElementById(name + 'healthBar').style = healthBarStyle.format(width);
+                // document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
+            }
+        }
+    }
+}
 /* --------------------------all update functions--------------------------- */
 
 
 
 
-export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates }
+export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
+         teammatesUpdate }

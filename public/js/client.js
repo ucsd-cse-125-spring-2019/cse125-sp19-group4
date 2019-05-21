@@ -139,6 +139,7 @@ socket.on('game_status', function (msg) {
             UI.coolDownUpdate(player.skills);
         }
     }
+    UI.teammatesUpdate(data);
 
     Object.keys(data).forEach(function (name) {
         const obj = data[name];
