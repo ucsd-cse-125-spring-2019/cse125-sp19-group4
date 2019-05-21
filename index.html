@@ -19,19 +19,29 @@
       /* -----------------------------------End of Chat Box----------------------------------- */
 
 
-      /* ----------------------------------------Status Bar-------------------------------------- */
+      /* ----------------------------------------Skill Bar-------------------------------------- */
       #skillBarDiv {width: 100%; height: 30px; margin-top: 5px}
       #skillsBar {position: absolute; }
       .skill { display: inline-block; height: 30px; width: 30px; box-shadow: 0 0 3px; border: 1px solid #495057;
                position: relative; margin: 0 5px 0 0; background: #131F1C;}
-      /* ----------------------------------------Status Bar-------------------------------------- */
+      /* ----------------------------------------SKill Bar-------------------------------------- */
 
-      /* ----------------------------------------Status Bar-------------------------------------- */
+
+      /* ----------------------------------------Teammates Bar-------------------------------------- */
       #teammatesDiv {position: absolute; top: 10px; width: 50%; height: 60px; left: 10px; background-size: cover;}
       #teammatesBar {position: absolute; }
       .teammate { display: inline-block; height: 60px; width: 60px; text-align: center;
                 position: relative; margin: 0 10px 0 0; background: #131F1C; font-size: 0}
-      /* ----------------------------------------Status Bar-------------------------------------- */
+      /* ----------------------------------------Teammates Bar-------------------------------------- */
+
+
+      /* ----------------------------------------Items Bar-------------------------------------- */
+      #vault {position: absolute; width: 176px; height: 106px; bottom: 20px; right: 20px; background-color:#131F1C;
+              box-shadow: 0 0 3px;}
+      #vaultUl {position: absolute; font-size: 0pt; border: solid #495057; border-width: 0 0 1px 1px; }
+      .item { display: inline-block; height: 35px; width: 35px;  border: solid #495057;
+               position: relative; margin: 0; background: #131F1C; border-width: 1px 1px 0 0}
+      /* ----------------------------------------Items Bar-------------------------------------- */
 
 
       /* ------------------------------------------Lobby----------------------------------------- */
@@ -41,6 +51,8 @@
       #lobbyUl img {height: 150px; width: 150px; object-fit: cover; vertical-align: unset;}
       /* ------------------------------------------Lobby----------------------------------------- */
 
+
+      
 
       /* ----------------------------------------Debugger-------------------------------------- */
       #Debugger {float: left; left: 10px; bottom: 10px; padding: 7px; position: absolute; border-style: solid; width: 300px;
@@ -131,6 +143,9 @@
         <form id="messageForm">
           <input id="messageInput" autocomplete="off" onblur="this.focus()" autofocus disabled/>
         </form>
+      </div>
+      <div id="vault">
+        <ul id="vaultUl"></ul>
       </div>
     </script>
     <script id="endgame-template" type="text/template">

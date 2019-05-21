@@ -163,6 +163,15 @@ function InitializeTeammates(Survivors) {
         teammatesBar.appendChild(teammate);
     }
 }
+
+function InitializeVault() {
+    let ul = document.getElementById('vaultUl');
+    for (let i = 0; i < 15; i++) {
+        let div = document.createElement('div');
+        div.className += "item";
+        ul.appendChild(div);
+    }
+}
 /* -------------------------Initialize status bar--------------------------- */
 
 
@@ -238,4 +247,4 @@ function teammateRevived(teammate) {
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived }
+         teammatesUpdate, teammateDied, teammateRevived, InitializeVault }

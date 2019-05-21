@@ -77,6 +77,7 @@ socket.on('enter game', function (msg) {
     UI.InitializeStatus(player.status);
     UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
+    UI.InitializeVault();
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
