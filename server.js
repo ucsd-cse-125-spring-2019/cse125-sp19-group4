@@ -1,3 +1,8 @@
+module.exports = {
+    notifySurvivorDied,
+    notifyAll
+}
+
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
@@ -214,3 +219,14 @@ function game_start() {
         }
     }, 1000 / tick_rate);
 }
+
+function notifyAll(msg, type) {
+    gameInstance.clientSockets.forEach(function (socket) {
+        io.to(socket).emit('notification', JSON.stringify({msg, type}));
+    });
+}
+
+function notifySurvivorDied(name) {
+    io.emit('Survivor Died', JSON.stringify({name}));
+}
+

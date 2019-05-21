@@ -123,10 +123,11 @@ function InitializeTeammates(Survivors) {
         teammatesName.push(survivor.name)
 
         let teammate = document.createElement('div');
-        teammate.className += "teammate"
+        teammate.className += "teammate";
 
         let img = document.createElement('img');
         img.src = survivor.iconPath;
+        img.id = survivor.name + "Icon";
         img.style = "width: 100%; height: 100%; box-shadow: 0 0 3px; border: 2px solid saddlebrown;"
 
         let name = document.createElement('span');
@@ -215,10 +216,19 @@ function teammatesUpdate(data) {
         }
     }
 }
+
+function teammateDied(teammate) {
+    let img = document.getElementById(teammate + "Icon");
+    img.style.filter = "grayscale(70%)";
+}
+
+function teammateRevived(teammate) {
+
+}
 /* --------------------------all update functions--------------------------- */
 
 
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate }
+         teammatesUpdate, teammateDied, teammateRevived }

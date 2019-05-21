@@ -2,6 +2,11 @@ const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
 const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
 const { Item, Slime, Tile, Bullet, Tree } = require('./GameUnits.js').Units;
+const server = require('../../server.js');
+
+const NotificationType = {
+    EVENT : "EVENT",
+}
 
 class GameInstance {
     constructor(config, physicsEngine) {
@@ -13,6 +18,8 @@ class GameInstance {
         this.clientSockets = [];
         this.socketidToPlayer = {};
         this.survivors = [];
+        this.deadSurvivors = [];
+        this.liveSurvivors = [];
         this.objects = {};                    // store all objects (players, slimes, trees, etc) on the map
         this.positions = {};
         this.directions = {};
@@ -124,6 +131,7 @@ class GameInstance {
             initializeProfession(survivor, msg);
             this.survivorCount++;
             this.survivors.push(survivor);
+            this.liveSurvivors.push(survivor.name);
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
@@ -148,6 +156,9 @@ class GameInstance {
     }
 
     move(name, direction, updateDirectionOnly=false) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const obj = this.objects[name];
         const speed = obj.status.STATUS_speed;
         if (updateDirectionOnly) 
@@ -158,16 +169,25 @@ class GameInstance {
     }
 
     jump(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         this.physicsEngine.jump(name, this.objects[name].jumpSpeed, this.objects[name].maxJump);
     }
 
     stay(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         this.physicsEngine.stopMovement(name);
     }
 
 
     // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const obj = this.objects[name];
         let { skillNum, position } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
@@ -203,6 +223,9 @@ class GameInstance {
      * @param {string} name the name of object that initiates the attack
      */
     shoot(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const initiator = this.objects[name];
         if (name === 'God' && !initiator.canAttack) return;
         const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
@@ -213,18 +236,35 @@ class GameInstance {
     }
 
     melee(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const initiator = this.objects[name];
         if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
     }
 
+    //#region Before Step
     // ==================================== Before Step ===================================
     beforeStep() {
         this.clearKeys();
         this.slimesChase();
-        this.updateAttackTimer();
         this.slimesAttack();
+        this.updateAttackTimer();
+    }
+
+    // at the begining of each loop, set all omitable properties to not be sent,
+    // if those properties are modified during this cycle, add them back to send them.
+    clearKeys() {
+        for (let obj in this.skillables) {
+            this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills");
+        }
+        for (let obj in this.objects) {
+            if ('KEYS' in this.objects[obj]) {
+                this.objects[obj].KEYS.length = 0;
+            }
+        }
     }
 
     /**
@@ -232,7 +272,7 @@ class GameInstance {
      */
     slimesChase() {
         const game = this;
-        if (this.survivors.length > 0) {
+        if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 game.objects[name].chase(game);
             });
@@ -244,7 +284,7 @@ class GameInstance {
      */
     slimesAttack() {
         const game = this;
-        if (this.survivors.length > 0) {
+        if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 const object = game.objects[name];
                 if (object.attackTimer == object.attackInterval) {
@@ -269,11 +309,19 @@ class GameInstance {
             else if (object.attackTimer < object.attackInterval) object.attackTimer --; 
         })
     }
+    // ==================================== Before Step ===================================
+    //#endregion
 
+
+
+
+
+    //#region After Step
     // ==================================== After Step ===================================
     afterStep() {
         this.handleSlimeExplosion();
-        this.handleDamage();
+        this.handleBullets();
+        this.checkHealth();
         this.cleanup();
         this.comparePosition();
     }
@@ -286,7 +334,7 @@ class GameInstance {
     /**
      * Run through 'hits' to handle all the damage in current step 
      */
-    handleDamage() {
+    handleBullets() {
         const gameInstance = this;
         this.physicsEngine.hits.forEach(function (hit_name) {
             const hit = gameInstance.physicsEngine.obj[hit_name];
@@ -297,19 +345,8 @@ class GameInstance {
             if (typeof attackee !== 'undefined') {
                 console.log(hit.from);
                 attackee.onHit(gameInstance, hit.damage);
-                console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
-
-                if (attackee.status.STATUS_curHealth <= 0) {
-                    // Remove slime from slimes list
-                    if (gameInstance.objects[attackee.name] instanceof Slime) {
-                        const index = gameInstance.slimes.indexOf(attackee.name);
-                        if (index > -1) {
-                            gameInstance.slimes.splice(index, 1);
-                        }
-                    }
-                    gameInstance.toClean.push(attackee.name);
-                    console.log(attackee.name, 'died');
-                }
+                console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:',
+                            attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
             }
             gameInstance.toClean.push(hit_name);
         });
@@ -324,17 +361,9 @@ class GameInstance {
             const attackee = gameInstance.objects[e.attacking];
             const slime = gameInstance.objects[e.name];
             attackee.onHit(gameInstance, slime.status.STATUS_damage);
-            const index = gameInstance.slimes.indexOf(e.name);
-            if (index > -1) {
-                gameInstance.slimes.splice(index, 1);
-            }
-            gameInstance.toClean.push(slime.name);
-            console.log(attackee.name, 'lost', slime.status.STATUS_damage, 'health. Current Health:', attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
-
-            if (attackee.status.STATUS_curHealth <= 0) {
-                gameInstance.toClean.push(attackee.name);
-                console.log(attackee.name, 'died');
-            }
+            slime.status.STATUS_curHealth = 0;
+            console.log(attackee.name, 'lost', slime.status.STATUS_damage, 'health. Current Health:',
+                        attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
         })
     }
 
@@ -388,18 +417,42 @@ class GameInstance {
         });
     }
 
-    // at the begining of each loop, set all omitable properties to not be sent,
-    // if those properties are modified during this cycle, add them back to send them.
-    clearKeys() {
-        for (let obj in this.skillables) {
-            this.skillables[obj].KEYS = this.skillables[obj].KEYS.filter(item => item !== "skills");
-        }
-        for (let obj in this.objects) {
-            if ('KEYS' in this.objects[obj]) {
-                this.objects[obj].KEYS.length = 0;
+    checkHealth() {
+        const gameInstance = this;
+
+        const deadSurvivors = [];
+        this.liveSurvivors.forEach(function (name) {
+            let survivor = gameInstance.objects[name];
+            if (survivor.status.STATUS_curHealth > 0) {
+                return;
             }
-        }
+            deadSurvivors.push(name);
+            gameInstance.survivorHasDied(name);
+        });
+        deadSurvivors.forEach(function (name) {
+            const index = gameInstance.liveSurvivors.indexOf(name);
+            gameInstance.liveSurvivors.splice(index, 1);
+        });
+        
+        const deadSlimes = [];
+        this.slimes.forEach(function (name) {
+            let slime = gameInstance.objects[name]
+            if (slime.status.STATUS_curHealth > 0) {
+                return;
+            }
+            deadSlimes.push(name)
+            gameInstance.toClean.push(name);
+        });
+        deadSlimes.forEach(function (name) {
+            gameInstance.slimes.splice(gameInstance.slimes.indexOf(name), 1);
+        });
     }
+    // ==================================== After Step ===================================
+    //#endregion
+
+
+
+
 
     initializeFilterFunctions() {
         for (let obj in this.objects) {
@@ -415,6 +468,15 @@ class GameInstance {
         this.slimes.push(slime.name);
         this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
             { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+    }
+
+    survivorHasDied(name) {
+        this.deadSurvivors.push(name);
+        server.notifySurvivorDied(name);
+    }
+
+    survivorHasRevived(name) {
+
     }
 
 

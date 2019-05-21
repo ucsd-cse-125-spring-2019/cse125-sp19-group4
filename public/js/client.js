@@ -100,6 +100,17 @@ socket.on('wait for game begin', function (msg) {
     $('#numStatus').html(statusString);
 });
 
+socket.on('Survivor Died', function(msg) {
+    const data = JSON.parse(msg);
+    const {name} = data;
+
+    if (name === uid) {
+        $('.game-area').css('filter', 'grayscale(70%)')
+    } else {
+        UI.teammateDied(name);
+    }
+});
+
 $('#GodButton').click(function () {
     socket.emit("play as god");
 });

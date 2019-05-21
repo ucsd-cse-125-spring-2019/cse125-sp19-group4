@@ -25,7 +25,7 @@ class Survivor {
     }
 
     onHit(game, damage) {
-        this.status.STATUS_curHealth -= damage;
+        this.status.STATUS_curHealth = Math.max(this.status.STATUS_curHealth - damage, 0);
         this.KEYS.push('status');
         game.toSend.push(this.name);
     }
@@ -97,7 +97,7 @@ class God {
     }
 
     onHit(game, damage) {
-        this.status.STATUS_curHealth -= damage;
+        this.status.STATUS_curHealth = Math.max(this.status.STATUS_curHealth - damage, 0);
         this.KEYS.push('status');
         game.toSend.push(this.name);
     }
