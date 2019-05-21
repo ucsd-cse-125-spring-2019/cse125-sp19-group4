@@ -125,13 +125,30 @@ function InitializeTeammates(Survivors) {
 
         let img = document.createElement('img');
         img.src = survivor.iconPath;
-        img.style = "width: 100%; height: 100%"
+        img.style = "width: 100%; height: 100%; box-shadow: 0 0 3px; border: 2px solid saddlebrown;"
 
         let name = document.createElement('span');
-        name.style = "color: white; font-size: 8pt; white-space: nowrap;";
+        name.style = "color: white; font-size: 8pt; white-space: nowrap; left: 50%; transformation: translateX(-50%)";
         name.innerHTML = survivor.name;
 
+        let healthBar = document.createElement("div");
+        healthBar.id = survivor.name + "healthBar";
+        healthBar.className += "progress-bar";
+        healthBar.role = "progressbar";
+        healthBar.style = healthBarStyle.format(60);
+        healthBar["aria-valuemin"] = "0";
+        healthBar["aria-valuemax"] = "100";
+        healthBar["aria-valuenow"] = "50";
+
+        let health = document.createElement("div");
+        health.className += "progress"
+        health.style = "display: inline-block; vertical-align: middle; width: 100%; height: 10px; border-radius: 2px;" +
+                       "background-color: IndianRed; margin: 3px 0 2px 0;"
+        health.background = "black";
+        health.appendChild(healthBar);
+
         teammate.appendChild(img);
+        teammate.appendChild(health);
         teammate.appendChild(name)
         teammatesBar.appendChild(teammate);
     }
