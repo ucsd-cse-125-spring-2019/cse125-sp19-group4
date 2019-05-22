@@ -128,7 +128,7 @@ class PhysicsEngine {
         // Does only collide with dynamic bodies, but does not respond to any force.
         // Its movement can be controlled by setting its velocity.
         const collisionFilterGroup = isGod ? GOD : SURVIVORS;
-        const collisionFilterMask = isGod ? BOUNDARY : (SURVIVORS | ENEMY | ENVIRONMENT | BOUNDARY | BULLET | MELEE);
+        const collisionFilterMask = isGod ? BOUNDARY : (SURVIVORS | ENEMY | ENVIRONMENT | OBJECT | BOUNDARY | BULLET | MELEE);
         const playerBody = new CANNON.Body({
             mass: mass,
             shape: shape,
@@ -161,7 +161,7 @@ class PhysicsEngine {
             linearDamping: 0.9,
             material: this.slimeMaterial,
             collisionFilterGroup: ENEMY,
-            collisionFilterMask: SURVIVORS | ENVIRONMENT | OBJECT | BOUNDARY | BULLET | MELEE
+            collisionFilterMask: SURVIVORS | ENVIRONMENT | BOUNDARY | BULLET | MELEE
         });
 
         slimeBody.position.set(position.x, position.y + radius, position.z);
