@@ -321,6 +321,7 @@ class GameInstance {
     //#region After Step
     // ==================================== After Step ===================================
     afterStep() {
+        this.useItems();
         this.handleSlimeExplosion();
         this.handleBullets();
         this.checkHealth();
@@ -331,6 +332,16 @@ class GameInstance {
     afterSend() {
         this.toClean.length = 0;
         this.toSend.length = 0;
+    }
+
+    useItems() {
+        const gameInstance = this;
+        this.physicsEngine.itemsTaken.forEach(function (name) {
+            const item = gameInstance.physicsEngine.obj[name];
+            const survivor = gameInstance.objects[item.takenBy];
+            survivor.itemEnhance(item.kind);
+            gameInstance.toClean.push(name);
+        });
     }
 
     /**
