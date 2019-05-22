@@ -41,6 +41,9 @@ class PhysicsEngine {
 
         // Store slime explosion
         this.slimeExplosion = [];
+
+        // Store items that have been taken by survivors
+        this.itemsTaken = [];
     }
 
     //----------------------------------------- World Setup --------------------------------
@@ -200,6 +203,38 @@ class PhysicsEngine {
         treeBody.position.set(position.x, position.y, position.z);
         this.world.add(treeBody);
         this.obj[name] = treeBody;
+    }
+
+    /**
+     * add an item body into physics engine
+     * @param {string} name name of the item
+     * @param {string} kind kind of the item, e.g. boots, swords
+     * @param {object} position position of item, same as position of just dead slimes, has xyz three properties
+     * @param {number} halfWidth the halfwidth of the body used in halfExtents
+     */
+    addItem(name, kind, position, halfWidth = 0.2) {
+        const shape = new CANNON.Box(new CANNON.Vec3(halfWidth, halfWidth, halfWidth));
+        const body = new CANNON.Body({
+            mass: 0,
+            shape: shape,
+            collisionFilterGroup: OBJECT,
+            collisionFilterMask: SURVIVORS | BOUNDARY
+        });
+        body.collisionResponse = 0;
+        body.position.set(position.x, halfWidth, position.z);
+        body.itemTaken = false;
+        body.kind = kind;
+        this.world.add(body);
+        this.obj[name] = body;
+
+        const engine = this;
+        body.addEventListener('collide', function (e) {
+            if (e.body.role === 'survivor' && !body.itemTaken) {
+                body.itemTaken = true;
+                body.takenBy = e.body.name;
+                engine.itemsTaken.push(name);
+            }
+        });
     }
 
     /**
@@ -411,6 +446,7 @@ class PhysicsEngine {
         this.meleeList.length = 0;
         this.hits.length = 0;
         this.slimeExplosion.length = 0;
+        this.itemsTaken.length = 0;
     }
 }
 
