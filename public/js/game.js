@@ -442,7 +442,7 @@ class GameInstance {
             if (slime.status.STATUS_curHealth > 0) {
                 return;
             }
-            deadSlimes.push(name)
+            deadSlimes.push(name);
             gameInstance.toClean.push(name);
         });
         deadSlimes.forEach(function (name) {
