@@ -29,6 +29,7 @@ class GameInstance {
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
         this.meleeId = 0;
+        this.itemId = 0;
         this.interactId = 0;
         this.toClean = [];
         this.skillables = {};
@@ -45,6 +46,7 @@ class GameInstance {
 
     loadConfig(config) {
         this.max_survivors = config.game.max_survivors;
+        this.itemDropProb = config.game.item_drop_prob;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
@@ -444,8 +446,25 @@ class GameInstance {
             gameInstance.toClean.push(name);
         });
         deadSlimes.forEach(function (name) {
+            gameInstance.generateItem(name);
             gameInstance.slimes.splice(gameInstance.slimes.indexOf(name), 1);
         });
+    }
+
+    /**
+     * item would be randomly generated when a slime dies
+     * @param {string} name name of slime
+     */
+    generateItem(name) {
+        const slime = this.objects[name];
+        if (Math.random() < this.itemDropProb) {
+            // Randomly generate an item
+            const itemName = 'Item ' + this.itemId++;
+            const item = new Item(itemName, 'boots'); 
+            this.objects[itemName] = item;
+            this.physicsEngine.addItem(itemName, item.kind, 
+                { x: slime.position[0], y: slime.position[1], z: slime.position[2] });
+        }
     }
     // ==================================== After Step ===================================
     //#endregion
