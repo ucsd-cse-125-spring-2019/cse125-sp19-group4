@@ -294,11 +294,12 @@ class PhysicsEngine {
         this.meleeList.push(meleeId);
         attackBody.role = 'melee';
         attackBody.from = name;
+        attackBody.fromRole = initiator.role;
         attackBody.damage = damage;
 
         const engine = this;
         attackBody.addEventListener("collide", function (e) {
-            if (e.body.name != name && e.body.role != engine.obj[name].role) {
+            if (e.body.name != name && e.body.role != attackBody.fromRole) {
                 console.log("Melee hit:", name, "->", e.body.name);
                 if (e.body.role === 'enemy' || e.body.role === 'survivor') {
                     attackBody.to = e.body.name; // TODO: Change to array?
@@ -355,15 +356,13 @@ class PhysicsEngine {
         // this.bullets.push(bulletBody);
         bulletBody.role = 'bullet';
         bulletBody.from = name; // shot 
+        bulletBody.fromRole = initiator.role;
         bulletBody.damage = damage;
 
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
             console.log("Bullet hit:", name, "->", e.body.name);
-            if (typeof engine.obj[name] === 'undefined') {
-                return;
-            }
-            if (e.body.name != name && e.body.role != engine.obj[name].role) {
+            if (e.body.name != name && e.body.role != bulletBody.fromRole) {
                 if (e.body.role === 'enemy') {
                     bulletBody.to = e.body.name; // TODO: Change to array?
                 } else if (e.body.role === 'survivor') {
