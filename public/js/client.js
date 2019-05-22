@@ -159,6 +159,9 @@ socket.on('game_status', function (msg) {
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
         }
+        if ('items' in player) {
+            UI.updateItems(player.items)
+        }
     }
     UI.teammatesUpdate(data);
 

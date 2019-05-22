@@ -233,6 +233,40 @@ function teammatesUpdate(data) {
     }
 }
 
+function updateItems(items) {
+    let keys = Object.keys(items);
+    let ul = document.getElementById('vaultUl');
+    while (ul.firstChild) {
+        ul.removeChild(ul.firstChild);
+    }
+
+    for (let i = 0; i < keys.length; i++) {
+        let item = items[keys[i]];
+        let div = document.createElement('div');
+        div.className += "item";
+
+        let img = document.createElement('img');
+        img.src = 'public/images/items/ITEM_' + keys[i] + ".png";
+        img.style = "width:100%; height:100%; position: absolute; padding: 3px"
+        div.appendChild(img);
+
+        let count = document.createElement('span');
+        count.style = "color: white; position: absolute; right: 5px; bottom: 0; font-size: 10pt;" + 
+                     "font-size: 10pt;";
+        count.innerHTML = item.count;
+        div.appendChild(count);
+
+        ul.appendChild(div);
+    }
+
+    // empty slots
+    for (let i = keys.length; i < 15; i++) {
+        let div = document.createElement('div');
+        div.className += "item";
+        ul.appendChild(div);
+    }
+}
+
 function teammateDied(teammate) {
     let img = document.getElementById(teammate + "Icon");
     img.style.filter = "grayscale(70%)";
@@ -247,4 +281,4 @@ function teammateRevived(teammate) {
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived, InitializeVault }
+         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems }

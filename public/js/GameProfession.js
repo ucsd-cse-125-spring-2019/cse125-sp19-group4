@@ -1,5 +1,6 @@
 const { Item, Slime, Tile, Bullet, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
+const items = require("./items.js");
 
 const SKILL_TYPE = {
     SELF: "SELF",
@@ -21,13 +22,27 @@ class Survivor {
         this.KEYS = [] // contain a list of property that we want to send to client
         this.profession = {};
         this.skills = {};
+        this.baseStatus = {};
         this.status = {};
+        this.buff = {};
+        this.items = JSON.parse(JSON.stringify(items));
     }
 
     onHit(game, damage) {
         this.status.STATUS_curHealth = Math.max(this.status.STATUS_curHealth - damage, 0);
         this.KEYS.push('status');
         game.toSend.push(this.name);
+    }
+
+    // Here item is the name of the item
+    itemEnhance(item) {
+        this.items[item].count += 1;
+        items[item].enhance(this.buff); //TODO two ways to update buff, one is to increament for each item, 
+                                             // the other is to sum all items each time. PICK ONE 
+        this.KEYS.push("items");
+        this.KEYS.push("buff");
+        this.KEYS.push("status");
+        this.KEYS.push("baseStatus");
     }
 }
 
@@ -185,9 +200,10 @@ class Healer {
                 'curCoolDown': 0,
                 'description': 'The healer makes a medicine that recovers ' + this.strenth + ' health for an unit',
                 'strength': 10,
+                'type': SKILL_TYPE.SELF,
                 'iconPath': '/public/images/skills/SKILL_Medicine.png',
-                'function': function () {
-                    // TODO
+                'function': function (mySelf) {
+                    mySelf.itemEnhance('boots');
                 }, 
             },
 
@@ -252,6 +268,7 @@ function initializeProfession(survivor, msg) {
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;
     survivor.status = profession.status;
+    survivor.baseStatus = profession.status;
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
         survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];
