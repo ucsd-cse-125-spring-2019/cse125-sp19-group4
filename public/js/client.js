@@ -74,9 +74,10 @@ socket.on('enter game', function (msg) {
     player = players[socket.id];
     console.log("my name is", uid);
     
-    UI.InitializeSkills(player.skills);
     UI.InitializeStatus(player.status);
+    UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
+    UI.InitializeVault();
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
@@ -98,6 +99,22 @@ socket.on('wait for game begin', function (msg) {
         $('#' + i).html(playerCount[i]);
     }
     $('#numStatus').html(statusString);
+});
+
+socket.on('Survivor Died', function(msg) {
+    const data = JSON.parse(msg);
+    const {name} = data;
+
+    if (name === uid) {
+        $('.game-area').css('filter', 'grayscale(70%)')
+    } else {
+        UI.teammateDied(name);
+    }
+});
+
+socket.on('end game', function(msg) {
+    $('.game-area').html($('#endgame-template').html());
+    document.getElementById('endgame-message').innerHTML = msg;
 });
 
 $('#GodButton').click(function () {
@@ -141,6 +158,9 @@ socket.on('game_status', function (msg) {
         }
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
+        }
+        if ('items' in player) {
+            UI.updateItems(player.items)
         }
     }
     UI.teammatesUpdate(data);

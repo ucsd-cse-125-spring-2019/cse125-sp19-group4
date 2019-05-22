@@ -89,6 +89,12 @@ function InitializeStatus(status) {
 
 
 function InitializeSkills(skills) {
+    let skillBarDiv = document.createElement('div');
+    skillBarDiv.id = "skillBarDiv";
+    let skillsBar = document.createElement('ul');
+    skillsBar.id = "skillsBar";
+    skillBarDiv.appendChild(skillsBar);
+    document.getElementById("statusBar").appendChild(skillBarDiv);
     for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
         let skill = document.createElement('div');
@@ -100,7 +106,8 @@ function InitializeSkills(skills) {
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
                      "bottom: 0; opacity: 0.8";
         let span = document.createElement('span');
-        span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%)";
+        span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" + 
+                     "font-size: 10pt;";
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
         skill.className += "skill";
@@ -123,10 +130,11 @@ function InitializeTeammates(Survivors) {
         teammatesName.push(survivor.name)
 
         let teammate = document.createElement('div');
-        teammate.className += "teammate"
+        teammate.className += "teammate";
 
         let img = document.createElement('img');
         img.src = survivor.iconPath;
+        img.id = survivor.name + "Icon";
         img.style = "width: 100%; height: 100%; box-shadow: 0 0 3px; border: 2px solid saddlebrown;"
 
         let name = document.createElement('span');
@@ -153,6 +161,15 @@ function InitializeTeammates(Survivors) {
         teammate.appendChild(health);
         teammate.appendChild(name)
         teammatesBar.appendChild(teammate);
+    }
+}
+
+function InitializeVault() {
+    let ul = document.getElementById('vaultUl');
+    for (let i = 0; i < 15; i++) {
+        let div = document.createElement('div');
+        div.className += "item";
+        ul.appendChild(div);
     }
 }
 /* -------------------------Initialize status bar--------------------------- */
@@ -215,10 +232,53 @@ function teammatesUpdate(data) {
         }
     }
 }
+
+function updateItems(items) {
+    let keys = Object.keys(items);
+    let ul = document.getElementById('vaultUl');
+    while (ul.firstChild) {
+        ul.removeChild(ul.firstChild);
+    }
+
+    for (let i = 0; i < keys.length; i++) {
+        let item = items[keys[i]];
+        let div = document.createElement('div');
+        div.className += "item";
+
+        let img = document.createElement('img');
+        img.src = 'public/images/items/ITEM_' + keys[i] + ".png";
+        img.style = "width:100%; height:100%; position: absolute; padding: 3px"
+        div.appendChild(img);
+
+        let count = document.createElement('span');
+        count.style = "color: white; position: absolute; right: 5px; bottom: 0; font-size: 10pt;" + 
+                     "font-size: 10pt;";
+        count.innerHTML = item.count;
+        div.appendChild(count);
+
+        ul.appendChild(div);
+    }
+
+    // empty slots
+    for (let i = keys.length; i < 15; i++) {
+        let div = document.createElement('div');
+        div.className += "item";
+        ul.appendChild(div);
+    }
+}
+
+function teammateDied(teammate) {
+    let img = document.getElementById(teammate + "Icon");
+    img.style.filter = "grayscale(70%)";
+}
+
+function teammateRevived(teammate) {
+
+}
 /* --------------------------all update functions--------------------------- */
 
 
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate }
+         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems }
