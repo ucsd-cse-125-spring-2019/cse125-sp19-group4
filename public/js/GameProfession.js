@@ -37,7 +37,7 @@ class Survivor {
     // Here item is the name of the item
     itemEnhance(item) {
         this.items[item].count += 1;
-        items[item].enhance(this.buff); //TODO two ways to update buff, one is to increament for each item, 
+        items[item].enhance(this.buff, this.status); //TODO two ways to update buff, one is to increament for each item, 
                                              // the other is to sum all items each time. PICK ONE 
         this.KEYS.push("items");
         this.KEYS.push("buff");
