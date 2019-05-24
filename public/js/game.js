@@ -2,6 +2,7 @@ const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
 const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
 const { Item, Slime, Tile, Bullet, Tree } = require('./GameUnits.js').Units;
+const items = require('./items.js');
 const server = require('../../server.js');
 
 const NotificationType = {
@@ -468,10 +469,27 @@ class GameInstance {
      */
     generateItem(name) {
         const slime = this.objects[name];
+        // Decide whether to drop item
         if (Math.random() < this.itemDropProb) {
             // Randomly generate an item
+            console.log(items);
+            const prob = Math.random();
+            let kind = null;
+            const keys = Object.keys(items)
+            let probLowerBound = 0;
+            for (let i = 0; i < keys.length; i++) {
+                if (probLowerBound >= 1) break;
+
+                const probUpperBound = probLowerBound + items[keys[i]].prob;
+                if (probLowerBound <= prob && prob < probUpperBound) {
+                    kind = keys[i];
+                    break;
+                } 
+                probLowerBound = probUpperBound;
+            }  
+
             const itemName = 'Item ' + this.itemId++;
-            const item = new Item(itemName, 'boots'); 
+            const item = new Item(itemName, kind); 
             this.objects[itemName] = item;
             this.physicsEngine.addItem(itemName, item.kind, 
                 { x: slime.position[0], y: slime.position[1], z: slime.position[2] });
