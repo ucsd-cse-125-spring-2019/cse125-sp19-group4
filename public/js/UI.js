@@ -1,5 +1,9 @@
 // import { uid } from "/public/js/client.js"
-const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;"
+const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;";
+const NOTIFICATION_BASE_STYLE = "transition: font-size 0.5s;";
+const NOTIFICATION_STYLE = {
+    EVENT: NOTIFICATION_BASE_STYLE +  "color: red",
+}
 
 if (!String.prototype.format) {
     String.prototype.format = function () {
@@ -294,10 +298,32 @@ function teammateDied(teammate) {
 function teammateRevived(teammate) {
 
 }
+
+let notificationTimer = null;
+
+function updateNotification(msg, type) {
+    let span = document.createElement("div")
+    span.innerHTML = msg;
+    span.style = NOTIFICATION_STYLE[type];
+    document.getElementById('notificationList').appendChild(span);
+
+    setTimeout(function() {
+        // span.parentElement.removeChild(span);
+        span.style["font-size"] = 0;
+        span.style["opacity"] = 0; 
+    }, 2000)
+
+    // $("#notification").fadeIn(300);
+    // hideTimer = setTimeout(function() {
+    //     $("#notification").fadeOut(500);
+    // }, 2000)
+}
 /* --------------------------all update functions--------------------------- */
 
 
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate }
+         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate,
+         updateNotification, NOTIFICATION_STYLE 
+ }

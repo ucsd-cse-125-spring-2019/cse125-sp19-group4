@@ -58,6 +58,13 @@ socket.on('chat message', function (msg) {
     }
 });
 
+socket.on('notification', function(msg) {
+    const data = JSON.parse(msg);
+    console.log(data)
+    const {message, type} = data;
+    UI.updateNotification(message, type);
+});
+
 $('.game-area').html($('#intro-screen-template').html());
 
 socket.on('role already taken', function (msg) {

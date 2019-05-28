@@ -226,9 +226,9 @@ function gameLoop() {
     }
 }
 
-function notifyAll(msg, type) {
+function notifyAll(message, type) {
     gameInstance.clientSockets.forEach(function (socket) {
-        io.to(socket).emit('notification', JSON.stringify({msg, type}));
+        io.to(socket).emit('notification', JSON.stringify({message, type}));
     });
 }
 
