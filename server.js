@@ -101,6 +101,16 @@ io.on('connection', function (socket) {
         shootEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
+    socket.on('stop_shoot', function () {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
+        shootEvents[gameInstance.socketidToPlayer[socket.id].name] = false;
+    });
+
     socket.on('melee', function () {
         if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
             return;
@@ -109,6 +119,16 @@ io.on('connection', function (socket) {
             return;
         }
         meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
+    });
+
+    socket.on('stop_melee', function () {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
+        meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = false;
     });
 
     socket.on('jump', function () {
@@ -212,12 +232,14 @@ function gameLoop() {
 
     // Handle attacks
     Object.keys(shootEvents).forEach((name) => {
-        gameInstance.shoot(name, shootEvents[name]);
-        delete shootEvents[name];
+        if (shootEvents[name]) {
+            gameInstance.shoot(name);
+        }
     });
     Object.keys(meleeEvents).forEach((name) => {
-        gameInstance.melee(name, meleeEvents[name]);
-        delete meleeEvents[name];
+        if (meleeEvents[name]) {
+            gameInstance.melee(name);
+        }
     });
 
     // Step and update objects
