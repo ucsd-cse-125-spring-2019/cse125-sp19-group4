@@ -38,6 +38,7 @@ items = {
         enhance(buff, status) {
             buff.STATUS_maxHealth += 10;
             status.STATUS_maxHealth += 10;
+            status.STATUS_curHealth += 10;
         },
     },
 }

@@ -81,7 +81,12 @@ socket.on('enter game', function (msg) {
     UI.InitializeStatus(player.status);
     UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
-    UI.InitializeVault();
+    if (uid !== "God") {
+        UI.InitializeVault();
+        UI.updateItems(player.items);
+    } else {
+        document.getElementById('vault').style.display = "none"
+    }
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
@@ -157,8 +162,14 @@ socket.on('game_status', function (msg) {
             // console.log(player.position);
         }
         // Update UI
+        if (typeof player.baseStatus !== 'undefined') {
+            UI.statusUpdate(player.baseStatus);
+        }
         if (typeof player.status !== 'undefined') {
-            UI.statusUpdate(player.status);
+            UI.healthUpdate(player.status);
+        }
+        if (typeof player.buff !== 'undefined') {
+            UI.buffUpdate(player.buff);
         }
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);

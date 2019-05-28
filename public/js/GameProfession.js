@@ -1,6 +1,12 @@
 const { Item, Slime, Tile, Bullet, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
 const items = require("./items.js");
+const buff = {
+    'STATUS_maxHealth': 0,
+    'STATUS_damage': 0,
+    'STATUS_defense': 0,
+    'STATUS_speed': 0,
+}
 
 const SKILL_TYPE = {
     SELF: "SELF",
@@ -24,7 +30,7 @@ class Survivor {
         this.skills = {};
         this.baseStatus = {};
         this.status = {};
-        this.buff = {};
+        this.buff = JSON.parse(JSON.stringify(buff));
         this.items = JSON.parse(JSON.stringify(items));
     }
 
@@ -43,6 +49,7 @@ class Survivor {
         this.KEYS.push("buff");
         this.KEYS.push("status");
         this.KEYS.push("baseStatus");
+        this.KEYS.push("buff");
     }
 }
 
@@ -268,7 +275,7 @@ function initializeProfession(survivor, msg) {
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;
     survivor.status = profession.status;
-    survivor.baseStatus = profession.status;
+    survivor.baseStatus = JSON.parse(JSON.stringify(profession.status));
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
         survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];

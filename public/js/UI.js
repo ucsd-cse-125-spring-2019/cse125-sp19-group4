@@ -36,10 +36,16 @@ function createStatusItem(statusName, initialValue) {
     let text = document.createElement("span");
     text.id = statusName;
     text.innerHTML = initialValue;
-    text.style = "display: inline-block; vertical-align: middle; margin: 0px 5px; color:#B4AE6C;";
+    text.style = "display: inline-block; vertical-align: middle; margin: 0 0 0 5px; color:#B4AE6C;";
+
+    let buff = document.createElement("span");
+    buff.id = "buff" + statusName;
+    buff.innerHTML = "+0"
+    buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 9pt";
 
     div.appendChild(img);
     div.appendChild(text);
+    div.appendChild(buff);
     document.getElementById("statusList").appendChild(div);     // Append <li> to <ul> with id="myList"
 }
 
@@ -85,6 +91,7 @@ function InitializeStatus(status) {
     }
     //------------------------everything else----------------------
     statusUpdate(status);
+    healthUpdate(status);
 }
 
 
@@ -187,16 +194,27 @@ function timerUpdate(second) {
     document.getElementById("timer").innerHTML = timeString;
 }
 
+function healthUpdate(status) {
+    const curHealth = status.STATUS_curHealth;
+    const maxHealth = status.STATUS_maxHealth;
+    const width = Math.floor(curHealth / maxHealth * 100);
+    document.getElementById('healthBar').style = healthBarStyle.format(width);
+    document.getElementById('healthBar').innerHTML = Math.floor(curHealth) + "/" + maxHealth;
+}
+
 function statusUpdate(status) {
     for (let i in status) {
-        if (i === 'STATUS_curHealth') {
-            const curHealth = status.STATUS_curHealth;
-            const maxHealth = status.STATUS_maxHealth;
-            const width = Math.floor(curHealth / maxHealth * 100);
-            document.getElementById('healthBar').style = healthBarStyle.format(width);
-            document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
-        } else if (isStatusValid(i)) {
+        if (isStatusValid(i)) {
             document.getElementById(i).innerHTML = status[i];
+        }
+    }
+}
+
+
+function buffUpdate(buff) {
+    for (let i in buff) {
+        if (isStatusValid(i)) {
+            document.getElementById("buff" + i).innerHTML = "+" + buff[i];
         }
     }
 }
@@ -234,6 +252,7 @@ function teammatesUpdate(data) {
 }
 
 function updateItems(items) {
+    console.log(items)
     let keys = Object.keys(items);
     let ul = document.getElementById('vaultUl');
     while (ul.firstChild) {
@@ -281,4 +300,4 @@ function teammateRevived(teammate) {
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems }
+         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate }
