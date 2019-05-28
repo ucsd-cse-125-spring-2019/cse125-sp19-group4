@@ -137,10 +137,6 @@ $('#ArcherButton').click(function () {
     socket.emit("play as survivor", JSON.stringify("Archer"));
 });
 
-$('#BuilderButton').click(function () {
-    socket.emit("play as survivor", JSON.stringify("Builder"));
-});
-
 socket.on('game_status', function (msg) {
     const start = Date.now();
     const status = JSON.parse(msg);

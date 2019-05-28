@@ -25,6 +25,7 @@ class Survivor {
         this.baseStatus = {};
         this.status = {};
         this.buff = {};
+        this.attackTimer = 0;
         this.items = JSON.parse(JSON.stringify(items));
     }
 
@@ -108,6 +109,7 @@ class God {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 20,
+            'STATUS_attackInterval': 10,
         };
 
         this.KEYS = []; // contain a list of property that we want to send to client
@@ -131,6 +133,7 @@ class Fighter {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
+            'STATUS_attackInterval': 60,
         };
         this.skills = {};
     }
@@ -145,6 +148,7 @@ class Archer {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
+            'STATUS_attackInterval': 60,
         };
         this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg';
         this.skills = {
@@ -179,6 +183,7 @@ class Healer {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
+            'STATUS_attackInterval': 60,
         };
 
         this.skills = {
@@ -234,21 +239,6 @@ class Healer {
     }
 }
 
-class Builder {
-    constructor() {
-        this.profession = "Builder";
-        this.iconPath = 'public/images/professions/PROFESSION_Builder.jpg'
-        this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 10,
-        };
-        this.skills = {};
-    }
-}
-
 function initializeProfession(survivor, msg) {
     let profession = null;
     switch(msg) {
@@ -260,9 +250,6 @@ function initializeProfession(survivor, msg) {
             break;
         case "Healer":
             profession = new Healer();
-            break;
-        case "Builder":
-            profession = new Builder();
             break;
     }
     survivor.skills = profession.skills;

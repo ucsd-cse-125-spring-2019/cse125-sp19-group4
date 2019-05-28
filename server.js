@@ -84,20 +84,38 @@ io.on('connection', function (socket) {
         if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
             return;
         }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
         const direction = JSON.parse(msg);
         movementEvents[gameInstance.socketidToPlayer[socket.id].name] = direction;
     });
 
     socket.on('shoot', function () {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
         shootEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
     socket.on('melee', function () {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
         meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
     });
 
     socket.on('jump', function () {
         if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
             return;
         }
         jumpEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
@@ -107,13 +125,21 @@ io.on('connection', function (socket) {
         if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
             return;
         }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
         const skillParams = JSON.parse(msg)
         skillEvents[gameInstance.socketidToPlayer[socket.id].name] = skillParams;
     });
 
     socket.on('chat message', function (msg) {
+        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
+            return;
+        }
+        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
+            return;
+        }
         io.emit('chat message', gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
-        //inputs.push(socket.id + ': ' + msg);
     });
 
     socket.on('disconnect', function (reason) {
