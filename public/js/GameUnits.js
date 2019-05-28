@@ -2,9 +2,12 @@ const Utils = require("./utils.js");
 const glMatrix = require('gl-Matrix');
 
 class Item {
-    constructor() {
-        this.name = "Item";
+    constructor(name, kind) {
+        this.name = name;
+        this.kind = kind;
+        this.model = kind;
         this.position = [0, 0, 0];
+        this.direction = [0, 0, 1];
     }
 }
 

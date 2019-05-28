@@ -27,6 +27,10 @@ const transform_ref = {
     'slime': glMatrix.mat4.create(),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
+    'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 10, 5]),
+    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 15, 5]),
 };
 
 const objects = {};
@@ -304,6 +308,10 @@ function main() {
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
+    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/items/SimpleBoot.obj", "", false, texture_counter, programInfo);
+    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
+    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
+    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
 
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
