@@ -137,10 +137,6 @@ $('#ArcherButton').click(function () {
     socket.emit("play as survivor", JSON.stringify("Archer"));
 });
 
-$('#BuilderButton').click(function () {
-    socket.emit("play as survivor", JSON.stringify("Builder"));
-});
-
 socket.on('game_status', function (msg) {
     const start = Date.now();
     const status = JSON.parse(msg);
@@ -390,16 +386,6 @@ function main() {
                 socket.emit('movement', JSON.stringify(direction));
             }   
             prev_direction = direction;
-        }
-
-        // Attack
-        if (Key.isDown('MELEE')) {
-            delete Key._pressed['MELEE'];
-            socket.emit('melee');
-        }
-        else if (Key.isDown('SHOOT')) {
-            delete Key._pressed['SHOOT'];
-            socket.emit('shoot');
         }
 
         // Skill
@@ -673,13 +659,25 @@ const Key = {
             // do nothing
         } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
             handleSkill(uid, event.keyCode - 49);
+        } else if (event.keyCode == 74) {
+            // shoot
+            socket.emit('shoot');
+        } else if (event.keyCode == 75) {
+            // melee
+            socket.emit('melee');
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
 
     onKeyup: function (event) {
-        if (event.keyCode in this.cmd) {
+        if (event.keyCode == 74) {
+            // stop_shoot
+            socket.emit('stop_shoot');
+        } else if (event.keyCode == 75) {
+            // melee
+            socket.emit('stop_melee');
+        } else if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
 
