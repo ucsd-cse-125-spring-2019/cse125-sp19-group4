@@ -274,7 +274,7 @@ function initializeProfession(survivor, msg) {
     survivor.baseStatus = JSON.parse(JSON.stringify(profession.status));
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
-        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];
+        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown', 'curCharge', 'maxCharge'];
     }
 }
 
