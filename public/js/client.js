@@ -58,6 +58,13 @@ socket.on('chat message', function (msg) {
     }
 });
 
+socket.on('notification', function(msg) {
+    const data = JSON.parse(msg);
+    console.log(data)
+    const {message, type} = data;
+    UI.updateNotification(message, type);
+});
+
 $('.game-area').html($('#intro-screen-template').html());
 
 socket.on('role already taken', function (msg) {
@@ -81,7 +88,12 @@ socket.on('enter game', function (msg) {
     UI.InitializeStatus(player.status);
     UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
-    UI.InitializeVault();
+    if (uid !== "God") {
+        UI.InitializeVault();
+        UI.updateItems(player.items);
+    } else {
+        document.getElementById('vault').style.display = "none"
+    }
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
@@ -153,8 +165,14 @@ socket.on('game_status', function (msg) {
             // console.log(player.position);
         }
         // Update UI
+        if (typeof player.baseStatus !== 'undefined') {
+            UI.statusUpdate(player.baseStatus);
+        }
         if (typeof player.status !== 'undefined') {
-            UI.statusUpdate(player.status);
+            UI.healthUpdate(player.status);
+        }
+        if (typeof player.buff !== 'undefined') {
+            UI.buffUpdate(player.buff);
         }
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
@@ -573,7 +591,7 @@ const mouseDown = function (e) {
                 // survivors
                 if (casting == 0) {
                     console.log('arrow fired');
-                    const skillsParams = { skillNum: 0, cursor: cursor, name: uid };
+                    const skillsParams = { skillNum: 0, position: cursor, name: uid };
                     socket.emit('skill', JSON.stringify(skillsParams));
                 }
             }

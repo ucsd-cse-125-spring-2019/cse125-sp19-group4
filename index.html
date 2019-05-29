@@ -68,6 +68,7 @@
                   border-width: 1px; border-color:SaddleBrown; border-radius:2px; background-color:#131F1C;}
       .button { padding: 5px 30px; border-radius: 3px; font-size: 24px; background: rgba(80, 80, 80, 0.8);
                 width: 200px; border: 0; box-shadow: 0 0 5px gray;}
+      #notification {position: absolute; top: 10%; left: 50%; transform: translateX(-50%); font-size: 20pt; }
       @keyframes rotate {
         to {
           transform: rotate(1turn)
@@ -130,6 +131,9 @@
         <div style="color:#B4AE6C; display: block;">Packet size: <span id="bytes" style="color: white;">--</span> bytes</div>
         <div style="color:#B4AE6C; display: block;">Processing cycle: <span id="processing" style="color: white;">--</span> ms</div>
         <div style="color:#B4AE6C; display: block;">Server cycle: <span id="server" style="color: white;">--</span> ms</div>
+      </div>
+      <div id="notification">
+        <ul id="notificationList"></ul>
       </div>
       <div id="statusBar" class="statusBar" onLoad="loadStatusList();">
         <div id="timer" style="color:#B4AE6C; display: inline-block;" >0:00:00</div>

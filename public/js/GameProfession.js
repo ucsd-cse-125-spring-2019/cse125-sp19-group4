@@ -1,6 +1,12 @@
 const { Item, Slime, Tile, Bullet, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
 const items = require("./items.js");
+const buff = {
+    'STATUS_maxHealth': 0,
+    'STATUS_damage': 0,
+    'STATUS_defense': 0,
+    'STATUS_speed': 0,
+}
 
 const SKILL_TYPE = {
     SELF: "SELF",
@@ -24,9 +30,9 @@ class Survivor {
         this.skills = {};
         this.baseStatus = {};
         this.status = {};
-        this.buff = {};
-        this.attackTimer = 0;
+        this.buff = JSON.parse(JSON.stringify(buff));
         this.items = JSON.parse(JSON.stringify(items));
+        this.attackTimer = 0;
     }
 
     onHit(game, damage) {
@@ -44,6 +50,7 @@ class Survivor {
         this.KEYS.push("buff");
         this.KEYS.push("status");
         this.KEYS.push("baseStatus");
+        this.KEYS.push("buff");
     }
 }
 
@@ -64,6 +71,8 @@ class God {
                 'name': 'Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -78,6 +87,8 @@ class God {
                 'name': 'Shooting Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -92,6 +103,8 @@ class God {
                 'name': 'Melee Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -154,13 +167,16 @@ class Archer {
         this.skills = {
             0: {
                 'name': 'Shoot',
+                'type': SKILL_TYPE.LOCATION,
                 'coolDown': 0.5,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, params) {
                     const name = params.name;
-                    const cursor = params.cursor;
+                    const cursor = params.position;
                     const direction = glMatrix.vec3.create();
                     glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
                     direction[1] = 0;
@@ -255,10 +271,10 @@ function initializeProfession(survivor, msg) {
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;
     survivor.status = profession.status;
-    survivor.baseStatus = profession.status;
+    survivor.baseStatus = JSON.parse(JSON.stringify(profession.status));
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
-        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];
+        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown', 'curCharge', 'maxCharge'];
     }
 }
 
