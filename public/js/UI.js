@@ -121,10 +121,20 @@ function InitializeSkills(skills) {
                      "font-size: 10pt;";
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
+
+
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask);
         skill.appendChild(span);
+
+        if ('maxCharge' in skills[i]) {
+            let charge = document.createElement('span');
+            charge.style = "color: white; position: absolute; bottom: -3px; right: 0; font-size: 8pt;";
+            charge.innerHTML = skills[i].curCharge;
+            charge.id = i + "charge";
+            skill.appendChild(charge);
+        }
         skillsBar.appendChild(skill);
     }
 }
@@ -225,16 +235,25 @@ function buffUpdate(buff) {
 
 function coolDownUpdate(skills) {
     for (let skill in skills) {
-        let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
         let mask = document.getElementById(skill + "Mask");
         let span = document.getElementById(skill + "Countdown");
-        mask.style.height = coolDownPercent + "%";
-        if (skills[skill].curCoolDown <= 0) {
-            span.innerHTML = "";
-        } else if (skills[skill].curCoolDown > 1) {
-            span.innerHTML = Math.round(skills[skill].curCoolDown) + "s";
-        } else {
-            span.innerHTML = Math.round(skills[skill].curCoolDown * 10) / 10 + "s";
+
+        if (!'maxCharge' in skills[skill] || skills[skill].curCharge == 0) {
+            let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
+            mask.style.height = coolDownPercent + "%";
+
+            if (skills[skill].curCoolDown <= 0) {
+                span.innerHTML = "";
+            } else if (skills[skill].curCoolDown > 1) {
+                span.innerHTML = Math.round(skills[skill].curCoolDown) + "s";
+            } else {
+                span.innerHTML = Math.round(skills[skill].curCoolDown * 10) / 10 + "s";
+            }
+        }
+
+        if ('maxCharge' in skills[skill]) {
+            let charge = document.getElementById(skill + 'charge');
+            charge.innerHTML = skills[skill].curCharge;
         }
     }
 }

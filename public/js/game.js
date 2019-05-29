@@ -96,12 +96,26 @@ class GameInstance {
     decrementCoolDown(amount) {
         for (let name in this.skillables) {
             let skills = this.skillables[name].skills;
-            for (let skill in skills) {
-                if (skills[skill].curCoolDown > 0) {
-                    skills[skill].curCoolDown -= amount;
-                    this.skillables[name].KEYS.push("skills");
-                } else if (skills[skill].curCoolDown < 0) {
-                    skills[skill].curCoolDown = 0;
+            for (let i in skills) {
+                let skill = skills[i];
+                let send = false;
+                
+                if (skill.curCoolDown > 0) {
+                    skill.curCoolDown -= amount;
+                    send = true;
+                } else {
+                    if (skill.curCoolDown != 0) { //TODO handle case when cooldown is exactly 0 from decrementing 
+                        send = true;
+                    }
+                    skill.curCoolDown = 0;
+                    if ('maxCharge' in skill && skill.curCharge < skill.maxCharge) {
+                        skill.curCharge++;
+                        skill.curCoolDown = skill.coolDown;
+                        send = true;
+                    }
+                }
+
+                if (send) {
                     this.skillables[name].KEYS.push("skills");
                 }
             }
@@ -194,7 +208,11 @@ class GameInstance {
         const obj = this.objects[name];
         let { skillNum, position } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
-        if (skill.curCoolDown > 0) { // not cooled down
+
+        if (!'maxCharge' in skill && skill.curCoolDown > 0) { // not cooled down
+            return;
+        }
+        if ('maxCharge' in skill && skill.curCharge == 0) {
             return;
         }
 
@@ -217,7 +235,11 @@ class GameInstance {
             default: 
                 console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
-        skill.curCoolDown = skill.coolDown;
+        if (!'maxCharge' in skill) {
+            skill.curCoolDown = skill.coolDown;
+        } else {
+            skill.curCharge -= 1;
+        }
     }
 
     /**

@@ -70,6 +70,8 @@ class God {
                 'name': 'Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -84,6 +86,8 @@ class God {
                 'name': 'Shooting Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -98,6 +102,8 @@ class God {
                 'name': 'Melee Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
