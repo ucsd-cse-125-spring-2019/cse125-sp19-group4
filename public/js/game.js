@@ -173,9 +173,6 @@ class GameInstance {
     }
 
     move(name, direction, updateDirectionOnly=false) {
-        if (this.deadSurvivors.includes(name)) {
-            return;
-        }
         const obj = this.objects[name];
         const speed = obj.status.STATUS_speed;
         if (updateDirectionOnly) 
@@ -186,25 +183,16 @@ class GameInstance {
     }
 
     jump(name) {
-        if (this.deadSurvivors.includes(name)) {
-            return;
-        }
         this.physicsEngine.jump(name, this.objects[name].jumpSpeed, this.objects[name].maxJump);
     }
 
     stay(name) {
-        if (this.deadSurvivors.includes(name)) {
-            return;
-        }
         this.physicsEngine.stopMovement(name);
     }
 
 
     // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
-        if (this.deadSurvivors.includes(name)) {
-            return;
-        }
         const obj = this.objects[name];
         let { skillNum, position } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
@@ -248,26 +236,30 @@ class GameInstance {
      * @param {string} name the name of object that initiates the attack
      */
     shoot(name) {
-        if (this.deadSurvivors.includes(name)) {
+        const initiator = this.objects[name];
+        if (initiator.attackTimer > 0) {
             return;
         }
-        const initiator = this.objects[name];
-        if (name === 'God' && !initiator.canAttack) return;
+        if (name === 'God' && !initiator.canAttack) {
+            return;
+        }
         const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
         this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.STATUS_damage, bullet.name, bullet.radius);
+        initiator.attackTimer = initiator.status.STATUS_attackInterval;
     }
 
     melee(name) {
-        if (this.deadSurvivors.includes(name)) {
+        const initiator = this.objects[name];
+        if (initiator.attackTimer > 0) {
             return;
         }
-        const initiator = this.objects[name];
         if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
+        initiator.attackTimer = initiator.status.STATUS_attackInterval;
     }
 
     //#region Before Step
@@ -312,15 +304,12 @@ class GameInstance {
         if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 const object = game.objects[name];
-                if (object.attackTimer == object.attackInterval) {
-                    if (game.objects[name].attackMode === 'shoot') {
-                        game.shoot(name);
-                    }
-                    else if (game.objects[name].attackMode === 'melee') {
-                        game.melee(name);
-                    }
-                    object.attackTimer --;
-                } 
+                if (game.objects[name].attackMode === 'shoot') {
+                    game.shoot(name);
+                }
+                else if (game.objects[name].attackMode === 'melee') {
+                    game.melee(name);
+                }
             });
         }
     }
@@ -328,10 +317,13 @@ class GameInstance {
     /** Helper: Update attack timer for each object*/ 
     updateAttackTimer() {
         const game = this;
-        this.slimes.forEach(function (name) {
+        Object.keys(this.objects).forEach(function (name) {
             const object = game.objects[name];
-            if (object.attackTimer < 0) object.attackTimer = object.attackInterval;
-            else if (object.attackTimer < object.attackInterval) object.attackTimer --; 
+            if (typeof object.attackTimer !== 'undefined') {
+                if (object.attackTimer > 0) {
+                    object.attackTimer--;
+                }
+            }
         })
     }
     // ==================================== Before Step ===================================
