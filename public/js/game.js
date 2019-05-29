@@ -554,6 +554,15 @@ class GameInstance {
             { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
     }
 
+    putTreeOnTheMap(tree) {
+        const position = tree.position;
+        this.toSend.push(tree.name);
+        this.objects[tree.name] = tree;
+        this.physicsEngine.addTree(tree.name, 0, tree.size, 0.5, 
+            { x: position[0], y: position[1], z: position[2] });
+        
+    }
+
     survivorHasDied(name) {
         this.deadSurvivors.push(name);
         if (this.deadSurvivors.length == this.max_survivors) {
