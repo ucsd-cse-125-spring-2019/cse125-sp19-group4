@@ -2,12 +2,9 @@ const Utils = require("./utils.js");
 const glMatrix = require('gl-Matrix');
 
 class Item {
-    constructor(name, kind) {
-        this.name = name;
-        this.kind = kind;
-        this.model = kind;
+    constructor() {
+        this.name = "Item";
         this.position = [0, 0, 0];
-        this.direction = [0, 0, 1];
     }
 }
 
@@ -25,12 +22,12 @@ class Slime {
             STATUS_curHealth: 30,
             STATUS_damage: 10,
             STATUS_defense: 0,
-            STATUS_speed: 5,
-            STATUS_attackInterval: 60,
+            STATUS_speed: 5
         };
         this.attacking = {};
         this.attackMode = attackMode;
-        this.attackTimer = this.status.STATUS_attackInterval;
+        this.attackInterval = 60;
+        this.attackTimer = this.attackInterval;
         if (attackMode === "explode") this.minDistanceFromPlayer = 0;
         else if (attackMode === "shoot") {
             this.minDistanceFromPlayer = 10;

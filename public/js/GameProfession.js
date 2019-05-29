@@ -1,12 +1,6 @@
 const { Item, Slime, Tile, Bullet, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
 const items = require("./items.js");
-const buff = {
-    'STATUS_maxHealth': 0,
-    'STATUS_damage': 0,
-    'STATUS_defense': 0,
-    'STATUS_speed': 0,
-}
 
 const SKILL_TYPE = {
     SELF: "SELF",
@@ -30,9 +24,8 @@ class Survivor {
         this.skills = {};
         this.baseStatus = {};
         this.status = {};
-        this.buff = JSON.parse(JSON.stringify(buff));
+        this.buff = {};
         this.items = JSON.parse(JSON.stringify(items));
-        this.attackTimer = 0;
     }
 
     onHit(game, damage) {
@@ -44,13 +37,12 @@ class Survivor {
     // Here item is the name of the item
     itemEnhance(item) {
         this.items[item].count += 1;
-        items[item].enhance(this.buff, this.status); //TODO two ways to update buff, one is to increament for each item, 
+        items[item].enhance(this.buff); //TODO two ways to update buff, one is to increament for each item, 
                                              // the other is to sum all items each time. PICK ONE 
         this.KEYS.push("items");
         this.KEYS.push("buff");
         this.KEYS.push("status");
         this.KEYS.push("baseStatus");
-        this.KEYS.push("buff");
     }
 }
 
@@ -71,8 +63,6 @@ class God {
                 'name': 'Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -87,8 +77,6 @@ class God {
                 'name': 'Shooting Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -103,8 +91,6 @@ class God {
                 'name': 'Melee Slime',
                 'coolDown': 1,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
@@ -122,7 +108,6 @@ class God {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 20,
-            'STATUS_attackInterval': 10,
         };
 
         this.KEYS = []; // contain a list of property that we want to send to client
@@ -146,7 +131,6 @@ class Fighter {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
-            'STATUS_attackInterval': 60,
         };
         this.skills = {};
     }
@@ -161,22 +145,18 @@ class Archer {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
-            'STATUS_attackInterval': 60,
         };
         this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg';
         this.skills = {
             0: {
                 'name': 'Shoot',
-                'type': SKILL_TYPE.LOCATION,
                 'coolDown': 0.5,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, params) {
                     const name = params.name;
-                    const cursor = params.position;
+                    const cursor = params.cursor;
                     const direction = glMatrix.vec3.create();
                     glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
                     direction[1] = 0;
@@ -199,7 +179,6 @@ class Healer {
             'STATUS_damage': 10,
             'STATUS_defense': 10,
             'STATUS_speed': 10,
-            'STATUS_attackInterval': 60,
         };
 
         this.skills = {
@@ -255,6 +234,21 @@ class Healer {
     }
 }
 
+class Builder {
+    constructor() {
+        this.profession = "Builder";
+        this.iconPath = 'public/images/professions/PROFESSION_Builder.jpg'
+        this.status = {
+            'STATUS_maxHealth': 100,
+            'STATUS_curHealth': 100,
+            'STATUS_damage': 10,
+            'STATUS_defense': 10,
+            'STATUS_speed': 10,
+        };
+        this.skills = {};
+    }
+}
+
 function initializeProfession(survivor, msg) {
     let profession = null;
     switch(msg) {
@@ -267,14 +261,17 @@ function initializeProfession(survivor, msg) {
         case "Healer":
             profession = new Healer();
             break;
+        case "Builder":
+            profession = new Builder();
+            break;
     }
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;
     survivor.status = profession.status;
-    survivor.baseStatus = JSON.parse(JSON.stringify(profession.status));
+    survivor.baseStatus = profession.status;
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
-        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown', 'curCharge', 'maxCharge'];
+        survivor.skills[i].KEYS = ['coolDown', 'curCoolDown'];
     }
 }
 

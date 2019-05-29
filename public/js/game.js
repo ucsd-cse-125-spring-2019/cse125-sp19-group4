@@ -2,7 +2,6 @@ const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
 const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
 const { Item, Slime, Tile, Bullet, Tree } = require('./GameUnits.js').Units;
-const items = require('./items.js');
 const server = require('../../server.js');
 
 const NotificationType = {
@@ -30,7 +29,6 @@ class GameInstance {
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
         this.meleeId = 0;
-        this.itemId = 0;
         this.interactId = 0;
         this.toClean = [];
         this.skillables = {};
@@ -47,7 +45,6 @@ class GameInstance {
 
     loadConfig(config) {
         this.max_survivors = config.game.max_survivors;
-        this.itemDropProb = config.game.item_drop_prob;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
@@ -96,26 +93,12 @@ class GameInstance {
     decrementCoolDown(amount) {
         for (let name in this.skillables) {
             let skills = this.skillables[name].skills;
-            for (let i in skills) {
-                let skill = skills[i];
-                let send = false;
-                
-                if (skill.curCoolDown > 0) {
-                    skill.curCoolDown -= amount;
-                    send = true;
-                } else {
-                    if (skill.curCoolDown != 0) { //TODO handle case when cooldown is exactly 0 from decrementing 
-                        send = true;
-                    }
-                    skill.curCoolDown = 0;
-                    if ('maxCharge' in skill && skill.curCharge < skill.maxCharge) {
-                        skill.curCharge++;
-                        skill.curCoolDown = skill.coolDown;
-                        send = true;
-                    }
-                }
-
-                if (send) {
+            for (let skill in skills) {
+                if (skills[skill].curCoolDown > 0) {
+                    skills[skill].curCoolDown -= amount;
+                    this.skillables[name].KEYS.push("skills");
+                } else if (skills[skill].curCoolDown < 0) {
+                    skills[skill].curCoolDown = 0;
                     this.skillables[name].KEYS.push("skills");
                 }
             }
@@ -173,6 +156,9 @@ class GameInstance {
     }
 
     move(name, direction, updateDirectionOnly=false) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const obj = this.objects[name];
         const speed = obj.status.STATUS_speed;
         if (updateDirectionOnly) 
@@ -183,24 +169,29 @@ class GameInstance {
     }
 
     jump(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         this.physicsEngine.jump(name, this.objects[name].jumpSpeed, this.objects[name].maxJump);
     }
 
     stay(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         this.physicsEngine.stopMovement(name);
     }
 
 
     // ==================================== Attack System ===================================
     handleSkill(name, skillParams) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const obj = this.objects[name];
         let { skillNum, position } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
-
-        if (!'maxCharge' in skill && skill.curCoolDown > 0) { // not cooled down
-            return;
-        }
-        if ('maxCharge' in skill && skill.curCharge == 0) {
+        if (skill.curCoolDown > 0) { // not cooled down
             return;
         }
 
@@ -223,11 +214,7 @@ class GameInstance {
             default: 
                 console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
-        if (!'maxCharge' in skill) {
-            skill.curCoolDown = skill.coolDown;
-        } else {
-            skill.curCharge -= 1;
-        }
+        skill.curCoolDown = skill.coolDown;
     }
 
     /**
@@ -236,30 +223,26 @@ class GameInstance {
      * @param {string} name the name of object that initiates the attack
      */
     shoot(name) {
+        if (this.deadSurvivors.includes(name)) {
+            return;
+        }
         const initiator = this.objects[name];
-        if (initiator.attackTimer > 0) {
-            return;
-        }
-        if (name === 'God' && !initiator.canAttack) {
-            return;
-        }
+        if (name === 'God' && !initiator.canAttack) return;
         const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
         this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.STATUS_damage, bullet.name, bullet.radius);
-        initiator.attackTimer = initiator.status.STATUS_attackInterval;
     }
 
     melee(name) {
-        const initiator = this.objects[name];
-        if (initiator.attackTimer > 0) {
+        if (this.deadSurvivors.includes(name)) {
             return;
         }
+        const initiator = this.objects[name];
         if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
-        initiator.attackTimer = initiator.status.STATUS_attackInterval;
     }
 
     //#region Before Step
@@ -304,12 +287,15 @@ class GameInstance {
         if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 const object = game.objects[name];
-                if (game.objects[name].attackMode === 'shoot') {
-                    game.shoot(name);
-                }
-                else if (game.objects[name].attackMode === 'melee') {
-                    game.melee(name);
-                }
+                if (object.attackTimer == object.attackInterval) {
+                    if (game.objects[name].attackMode === 'shoot') {
+                        game.shoot(name);
+                    }
+                    else if (game.objects[name].attackMode === 'melee') {
+                        game.melee(name);
+                    }
+                    object.attackTimer --;
+                } 
             });
         }
     }
@@ -317,13 +303,10 @@ class GameInstance {
     /** Helper: Update attack timer for each object*/ 
     updateAttackTimer() {
         const game = this;
-        Object.keys(this.objects).forEach(function (name) {
+        this.slimes.forEach(function (name) {
             const object = game.objects[name];
-            if (typeof object.attackTimer !== 'undefined') {
-                if (object.attackTimer > 0) {
-                    object.attackTimer--;
-                }
-            }
+            if (object.attackTimer < 0) object.attackTimer = object.attackInterval;
+            else if (object.attackTimer < object.attackInterval) object.attackTimer --; 
         })
     }
     // ==================================== Before Step ===================================
@@ -336,7 +319,6 @@ class GameInstance {
     //#region After Step
     // ==================================== After Step ===================================
     afterStep() {
-        this.useItems();
         this.handleSlimeExplosion();
         this.handleBullets();
         this.checkHealth();
@@ -347,16 +329,6 @@ class GameInstance {
     afterSend() {
         this.toClean.length = 0;
         this.toSend.length = 0;
-    }
-
-    useItems() {
-        const gameInstance = this;
-        this.physicsEngine.itemsTaken.forEach(function (name) {
-            const item = gameInstance.physicsEngine.obj[name];
-            const survivor = gameInstance.objects[item.takenBy];
-            survivor.itemEnhance(item.kind);
-            gameInstance.toClean.push(name);
-        });
     }
 
     /**
@@ -468,45 +440,12 @@ class GameInstance {
             if (slime.status.STATUS_curHealth > 0) {
                 return;
             }
-            deadSlimes.push(name);
+            deadSlimes.push(name)
             gameInstance.toClean.push(name);
         });
         deadSlimes.forEach(function (name) {
-            gameInstance.generateItem(name);
             gameInstance.slimes.splice(gameInstance.slimes.indexOf(name), 1);
         });
-    }
-
-    /**
-     * item would be randomly generated when a slime dies
-     * @param {string} name name of slime
-     */
-    generateItem(name) {
-        const slime = this.objects[name];
-        // Decide whether to drop item
-        if (Math.random() < this.itemDropProb) {
-            // Randomly generate an item
-            const prob = Math.random();
-            let kind = null;
-            const keys = Object.keys(items)
-            let probLowerBound = 0;
-            for (let i = 0; i < keys.length; i++) {
-                if (probLowerBound >= 1) break;
-
-                const probUpperBound = probLowerBound + items[keys[i]].prob;
-                if (probLowerBound <= prob && prob < probUpperBound) {
-                    kind = keys[i];
-                    break;
-                } 
-                probLowerBound = probUpperBound;
-            }  
-
-            const itemName = 'Item ' + this.itemId++;
-            const item = new Item(itemName, kind); 
-            this.objects[itemName] = item;
-            this.physicsEngine.addItem(itemName, item.kind, 
-                { x: slime.position[0], y: slime.position[1], z: slime.position[2] });
-        }
     }
     // ==================================== After Step ===================================
     //#endregion

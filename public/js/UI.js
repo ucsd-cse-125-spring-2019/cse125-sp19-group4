@@ -1,9 +1,5 @@
 // import { uid } from "/public/js/client.js"
-const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;";
-const NOTIFICATION_BASE_STYLE = "transition: font-size 0.5s;";
-const NOTIFICATION_STYLE = {
-    EVENT: NOTIFICATION_BASE_STYLE +  "color: red",
-}
+const healthBarStyle = "height: 100%; background-color: FireBrick; width: {0}%;"
 
 if (!String.prototype.format) {
     String.prototype.format = function () {
@@ -40,16 +36,10 @@ function createStatusItem(statusName, initialValue) {
     let text = document.createElement("span");
     text.id = statusName;
     text.innerHTML = initialValue;
-    text.style = "display: inline-block; vertical-align: middle; margin: 0 0 0 5px; color:#B4AE6C;";
-
-    let buff = document.createElement("span");
-    buff.id = "buff" + statusName;
-    buff.innerHTML = "+0"
-    buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 9pt";
+    text.style = "display: inline-block; vertical-align: middle; margin: 0px 5px; color:#B4AE6C;";
 
     div.appendChild(img);
     div.appendChild(text);
-    div.appendChild(buff);
     document.getElementById("statusList").appendChild(div);     // Append <li> to <ul> with id="myList"
 }
 
@@ -95,7 +85,6 @@ function InitializeStatus(status) {
     }
     //------------------------everything else----------------------
     statusUpdate(status);
-    healthUpdate(status);
 }
 
 
@@ -121,20 +110,10 @@ function InitializeSkills(skills) {
                      "font-size: 10pt;";
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
-
-
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask);
         skill.appendChild(span);
-
-        if ('maxCharge' in skills[i]) {
-            let charge = document.createElement('span');
-            charge.style = "color: white; position: absolute; bottom: -3px; right: 0; font-size: 8pt;";
-            charge.innerHTML = skills[i].curCharge;
-            charge.id = i + "charge";
-            skill.appendChild(charge);
-        }
         skillsBar.appendChild(skill);
     }
 }
@@ -208,52 +187,32 @@ function timerUpdate(second) {
     document.getElementById("timer").innerHTML = timeString;
 }
 
-function healthUpdate(status) {
-    const curHealth = status.STATUS_curHealth;
-    const maxHealth = status.STATUS_maxHealth;
-    const width = Math.floor(curHealth / maxHealth * 100);
-    document.getElementById('healthBar').style = healthBarStyle.format(width);
-    document.getElementById('healthBar').innerHTML = Math.floor(curHealth) + "/" + maxHealth;
-}
-
 function statusUpdate(status) {
     for (let i in status) {
-        if (isStatusValid(i)) {
+        if (i === 'STATUS_curHealth') {
+            const curHealth = status.STATUS_curHealth;
+            const maxHealth = status.STATUS_maxHealth;
+            const width = Math.floor(curHealth / maxHealth * 100);
+            document.getElementById('healthBar').style = healthBarStyle.format(width);
+            document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
+        } else if (isStatusValid(i)) {
             document.getElementById(i).innerHTML = status[i];
-        }
-    }
-}
-
-
-function buffUpdate(buff) {
-    for (let i in buff) {
-        if (isStatusValid(i)) {
-            document.getElementById("buff" + i).innerHTML = "+" + buff[i];
         }
     }
 }
 
 function coolDownUpdate(skills) {
     for (let skill in skills) {
+        let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
         let mask = document.getElementById(skill + "Mask");
         let span = document.getElementById(skill + "Countdown");
-
-        if (!'maxCharge' in skills[skill] || skills[skill].curCharge == 0) {
-            let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
-            mask.style.height = coolDownPercent + "%";
-
-            if (skills[skill].curCoolDown <= 0) {
-                span.innerHTML = "";
-            } else if (skills[skill].curCoolDown > 1) {
-                span.innerHTML = Math.round(skills[skill].curCoolDown) + "s";
-            } else {
-                span.innerHTML = Math.round(skills[skill].curCoolDown * 10) / 10 + "s";
-            }
-        }
-
-        if ('maxCharge' in skills[skill]) {
-            let charge = document.getElementById(skill + 'charge');
-            charge.innerHTML = skills[skill].curCharge;
+        mask.style.height = coolDownPercent + "%";
+        if (skills[skill].curCoolDown <= 0) {
+            span.innerHTML = "";
+        } else if (skills[skill].curCoolDown > 1) {
+            span.innerHTML = Math.round(skills[skill].curCoolDown) + "s";
+        } else {
+            span.innerHTML = Math.round(skills[skill].curCoolDown * 10) / 10 + "s";
         }
     }
 }
@@ -275,7 +234,6 @@ function teammatesUpdate(data) {
 }
 
 function updateItems(items) {
-    console.log(items)
     let keys = Object.keys(items);
     let ul = document.getElementById('vaultUl');
     while (ul.firstChild) {
@@ -317,32 +275,10 @@ function teammateDied(teammate) {
 function teammateRevived(teammate) {
 
 }
-
-let notificationTimer = null;
-
-function updateNotification(msg, type) {
-    let span = document.createElement("div")
-    span.innerHTML = msg;
-    span.style = NOTIFICATION_STYLE[type];
-    document.getElementById('notificationList').appendChild(span);
-
-    setTimeout(function() {
-        // span.parentElement.removeChild(span);
-        span.style["font-size"] = 0;
-        span.style["opacity"] = 0; 
-    }, 2000)
-
-    // $("#notification").fadeIn(300);
-    // hideTimer = setTimeout(function() {
-    //     $("#notification").fadeOut(500);
-    // }, 2000)
-}
 /* --------------------------all update functions--------------------------- */
 
 
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate,
-         updateNotification, NOTIFICATION_STYLE 
- }
+         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems }

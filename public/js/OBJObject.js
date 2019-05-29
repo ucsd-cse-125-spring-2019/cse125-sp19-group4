@@ -5,7 +5,7 @@ class OBJObject {
         this.has_mtl = has_mtl;
         const mesh_content = readTextFile(mesh_path);
         this.mesh = new OBJ.Mesh(mesh_content);
-        console.log(this.mesh);
+        //console.log(this.mesh);
         
         this.mesh.name = mesh_name;
         OBJ.initMeshBuffers(gl, this.mesh);
@@ -15,7 +15,7 @@ class OBJObject {
         if (this.has_mtl) {
             this.mtl_content = readTextFile(texture_path);
             this.materials = new OBJ.MaterialLibrary(this.mtl_content).materials;
-            console.log(this.materials);
+            //console.log(this.materials);
             Object.keys(this.materials).forEach((name) => {
                 const material = this.materials[name];
                 const mapping = {};
@@ -67,6 +67,7 @@ class OBJObject {
                 gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, material.ambient);
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, material.diffuse);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, material.specular);
+                // gl.uniform1f(this.programInfo.uniformLocations.shininess, material.specularExponent);
                 // gl.uniform1f(this.programInfo.uniformLocations.shininess, material.specularExponent);
                 if (Object.keys(this.texture_files[name].map).length) {
                     Object.keys(this.texture_files[name].map).forEach((e) => {
