@@ -163,13 +163,16 @@ class Archer {
         this.skills = {
             0: {
                 'name': 'Shoot',
+                'type': SKILL_TYPE.LOCATION,
                 'coolDown': 0.5,
                 'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, params) {
                     const name = params.name;
-                    const cursor = params.cursor;
+                    const cursor = params.position;
                     const direction = glMatrix.vec3.create();
                     glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
                     direction[1] = 0;

@@ -494,7 +494,6 @@ class GameInstance {
         // Decide whether to drop item
         if (Math.random() < this.itemDropProb) {
             // Randomly generate an item
-            console.log(items);
             const prob = Math.random();
             let kind = null;
             const keys = Object.keys(items)

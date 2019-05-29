@@ -605,7 +605,7 @@ const mouseDown = function (e) {
                 // survivors
                 if (casting == 0) {
                     console.log('arrow fired');
-                    const skillsParams = { skillNum: 0, cursor: cursor, name: uid };
+                    const skillsParams = { skillNum: 0, position: cursor, name: uid };
                     socket.emit('skill', JSON.stringify(skillsParams));
                 }
             }
