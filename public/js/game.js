@@ -6,7 +6,7 @@ const items = require('./items.js');
 const server = require('../../server.js');
 
 const NotificationType = {
-    EVENT : "EVENT",
+    EVENT: "EVENT",
 }
 
 class GameInstance {
@@ -101,7 +101,7 @@ class GameInstance {
             for (let i in skills) {
                 let skill = skills[i];
                 let send = false;
-                
+
                 if (skill.curCoolDown > 0) {
                     skill.curCoolDown -= amount;
                     send = true;
@@ -174,10 +174,14 @@ class GameInstance {
             + (typeof this.god === 'undefined' ? '0' : '1') + '/1 god';
     }
 
-    move(name, direction, updateDirectionOnly=false) {
+    move(name, direction, updateDirectionOnly = false) {
         const obj = this.objects[name];
+        if (obj instanceof Survivor) {
+            obj.model = 'player_running';
+            obj.KEYS.push('model');
+        }
         const speed = obj.status.STATUS_speed;
-        if (updateDirectionOnly) 
+        if (updateDirectionOnly)
             this.physicsEngine.updateVelocity(name, direction, 0);
         else
             this.physicsEngine.updateVelocity(name, direction, speed);
@@ -189,6 +193,11 @@ class GameInstance {
     }
 
     stay(name) {
+        const obj = this.objects[name];
+        if (obj instanceof Survivor) {
+            obj.model = 'player';
+            obj.KEYS.push('model');
+        }
         this.physicsEngine.stopMovement(name);
     }
 
@@ -208,8 +217,8 @@ class GameInstance {
 
         obj.KEYS.push("skills")
         this.toSend.push(name);
-        switch(skill.type) {
-            case SKILL_TYPE.SELF: 
+        switch (skill.type) {
+            case SKILL_TYPE.SELF:
                 skill.function(obj, skillParams);
                 obj.KEYS.push("status")
                 break;
@@ -222,7 +231,7 @@ class GameInstance {
                 skill.function(this, skillParams);
                 break;
 
-            default: 
+            default:
                 console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
         if (!'maxCharge' in skill) {
@@ -316,7 +325,7 @@ class GameInstance {
         }
     }
 
-    /** Helper: Update attack timer for each object*/ 
+    /** Helper: Update attack timer for each object*/
     updateAttackTimer() {
         const game = this;
         Object.keys(this.objects).forEach(function (name) {
@@ -377,7 +386,7 @@ class GameInstance {
                 console.log(hit.from);
                 attackee.onHit(gameInstance, hit.damage);
                 console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:',
-                            attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
+                    attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
             }
             gameInstance.toClean.push(hit_name);
         });
@@ -394,7 +403,7 @@ class GameInstance {
             attackee.onHit(gameInstance, slime.status.STATUS_damage);
             slime.status.STATUS_curHealth = 0;
             console.log(attackee.name, 'lost', slime.status.STATUS_damage, 'health. Current Health:',
-                        attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
+                attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
         })
     }
 
@@ -464,7 +473,7 @@ class GameInstance {
             const index = gameInstance.liveSurvivors.indexOf(name);
             gameInstance.liveSurvivors.splice(index, 1);
         });
-        
+
         const deadSlimes = [];
         this.slimes.forEach(function (name) {
             let slime = gameInstance.objects[name]
@@ -512,14 +521,14 @@ class GameInstance {
                 if (probLowerBound <= prob && prob < probUpperBound) {
                     kind = keys[i];
                     break;
-                } 
+                }
                 probLowerBound = probUpperBound;
-            }  
+            }
 
             const itemName = 'Item ' + this.itemId++;
-            const item = new Item(itemName, kind); 
+            const item = new Item(itemName, kind);
             this.objects[itemName] = item;
-            this.physicsEngine.addItem(itemName, item.kind, 
+            this.physicsEngine.addItem(itemName, item.kind,
                 { x: slime.position[0], y: slime.position[1], z: slime.position[2] });
         }
     }
@@ -562,7 +571,7 @@ class GameInstance {
     /********************* Utils function *********************/
     outOfWorld(position) {
         return Math.abs(Math.floor(position[0])) > this.worldHalfWidth ||
-               Math.abs(Math.floor(position[2])) > this.worldHalfHeight
+            Math.abs(Math.floor(position[2])) > this.worldHalfHeight
     }
 }
 

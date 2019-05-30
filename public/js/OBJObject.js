@@ -73,18 +73,12 @@ class OBJObject {
                         gl.activeTexture(gl.TEXTURE0 + this.texture_files[name].index);
                         gl.bindTexture(gl.TEXTURE_2D, this.texture_files[name].map[e]);
                         gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[name].index);
-                        transformMatrix_array.forEach((t) => {
-                            gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
-                            gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
-                        });
-                    });
-                } else {
-                    transformMatrix_array.forEach((t) => {
-                        gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
-                        gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
                     });
                 }
-                
+                transformMatrix_array.forEach((t) => {
+                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                    gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
+                });
             });
         } else {
             gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, [1, 1, 1]);

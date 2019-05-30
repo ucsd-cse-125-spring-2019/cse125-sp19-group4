@@ -275,7 +275,6 @@ function teammatesUpdate(data) {
 }
 
 function updateItems(items) {
-    console.log(items)
     let keys = Object.keys(items);
     let ul = document.getElementById('vaultUl');
     while (ul.firstChild) {

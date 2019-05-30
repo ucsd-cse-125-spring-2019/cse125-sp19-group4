@@ -179,7 +179,7 @@ function enterGame() {
     // Game begins, notify all participants to enter
     game_start();
     gameInstance.clientSockets.forEach(function (socket) {
-        data = {players: gameInstance.socketidToPlayer, objects: gameInstance.objects}
+        data = { players: gameInstance.socketidToPlayer, objects: gameInstance.objects }
         io.to(socket).emit('enter game', JSON.stringify(data));
     });
     gameInstance.initializeFilterFunctions();
@@ -207,7 +207,7 @@ function gameLoop() {
     inputs.length = 0;
 
     gameInstance.beforeStep();
-    gameInstance.decrementCoolDown(1/tick_rate);
+    gameInstance.decrementCoolDown(1 / tick_rate);
 
     // Handle Movements
     Object.keys(movementEvents).forEach((name) => {
@@ -256,7 +256,7 @@ function gameLoop() {
 
     let end = Date.now();
     duration = Math.floor((end - gameStartTime) / 1000);
-    
+
     const broadcast_status = {
         data: toSend,
         time: duration,
@@ -277,12 +277,12 @@ function gameLoop() {
 
 function notifyAll(message, type) {
     gameInstance.clientSockets.forEach(function (socket) {
-        io.to(socket).emit('notification', JSON.stringify({message, type}));
+        io.to(socket).emit('notification', JSON.stringify({ message, type }));
     });
 }
 
 function notifySurvivorDied(name) {
-    io.emit('Survivor Died', JSON.stringify({name}));
+    io.emit('Survivor Died', JSON.stringify({ name }));
 }
 
 function endGame(survivorsWon) {

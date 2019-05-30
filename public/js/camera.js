@@ -85,7 +85,6 @@ class Camera {
     rotateRight(deltaTime) {
         const angle = this.MouseSensitivity * deltaTime;
         this.Yaw += angle;
-        this.updateCameraVectors();
 
         let neg_position = glMatrix.vec3.create();
         let pos_position = glMatrix.vec3.create();
@@ -105,15 +104,13 @@ class Camera {
         glMatrix.vec3.transformMat4(this.Position, this.Position, rotation);
         glMatrix.vec3.transformMat4(this.RelativePosition, this.RelativePosition, rotation);
         glMatrix.vec3.transformMat4(this.Position, this.Position, translation_back);
-
+        this.updateCameraVectors();
     }
 
     // Q
     rotateLeft(deltaTime) {
         const angle = this.MouseSensitivity * deltaTime;
-
         this.Yaw -= angle;
-        this.updateCameraVectors();
 
         let neg_position = glMatrix.vec3.create();
         let pos_position = glMatrix.vec3.create();
@@ -133,6 +130,7 @@ class Camera {
         glMatrix.vec3.transformMat4(this.Position, this.Position, rotation);
         glMatrix.vec3.transformMat4(this.RelativePosition, this.RelativePosition, rotation);
         glMatrix.vec3.transformMat4(this.Position, this.Position, translation_back);
+        this.updateCameraVectors();
     }
 
     // moveFoward(deltaTime) {
