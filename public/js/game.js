@@ -174,6 +174,10 @@ class GameInstance {
 
     move(name, direction, updateDirectionOnly=false) {
         const obj = this.objects[name];
+        if (obj instanceof Survivor) {
+            obj.model = 'player_running';
+            obj.KEYS.push('model');
+        }
         const speed = obj.status.STATUS_speed;
         if (updateDirectionOnly) 
             this.physicsEngine.updateVelocity(name, direction, 0);
@@ -187,6 +191,11 @@ class GameInstance {
     }
 
     stay(name) {
+        const obj = this.objects[name];
+        if (obj instanceof Survivor) {
+            obj.model = 'player';
+            obj.KEYS.push('model');
+        }
         this.physicsEngine.stopMovement(name);
     }
 

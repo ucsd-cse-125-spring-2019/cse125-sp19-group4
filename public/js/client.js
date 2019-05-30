@@ -24,6 +24,7 @@ const transform_ref = {
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
+    'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI/2),
     'slime': glMatrix.mat4.create(),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
@@ -203,6 +204,11 @@ socket.on('game_status', function (msg) {
             objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
         
+        if ('model' in obj) {
+            objects[name].m = obj['model'];
+            transform = true;
+        }
+        
         if (transform) {
             // update face
             const dot = glMatrix.vec3.dot(direction, FACE);
@@ -318,6 +324,7 @@ function main() {
 
     model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
+    model_ref['player_running'] = new Animation(gl, "/public/model/player_running.json", programInfo, texture_counter);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
@@ -340,6 +347,9 @@ function main() {
         $('#render').html(Math.ceil(deltaTime * 1000));
 
         then = now;
+
+        
+        model_ref['player_running'].updateJoints(now);
 
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
