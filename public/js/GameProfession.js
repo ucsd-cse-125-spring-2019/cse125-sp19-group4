@@ -64,7 +64,7 @@ class God {
         this.mass = 500;
         this.maxJump = 10;
         this.jumpSpeed = 10;
-        this.model = 'player';
+        this.model = '';
         this.radius = 2;
         this.skills = {
             0: {
@@ -129,9 +129,6 @@ class God {
     }
 
     onHit(game, damage) {
-        this.status.STATUS_curHealth = Math.max(this.status.STATUS_curHealth - damage, 0);
-        this.KEYS.push('status');
-        game.toSend.push(this.name);
     }
 }
 

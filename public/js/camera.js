@@ -2,7 +2,9 @@ const YAW = -90.0;
 const PITCH = -45.0;
 const SPEED = 5;        // Unit
 const SENSITIVITY = 120;
-const ZOOM = 45.0;
+const MIN_ZOOM = 10.0;
+const MAX_ZOOM = 50.0;
+const MAX_ZOOM_GOD = 100.0;
 const POSITION = [0, 20, 20];
 class Camera {
     /**
@@ -20,7 +22,6 @@ class Camera {
         this.Front[2] = Math.sin(this.Yaw * Math.PI / 180) * Math.cos(this.Pitch * Math.PI / 180);
         this.MovementSpeed = SPEED;
         this.MouseSensitivity = SENSITIVITY;
-        this.Zoom = ZOOM;
         this.RelativePosition = relativePosition;
         this.Position = glMatrix.vec3.fromValues(relativePosition[0], relativePosition[1], relativePosition[2]);
         this.WorldUp = up;
@@ -32,7 +33,7 @@ class Camera {
         this.Pitch = pitch;
         this.fieldOfView = 60 * Math.PI / 180;   // in radians
         this.zNear = 0.1;
-        this.zFar = 100.0;
+        this.zFar = 500.0;
         this.updateCameraVectors();
     }
 
@@ -79,6 +80,33 @@ class Camera {
             this.zNear,
             this.zFar);
         return output;
+    }
+
+    zoomIn() {
+        if (glMatrix.vec3.length(this.RelativePosition) > MIN_ZOOM) {
+            let scale = glMatrix.mat4.create();
+            glMatrix.mat4.fromScaling(scale, [0.9, 0.9, 0.9]);
+
+            const diff = glMatrix.vec3.clone(this.RelativePosition);
+            glMatrix.vec3.transformMat4(this.RelativePosition, this.RelativePosition, scale);
+
+            glMatrix.vec3.subtract(diff, diff, this.RelativePosition);
+            glMatrix.vec3.subtract(this.Position, this.Position, diff);
+        }
+    }
+
+    zoomOut(isGod) {
+        let max_zoom = isGod ? MAX_ZOOM_GOD : MAX_ZOOM;
+        if (glMatrix.vec3.length(this.RelativePosition) < max_zoom) {
+            let scale = glMatrix.mat4.create();
+            glMatrix.mat4.fromScaling(scale, [1.1, 1.1, 1.1]);
+
+            const diff = glMatrix.vec3.clone(this.RelativePosition);
+            glMatrix.vec3.transformMat4(this.RelativePosition, this.RelativePosition, scale);
+
+            glMatrix.vec3.subtract(diff, diff, this.RelativePosition);
+            glMatrix.vec3.subtract(this.Position, this.Position, diff);
+        }
     }
 
     // E

@@ -7,6 +7,7 @@ const UIdebug = true;
 
 const camera = new Camera();
 let uid = '';
+let isGod = false;
 let prev_direction = glMatrix.vec3.create();
 
 const FACE_mat = glMatrix.mat4.create();
@@ -20,6 +21,7 @@ let player = {};
 const model_ref = {};
 
 const transform_ref = {
+    '': glMatrix.mat4.create(),
     'terrain': glMatrix.mat4.create(), //glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
@@ -93,6 +95,7 @@ socket.on('enter game', function (msg) {
         UI.InitializeVault();
         UI.updateItems(player.items);
     } else {
+        isGod = true;
         document.getElementById('vault').style.display = "none"
     }
 
@@ -272,6 +275,7 @@ function main() {
     // canvas.addEventListener("mouseup", mouseUp, false);
     // canvas.addEventListener("mouseout", mouseUp, false);
     window.addEventListener("mousemove", mouseMove, false);
+    window.addEventListener("wheel", zoom, {passive: false});
 
     window.addEventListener('keyup', function (event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function (event) { Key.onKeydown(event); }, false);
@@ -360,8 +364,8 @@ function main() {
             camera.rotateRight(deltaTime);
         }
 
-        // Jump
-        if (Key.isDown('JUMP')) {
+        // Jump, god's jump disabled
+        if (Key.isDown('JUMP') && !isGod) {
             delete Key._pressed['JUMP'];
             Key.jumped = true;
             socket.emit('jump');
@@ -482,6 +486,9 @@ function drawScene(gl, programInfo, objects, camera) {
     const to_render = {};
     Object.keys(objects).forEach(function (obj_name) {
         const obj = objects[obj_name];
+        if (obj.m === '') {
+            return;
+        }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
         }
@@ -581,7 +588,7 @@ const mouseDown = function (e) {
     switch (e.which) {
         case 1:
             // left click
-            if (uid === 'God') {
+            if (isGod) {
                 if (casting == 0) {
                     console.log('slime fired');
                     const skillsParams = { skillNum: 0, position: cursor };
@@ -624,8 +631,16 @@ const mouseDown = function (e) {
 const mouseMove = function (e) {
     mouse_pos.x = e.pageX;
     mouse_pos.y = e.pageY;
-
 };
+
+const zoom = function (e) {
+    e.preventDefault();
+    if (e.deltaY > 0) {
+        camera.zoomIn();
+    } else if(e.deltaY < 0) {
+        camera.zoomOut(isGod);
+    }
+}
 
 /*================= Keyboard events ======================*/
 
