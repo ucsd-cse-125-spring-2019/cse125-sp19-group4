@@ -24,7 +24,7 @@ const transform_ref = {
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
-    'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI/2),
+    'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
     'slime': glMatrix.mat4.create(),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
@@ -37,9 +37,9 @@ const transform_ref = {
 const objects = {};
 const cast_models = [];
 
-const texture_counter = {i: 0};
+const texture_counter = { i: 0 };
 
-const mouse_pos = {x: 0, y:0};
+const mouse_pos = { x: 0, y: 0 };
 
 const cursor = glMatrix.vec3.create();
 
@@ -59,10 +59,10 @@ socket.on('chat message', function (msg) {
     }
 });
 
-socket.on('notification', function(msg) {
+socket.on('notification', function (msg) {
     const data = JSON.parse(msg);
     console.log(data)
-    const {message, type} = data;
+    const { message, type } = data;
     UI.updateNotification(message, type);
 });
 
@@ -80,12 +80,12 @@ socket.on('enter game', function (msg) {
 
     const data = JSON.parse(msg);
     const players = data.players;
-    const objs = data.objects; 
+    const objs = data.objects;
 
     uid = players[socket.id].name;
     player = players[socket.id];
     console.log("my name is", uid);
-    
+
     UI.InitializeStatus(player.status);
     UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
@@ -111,16 +111,16 @@ socket.on('wait for game begin', function (msg) {
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
-    const {playerCount, statusString} = JSON.parse(msg);
+    const { playerCount, statusString } = JSON.parse(msg);
     for (let i in playerCount) {
         $('#' + i).html(playerCount[i]);
     }
     $('#numStatus').html(statusString);
 });
 
-socket.on('Survivor Died', function(msg) {
+socket.on('Survivor Died', function (msg) {
     const data = JSON.parse(msg);
-    const {name} = data;
+    const { name } = data;
 
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)')
@@ -129,7 +129,7 @@ socket.on('Survivor Died', function(msg) {
     }
 });
 
-socket.on('end game', function(msg) {
+socket.on('end game', function (msg) {
     $('.game-area').html($('#endgame-template').html());
     document.getElementById('endgame-message').innerHTML = msg;
 });
@@ -203,12 +203,12 @@ socket.on('game_status', function (msg) {
         if (typeof objects[name] === 'undefined') { //TODO move this to other event
             objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
-        
+
         if ('model' in obj) {
             objects[name].m = obj['model'];
             transform = true;
         }
-        
+
         if (transform) {
             // update face
             const dot = glMatrix.vec3.dot(direction, FACE);
@@ -231,7 +231,7 @@ socket.on('game_status', function (msg) {
             let t = glMatrix.mat4.clone(transform_ref[objects[name].m]);
             if (objects[name].m === 'tree') {
                 t = glMatrix.mat4.fromScaling(t, [obj.size, obj.size, obj.size]);
-            } 
+            }
             glMatrix.mat4.multiply(objects[name].t, transformation, t);
         }
     });
@@ -245,7 +245,7 @@ socket.on('game_status', function (msg) {
     $('#server').html(status.debug.looptime);
 
     UI.timerUpdate(status.time);
-    
+
 });
 
 socket.on('pong', (latency) => {
@@ -348,7 +348,7 @@ function main() {
 
         then = now;
 
-        
+
         model_ref['player_running'].updateJoints(now);
 
         // Camera Rotation
@@ -412,8 +412,8 @@ function main() {
                 socket.emit('movement', JSON.stringify('stay'));
             } else {
                 socket.emit('movement', JSON.stringify(direction));
-            }   
-            prev_direction = direction;
+            }
+            prev_direction = glMatrix.vec3.clone(direction);
         }
 
         // Skill
@@ -477,7 +477,7 @@ function drawScene(gl, programInfo, objects, camera) {
         false,
         modelViewMatrix);
     gl.uniform3fv(programInfo.uniformLocations.viewPosition, camera.Position);
-    
+
 
     const to_render = {};
     Object.keys(objects).forEach(function (obj_name) {
@@ -605,7 +605,7 @@ const mouseDown = function (e) {
                     socket.emit('skill', JSON.stringify(skillsParams));
                 }
             }
-            
+
             break;
         case 3:
             // right click

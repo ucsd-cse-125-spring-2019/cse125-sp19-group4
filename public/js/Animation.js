@@ -9,13 +9,11 @@ class Animation {
         this.init_normals = ObjectJSON.normals
         this.vertices = new Array(this.init_vertices.length);
         this.normals = new Array(this.init_normals.length);
-        //this.uvs = ObjectJSON.uvs[0]
         this.uvs = ObjectJSON.uvs
         const init_bones = ObjectJSON.bones
         this.keyframes = ObjectJSON.animation.hierarchy;
         this.skinIndices = ObjectJSON.skinIndices;
         this.skinWeights = ObjectJSON.skinWeights;
-        //this.material = ObjectJSON.materials[0];
         this.materials = ObjectJSON.materials
         const init_indices = ObjectJSON.faces;
         this.indices = new Array(this.materials.length);
@@ -25,7 +23,6 @@ class Animation {
             this.indices[init_indices[i + 4]].push(init_indices[i + 2]);
             this.indices[init_indices[i + 4]].push(init_indices[i + 3]);
         }
-        console.log(this.indices)
         this.hasTexture = false;
         this.texture_files = {};
         this.indexBuffers = {};
@@ -147,7 +144,6 @@ class Animation {
         while (this.scaled_now > end) {
             this.scaled_now -= (end - start)
         }
-        //console.log(time_second)
         this.bones.forEach((element, index, array) => {
             let local = glMatrix.mat4.create()
             let world = glMatrix.mat4.create()
@@ -156,7 +152,7 @@ class Animation {
             let scaling = glMatrix.vec3.create()
             scaling.fill(1)
             let keys = this.keyframes[index].keys
-            if (keys.length == 2) {//such bones have no change during the animation
+            if (keys.length == 2) { //such bones have no change during the animation
                 position = keys[0].pos;
                 rotation = keys[0].rot;
                 scaling = keys[0].scl;
