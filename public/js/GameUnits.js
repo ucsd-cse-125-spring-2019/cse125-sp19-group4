@@ -31,6 +31,7 @@ class Slime {
         this.attacking = {};
         this.attackMode = attackMode;
         this.attackTimer = this.status.STATUS_attackInterval;
+        this.progressPoint = 5;
         if (attackMode === "explode") this.minDistanceFromPlayer = 0;
         else if (attackMode === "shoot") {
             this.minDistanceFromPlayer = 10;
