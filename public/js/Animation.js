@@ -5,33 +5,55 @@ class Animation {
         this.then = 0;
         this.programInfo = programInfo
         var ObjectJSON = JSON.parse(readTextFile(json_name))
-        console.log(ObjectJSON)
         this.init_vertices = ObjectJSON.vertices
         this.init_normals = ObjectJSON.normals
         this.vertices = new Array(this.init_vertices.length);
         this.normals = new Array(this.init_normals.length);
-        this.uvs = ObjectJSON.uvs[0]
+        //this.uvs = ObjectJSON.uvs[0]
+        this.uvs = ObjectJSON.uvs
         const init_bones = ObjectJSON.bones
         this.keyframes = ObjectJSON.animation.hierarchy;
         this.skinIndices = ObjectJSON.skinIndices;
         this.skinWeights = ObjectJSON.skinWeights;
-        this.material = ObjectJSON.materials[0];
+        //this.material = ObjectJSON.materials[0];
+        this.materials = ObjectJSON.materials
+        const init_indices = ObjectJSON.faces;
+        this.indices = new Array(this.materials.length);
+        this.indices.fill([])
+        for (let i = 0; i < init_indices.length; i += 11) {
+            this.indices[init_indices[i + 4]].push(init_indices[i + 1]);
+            this.indices[init_indices[i + 4]].push(init_indices[i + 2]);
+            this.indices[init_indices[i + 4]].push(init_indices[i + 3]);
+        }
+        console.log(this.indices)
         this.hasTexture = false;
-        const mapping = {};
-        if (this.material.mapNormal) {
-            mapping["ambient"] = loadTexture(gl, this.material.mapNormal);
-            this.hasTexture = true;
-        }
-        if (this.material.mapDiffuse) {
-            mapping["diffuse"] = loadTexture(gl, this.material.mapDiffuse);
-            this.hasTexture = true;
-        }
-        if (this.material.mapSpecular) {
-            mapping["specular"] = loadTexture(gl, this.material.mapSpecular);
-            this.hasTexture = true;
-        }
-        this.texture_files = { map: mapping, index: texture_counter.i };
-        console.log(this.texture_files)
+        this.texture_files = {};
+        this.indexBuffers = {};
+        this.textureBuffers = {};
+        ObjectJSON.materials.forEach((element, index) => {
+            const mapping = {};
+            if (element.mapNormal) {
+                mapping["ambient"] = loadTexture(gl, element.mapNormal);
+                this.hasTexture = true;
+            }
+            if (element.mapDiffuse) {
+                mapping["diffuse"] = loadTexture(gl, element.mapDiffuse);
+                this.hasTexture = true;
+            }
+            if (element.mapSpecular) {
+                mapping["specular"] = loadTexture(gl, element.mapSpecular);
+                this.hasTexture = true;
+            }
+            this.texture_files[index] = { map: mapping, index: texture_counter.i };
+            this.textureBuffers[index] = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[index]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uvs[index]), gl.STATIC_DRAW);
+
+            this.indexBuffers[index] = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[index]);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices[index]), gl.STATIC_DRAW);
+            this
+        })
         this.fps = ObjectJSON.animation.fps;
         this.frame_time = 1 / this.fps;
         this.start_time = 0;
@@ -62,13 +84,6 @@ class Animation {
             value[2] = element.inv_bind_mat
             this.bones.push(value)
         })
-        var init_indices = ObjectJSON.faces;
-        this.indices = [];
-        for (let i = 0; i < init_indices.length; i += 11) {
-            this.indices.push(init_indices[i + 1]);
-            this.indices.push(init_indices[i + 2]);
-            this.indices.push(init_indices[i + 3]);
-        }
         this.vertex_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
@@ -76,14 +91,7 @@ class Animation {
         this.normal_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normal_buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
-        
-        this.texture_buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.texture_buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.uvs), gl.STATIC_DRAW);
         //indexbuffer
-        this.index_buffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), gl.STATIC_DRAW);
     }
 
     render(gl, transformMatrix_array) {
@@ -103,31 +111,31 @@ class Animation {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
         gl.vertexAttribPointer(this.programInfo.attribLocations.normal, 3, gl.FLOAT, false, 0, 0);
         gl.enableVertexAttribArray(this.programInfo.attribLocations.normal);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.texture_buffer);
-        gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
         //gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
         if (this.hasTexture) {
             gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
         } else {
             gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
         }
-        gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.material.colorAmbient);
-        gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, this.material.colorDiffuse);
-        gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.material.colorSpecular);
-
-        if (Object.keys(this.texture_files.map).length) {
-            Object.keys(this.texture_files.map).forEach((e) => {
-                gl.activeTexture(gl.TEXTURE0 + this.texture_files.index);
-                gl.bindTexture(gl.TEXTURE_2D, this.texture_files.map[e]);
-                gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files.index);
+        Object.keys(this.materials).forEach((index) => {
+            gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.materials[index].colorAmbient);
+            gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, this.materials[index].colorDiffuse);
+            gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[index].colorSpecular);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[index]);
+            gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
+            if (Object.keys(this.texture_files[index].map).length) {
+                Object.keys(this.texture_files[index].map).forEach((e) => {
+                    gl.activeTexture(gl.TEXTURE0 + this.texture_files[index].index);
+                    gl.bindTexture(gl.TEXTURE_2D, this.texture_files[index].map[e]);
+                    gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[index].index);
+                });
+            }
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[index]);
+            transformMatrix_array.forEach((t) => {
+                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                gl.drawElements(gl.TRIANGLES, this.indices[index].length, gl.UNSIGNED_SHORT, 0);
             });
-        }
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.index_buffer);
-        transformMatrix_array.forEach((t) => {
-            gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
-            gl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
-        });
+        })
     }
     updateJoints(time, scale = 1.0, start = this.start_time, end = this.end_time) {
         //use scale to adjust speed, start and end defines which part of animation you want to play
@@ -190,7 +198,7 @@ class Animation {
                 element[1] = world;
             }
         })
-        
+
         for (let i = 0; i < this.skinIndices.length; i += 2) {//bind vertices and normals with bones
             let temp_pos = glMatrix.vec4.fromValues(this.init_vertices[i * 3 / 2], this.init_vertices[i * 3 / 2 + 1], this.init_vertices[i * 3 / 2 + 2], 1)
             let frac_pos0 = glMatrix.vec4.create();
