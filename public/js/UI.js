@@ -336,6 +336,11 @@ function updateNotification(msg, type) {
     //     $("#notification").fadeOut(500);
     // }, 2000)
 }
+
+function updateProgressBar(progress) {
+    const {curProgress, winProgress} = progress;
+    document.getElementById('progressBar').style.width =  curProgress / winProgress * 100 + "%"
+}
 /* --------------------------all update functions--------------------------- */
 
 
@@ -343,5 +348,5 @@ function updateNotification(msg, type) {
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
          teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate,
-         updateNotification, NOTIFICATION_STYLE 
+         updateNotification, NOTIFICATION_STYLE , updateProgressBar
  }

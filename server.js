@@ -261,7 +261,8 @@ function gameLoop() {
         data: toSend,
         time: duration,
         toClean: gameInstance.toClean,
-        debug: { looptime: elapse },
+        debug: {looptime: elapse},
+        progress: { curProgress: gameInstance.curProgress, winProgress: gameInstance.winProgress }
     }
 
     const msg = JSON.stringify(broadcast_status, Utils.stringifyReplacer)

@@ -16,6 +16,8 @@ class GameInstance {
         this.treeId = 0;
         this.worldHalfWidth = 500;
         this.worldHalfHeight = 500;
+        this.winProgress = 100;
+        this.curProgress = 0;
         this.clientSockets = [];
         this.socketidToPlayer = {};
         this.survivors = [];
@@ -351,6 +353,7 @@ class GameInstance {
         this.checkHealth();
         this.cleanup();
         this.comparePosition();
+        this.checkProgress();
     }
 
     afterSend() {
@@ -479,12 +482,24 @@ class GameInstance {
             }
             deadSlimes.push(name);
             gameInstance.toClean.push(name);
+            gameInstance.curProgress += slime.progressPoint;
         });
         deadSlimes.forEach(function (name) {
             gameInstance.generateItem(name);
             gameInstance.slimes.splice(gameInstance.slimes.indexOf(name), 1);
         });
     }
+
+    checkProgress() {
+        if (this.curProgress > this.winProgress) {
+            // dosomething
+        }
+    }
+    // ==================================== After Step ===================================
+    //#endregion
+
+
+
 
     /**
      * item would be randomly generated when a slime dies
@@ -517,8 +532,7 @@ class GameInstance {
                 { x: slime.position[0], y: slime.position[1], z: slime.position[2] });
         }
     }
-    // ==================================== After Step ===================================
-    //#endregion
+
 
 
 
