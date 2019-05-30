@@ -134,16 +134,24 @@ class Animation {
             });
         })
     }
-    updateJoints(time, scale = 1.0, start = this.start_time, end = this.end_time) {
+    resetTime() {//use this to reset animation
+        this.scaled_now = 0;
+    }
+    updateJoints(deltaTime, loop = true, scale = 1.0, start = this.start_time, end = this.end_time) {
         //use scale to adjust speed, start and end defines which part of animation you want to play
-        let now = time / 1000;
-        this.scaled_now += (now - this.then) * scale;
+        this.scaled_now += deltaTime * scale;
         while (this.scaled_now < start) {
             this.scaled_now += (end - start)
         }
-        while (this.scaled_now > end) {
-            this.scaled_now -= (end - start)
+        if(loop) {
+            while (this.scaled_now > end) {
+                this.scaled_now -= (end - start)
+            }
+        } else if(this.scaled_now > end) {
+            this.scaled_now = end;
         }
+        
+        
         this.bones.forEach((element, index, array) => {
             let local = glMatrix.mat4.create()
             let world = glMatrix.mat4.create()
@@ -227,7 +235,6 @@ class Animation {
             this.normals[i * 3 / 2 + 1] = temp_nor[1]
             this.normals[i * 3 / 2 + 2] = temp_nor[2]
         }
-        this.then = now;
     }
 }
 

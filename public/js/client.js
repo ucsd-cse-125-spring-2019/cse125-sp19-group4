@@ -275,7 +275,7 @@ function main() {
     // canvas.addEventListener("mouseup", mouseUp, false);
     // canvas.addEventListener("mouseout", mouseUp, false);
     window.addEventListener("mousemove", mouseMove, false);
-    window.addEventListener("wheel", zoom, {passive: false});
+    window.addEventListener("wheel", zoom, { passive: false });
 
     window.addEventListener('keyup', function (event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function (event) { Key.onKeydown(event); }, false);
@@ -349,11 +349,9 @@ function main() {
         const deltaTime = (now - then) / 1000;
         $('#fps').html(Math.floor(1 / deltaTime));
         $('#render').html(Math.ceil(deltaTime * 1000));
-
         then = now;
 
-
-        model_ref['player_running'].updateJoints(now);
+        model_ref['player_running'].updateJoints(deltaTime, true);
 
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
@@ -637,7 +635,7 @@ const zoom = function (e) {
     e.preventDefault();
     if (e.deltaY > 0) {
         camera.zoomIn();
-    } else if(e.deltaY < 0) {
+    } else if (e.deltaY < 0) {
         camera.zoomOut(isGod);
     }
 }
