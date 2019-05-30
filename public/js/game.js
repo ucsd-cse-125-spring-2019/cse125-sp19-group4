@@ -26,6 +26,7 @@ class GameInstance {
         this.objects = {};                    // store all objects (players, slimes, trees, etc) on the map
         this.positions = {};
         this.directions = {};
+        this.onGoingSkills = {};
         this.toSend = [];
         this.slimes = [];
         this.initializeMap();                 // build this.map
@@ -180,7 +181,7 @@ class GameInstance {
             obj.model = 'player_running';
             obj.KEYS.push('model');
         }
-        const speed = obj.status.STATUS_speed;
+        const speed = obj.status.speed;
         if (updateDirectionOnly)
             this.physicsEngine.updateVelocity(name, direction, 0);
         else
@@ -231,6 +232,10 @@ class GameInstance {
                 skill.function(this, skillParams);
                 break;
 
+            case SKILL_TYPE.ONGING:
+                skill.function(this, obj, skillParams);
+                break;
+
             default:
                 console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
@@ -258,8 +263,8 @@ class GameInstance {
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.STATUS_damage, bullet.name, bullet.radius);
-        initiator.attackTimer = initiator.status.STATUS_attackInterval;
+        this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.damage, bullet.name, bullet.radius);
+        initiator.attackTimer = initiator.status.attackInterval;
     }
 
     melee(name) {
@@ -269,8 +274,8 @@ class GameInstance {
         }
         if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
-        this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.STATUS_damage);
-        initiator.attackTimer = initiator.status.STATUS_attackInterval;
+        this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.damage);
+        initiator.attackTimer = initiator.status.attackInterval;
     }
 
     //#region Before Step
@@ -280,6 +285,8 @@ class GameInstance {
         this.slimesChase();
         this.slimesAttack();
         this.updateAttackTimer();
+        this.resetStatus();
+        this.handleOnGoingSkills();
     }
 
     // at the begining of each loop, set all omitable properties to not be sent,
@@ -337,6 +344,23 @@ class GameInstance {
             }
         })
     }
+
+    resetStatus() {
+        // gameInstance = this;
+        // this.survivors.forEach(function(survivor) {
+        //     for (let key in survivor.status) {
+        //         survivor.status[key] = survivor.baseStatus[key] + survivor.buff[key]
+        //     }
+        // })
+    }
+
+
+    handleOnGoingSkills() {
+        // for (let key in onGoingSkills) {
+            // skill = onGoingSkills[key];
+// 
+        // }
+    }
     // ==================================== Before Step ===================================
     //#endregion
 
@@ -386,7 +410,7 @@ class GameInstance {
                 console.log(hit.from);
                 attackee.onHit(gameInstance, hit.damage);
                 console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:',
-                    attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
+                    attackee.status.curHealth, '/', attackee.status.maxHealth);
             }
             gameInstance.toClean.push(hit_name);
         });
@@ -400,10 +424,10 @@ class GameInstance {
         this.physicsEngine.slimeExplosion.forEach(function (e) {
             const attackee = gameInstance.objects[e.attacking];
             const slime = gameInstance.objects[e.name];
-            attackee.onHit(gameInstance, slime.status.STATUS_damage);
-            slime.status.STATUS_curHealth = 0;
-            console.log(attackee.name, 'lost', slime.status.STATUS_damage, 'health. Current Health:',
-                attackee.status.STATUS_curHealth, '/', attackee.status.STATUS_maxHealth);
+            attackee.onHit(gameInstance, slime.status.damage);
+            slime.status.curHealth = 0;
+            console.log(attackee.name, 'lost', slime.status.damage, 'health. Current Health:',
+                attackee.status.curHealth, '/', attackee.status.maxHealth);
         })
     }
 
@@ -463,7 +487,7 @@ class GameInstance {
         const deadSurvivors = [];
         this.liveSurvivors.forEach(function (name) {
             let survivor = gameInstance.objects[name];
-            if (survivor.status.STATUS_curHealth > 0) {
+            if (survivor.status.curHealth > 0) {
                 return;
             }
             deadSurvivors.push(name);
@@ -477,7 +501,7 @@ class GameInstance {
         const deadSlimes = [];
         this.slimes.forEach(function (name) {
             let slime = gameInstance.objects[name]
-            if (slime.status.STATUS_curHealth > 0) {
+            if (slime.status.curHealth > 0) {
                 return;
             }
             deadSlimes.push(name);
@@ -551,7 +575,7 @@ class GameInstance {
         this.insertObjListAndMap(slime);
         this.slimes.push(slime.name);
         this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
-            { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+            { x: position[0], y: position[1], z: position[2] }, slime.status.speed, slime.attackMode);
     }
 
     survivorHasDied(name) {

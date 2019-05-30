@@ -2,16 +2,25 @@ const { Item, Slime, Tile, Bullet, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
 const items = require("./items.js");
 const buff = {
-    'STATUS_maxHealth': 0,
-    'STATUS_damage': 0,
-    'STATUS_defense': 0,
-    'STATUS_speed': 0,
+    'damage': 0,
+    'defense': 0,
+    'speed': 0,
+    'attackSpeed': 0
 }
 
 const SKILL_TYPE = {
     SELF: "SELF",
     OTHERS: "OTHERS",
     LOCATION: "LOCATION",
+    ONGOING: "ONGOING"
+}
+
+class onGoingSkill {
+    constructor(duration, effect, invoker) {
+        this.duration = duration;
+        this.effect = effect;
+        this.invoker = invoker;
+    }
 }
 
 class Survivor {
@@ -36,7 +45,7 @@ class Survivor {
     }
 
     onHit(game, damage) {
-        this.status.STATUS_curHealth = Math.max(this.status.STATUS_curHealth - damage, 0);
+        this.status.curHealth = Math.max(this.status.curHealth - damage, 0);
         this.KEYS.push('status');
         game.toSend.push(this.name);
     }
@@ -117,12 +126,12 @@ class God {
             },
         };
         this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 20,
-            'STATUS_attackInterval': 10,
+            'maxHealth': 100,
+            'curHealth': 100,
+            'damage': 10,
+            'defense': 10,
+            'speed': 20,
+            'attackInterval': 10,
         };
 
         this.KEYS = []; // contain a list of property that we want to send to client
@@ -138,14 +147,57 @@ class Fighter {
         this.profession = "Fighter";
         this.iconPath = 'public/images/professions/PROFESSION_Fighter.jpg'
         this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 10,
-            'STATUS_attackInterval': 60,
+            'maxHealth': 100,
+            'curHealth': 100,
+            'damage': 10,
+            'defense': 10,
+            'speed': 10,
+            'attackInterval': 60,
+            'attackSpeed': 1,
         };
-        this.skills = {};
+        this.skills = {
+            0: {
+                'name': 'Attack',
+                'type': SKILL_TYPE.LOCATION,
+                'coolDown': 0.5,
+                'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
+                'description': 'Shoot an arrow',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, params) {
+                    const name = params.name;
+                    const cursor = params.position;
+                    const direction = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    direction[1] = 0;
+                    glMatrix.vec3.normalize(direction, direction);
+                    game.objects[name].direction = direction;
+                    game.shoot(name);
+                },
+            },
+
+            0: {
+                'name': 'Attack',
+                'type': SKILL_TYPE.LOCATION,
+                'coolDown': 0.5,
+                'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
+                'description': 'Shoot an arrow',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, params) {
+                    const name = params.name;
+                    const cursor = params.position;
+                    const direction = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    direction[1] = 0;
+                    glMatrix.vec3.normalize(direction, direction);
+                    game.objects[name].direction = direction;
+                    game.shoot(name);
+                },
+            },
+        };
     }
 }
 
@@ -153,12 +205,13 @@ class Archer {
     constructor() {
         this.profession = "Archer";
         this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 10,
-            'STATUS_attackInterval': 60,
+            'maxHealth': 100,
+            'curHealth': 100,
+            'damage': 10,
+            'defense': 10,
+            'speed': 10,
+            'attackInterval': 60,
+            'attackSpeed': 1,
         };
         this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg';
         this.skills = {
@@ -182,6 +235,62 @@ class Archer {
                     game.shoot(name);
                 },
             },
+            1: {
+                'name': 'Grenade',
+                'type': SKILL_TYPE.LOCATION,
+                'coolDown': 0.5,
+                'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
+                'description': 'Shoot an arrow',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, params) {
+                    const name = params.name;
+                    const cursor = params.position;
+                    const direction = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    direction[1] = 0;
+                    glMatrix.vec3.normalize(direction, direction);
+                    game.objects[name].direction = direction;
+                    game.shoot(name);
+                },
+            },
+            2: {
+                'name': 'Run',
+                'type': SKILL_TYPE.ONGOING,
+                'coolDown': 0.5,
+                'curCoolDown': 0,
+                'maxCharge': 5,
+                'curCharge': 0,
+                'description': 'Run! Increase speed by 50 for 1 sec',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, params) {
+                    const name = params.name;
+                    const cursor = params.position;
+                    const direction = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    direction[1] = 0;
+                    glMatrix.vec3.normalize(direction, direction);
+                    game.objects[name].direction = direction;
+                    game.shoot(name);
+                },
+            },
+            3: {
+                'name': 'Boost',
+                'type': SKILL_TYPE.ONGOING,
+                'coolDown': 10,
+                'curCoolDown': 0,
+                'description': 'Increase attack speed by 200% for 3 seconds',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, self, params) {
+                    let duration = 3;
+                    let effect = function(game, self) {
+                        self.status.attackSpeed = (self.baseStatus.attackSpeed + self.buff.attackSpeed) * 3;
+                    };
+                    effect(game, self);
+                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self);
+                },
+            },
         };
     }
 }
@@ -191,12 +300,12 @@ class Healer {
         this.profession = "Healer";
         this.iconPath = 'public/images/professions/PROFESSION_Healer.jpg'
         this.status = {
-            'STATUS_maxHealth': 100,
-            'STATUS_curHealth': 100,
-            'STATUS_damage': 10,
-            'STATUS_defense': 10,
-            'STATUS_speed': 10,
-            'STATUS_attackInterval': 60,
+            'maxHealth': 100,
+            'curHealth': 100,
+            'damage': 10,
+            'defense': 10,
+            'speed': 10,
+            'attackInterval': 60,
         };
 
         this.skills = {
@@ -233,7 +342,7 @@ class Healer {
                 'iconPath': 'a',
                 'type': SKILL_TYPE.SELF,
                 'function': function(mySelf) {
-                    mySelf.status.STATUS_curHealth = 100;
+                    mySelf.status.curHealth = 100;
                 }
             },
 
@@ -268,7 +377,9 @@ function initializeProfession(survivor, msg) {
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;
     survivor.status = profession.status;
-    survivor.baseStatus = JSON.parse(JSON.stringify(profession.status));
+    let baseStatus = JSON.parse(JSON.stringify(profession.status));
+    delete baseStatus.maxHealth;
+    delete baseStatus.curHealth
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
         survivor.skills[i].KEYS = ['coolDown', 'curCoolDown', 'curCharge', 'maxCharge'];

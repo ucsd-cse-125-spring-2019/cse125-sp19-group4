@@ -18,7 +18,7 @@ if (!String.prototype.format) {
 }
 
 /* ---------------------------- helper functions --------------------------- */
-const invalidStatus = ['STATUS_maxHealth', 'STATUS_curHealth']
+const invalidStatus = ['maxHealth', 'curHealth', 'attackInterval']
 function isStatusValid(status) {
     return invalidStatus.indexOf(status) < 0;
 }
@@ -27,7 +27,7 @@ function isStatusValid(status) {
 /* -------------------------Initialize status bar--------------------------- */
 function createStatusItem(statusName, initialValue) {
     let div = document.createElement("div");
-    let imgSrc = "/public/images/" + statusName + ".png";
+    let imgSrc = "/public/images/status/" + statusName + ".png";
 
     let img = document.createElement("img");
     img.src = imgSrc;
@@ -57,7 +57,7 @@ function InitializeStatus(status) {
     //------------------------health bar---------------------------
     let div = document.createElement("div");
     let img = document.createElement("img");
-    img.src = "/public/images/STATUS_maxHealth.png";
+    img.src = "/public/images/status/maxHealth.png";
     img.height = 20;
     img.weight = 20;
     img.style = "vertical-align: middle; margin: 2px";
@@ -209,8 +209,8 @@ function timerUpdate(second) {
 }
 
 function healthUpdate(status) {
-    const curHealth = status.STATUS_curHealth;
-    const maxHealth = status.STATUS_maxHealth;
+    const curHealth = status.curHealth;
+    const maxHealth = status.maxHealth;
     const width = Math.floor(curHealth / maxHealth * 100);
     document.getElementById('healthBar').style = healthBarStyle.format(width);
     document.getElementById('healthBar').innerHTML = Math.floor(curHealth) + "/" + maxHealth;
@@ -228,6 +228,7 @@ function statusUpdate(status) {
 function buffUpdate(buff) {
     for (let i in buff) {
         if (isStatusValid(i)) {
+            console.log(i)
             document.getElementById("buff" + i).innerHTML = "+" + buff[i];
         }
     }
@@ -264,8 +265,8 @@ function teammatesUpdate(data) {
         if (name in data) {
             const player = data[name];
             if ('status' in player) {
-                const curHealth = player.status.STATUS_curHealth;
-                const maxHealth = player.status.STATUS_maxHealth;
+                const curHealth = player.status.curHealth;
+                const maxHealth = player.status.maxHealth;
                 const width = Math.floor(curHealth / maxHealth * 100);
                 document.getElementById(name + 'healthBar').style = healthBarStyle.format(width);
                 // document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
