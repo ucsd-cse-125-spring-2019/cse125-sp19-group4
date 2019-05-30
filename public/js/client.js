@@ -23,22 +23,18 @@ const transform_ref = {
     'terrain': glMatrix.mat4.create(), //glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
-    'player': glMatrix.mat4.create(),
+    'player': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -1.57),
     'slime': glMatrix.mat4.create(),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
-    'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 10, 5]),
-    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 15, 5]),
 };
 
 const objects = {};
 const cast_models = [];
 
-const texture_counter = {i: 0};
+const texture_counter = { i: 0 };
 
-const mouse_pos = {x: 0, y:0};
+const mouse_pos = { x: 0, y: 0 };
 
 const cursor = glMatrix.vec3.create();
 
@@ -58,13 +54,6 @@ socket.on('chat message', function (msg) {
     }
 });
 
-socket.on('notification', function(msg) {
-    const data = JSON.parse(msg);
-    console.log(data)
-    const {message, type} = data;
-    UI.updateNotification(message, type);
-});
-
 $('.game-area').html($('#intro-screen-template').html());
 
 socket.on('role already taken', function (msg) {
@@ -79,21 +68,16 @@ socket.on('enter game', function (msg) {
 
     const data = JSON.parse(msg);
     const players = data.players;
-    const objs = data.objects; 
+    const objs = data.objects;
 
     uid = players[socket.id].name;
     player = players[socket.id];
     console.log("my name is", uid);
-    
+
     UI.InitializeStatus(player.status);
     UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
-    if (uid !== "God") {
-        UI.InitializeVault();
-        UI.updateItems(player.items);
-    } else {
-        document.getElementById('vault').style.display = "none"
-    }
+    UI.InitializeVault();
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
@@ -110,16 +94,16 @@ socket.on('wait for game begin', function (msg) {
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
-    const {playerCount, statusString} = JSON.parse(msg);
+    const { playerCount, statusString } = JSON.parse(msg);
     for (let i in playerCount) {
         $('#' + i).html(playerCount[i]);
     }
     $('#numStatus').html(statusString);
 });
 
-socket.on('Survivor Died', function(msg) {
+socket.on('Survivor Died', function (msg) {
     const data = JSON.parse(msg);
-    const {name} = data;
+    const { name } = data;
 
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)')
@@ -128,7 +112,7 @@ socket.on('Survivor Died', function(msg) {
     }
 });
 
-socket.on('end game', function(msg) {
+socket.on('end game', function (msg) {
     $('.game-area').html($('#endgame-template').html());
     document.getElementById('endgame-message').innerHTML = msg;
 });
@@ -149,6 +133,10 @@ $('#ArcherButton').click(function () {
     socket.emit("play as survivor", JSON.stringify("Archer"));
 });
 
+$('#BuilderButton').click(function () {
+    socket.emit("play as survivor", JSON.stringify("Builder"));
+});
+
 socket.on('game_status', function (msg) {
     const start = Date.now();
     const status = JSON.parse(msg);
@@ -165,14 +153,8 @@ socket.on('game_status', function (msg) {
             // console.log(player.position);
         }
         // Update UI
-        if (typeof player.baseStatus !== 'undefined') {
-            UI.statusUpdate(player.baseStatus);
-        }
         if (typeof player.status !== 'undefined') {
-            UI.healthUpdate(player.status);
-        }
-        if (typeof player.buff !== 'undefined') {
-            UI.buffUpdate(player.buff);
+            UI.statusUpdate(player.status);
         }
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
@@ -202,7 +184,7 @@ socket.on('game_status', function (msg) {
         if (typeof objects[name] === 'undefined') { //TODO move this to other event
             objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
-        
+
         if (transform) {
             // update face
             const dot = glMatrix.vec3.dot(direction, FACE);
@@ -225,7 +207,7 @@ socket.on('game_status', function (msg) {
             let t = glMatrix.mat4.clone(transform_ref[objects[name].m]);
             if (objects[name].m === 'tree') {
                 t = glMatrix.mat4.fromScaling(t, [obj.size, obj.size, obj.size]);
-            } 
+            }
             glMatrix.mat4.multiply(objects[name].t, transformation, t);
         }
     });
@@ -239,7 +221,7 @@ socket.on('game_status', function (msg) {
     $('#server').html(status.debug.looptime);
 
     UI.timerUpdate(status.time);
-    
+
 });
 
 socket.on('pong', (latency) => {
@@ -317,30 +299,31 @@ function main() {
     // const buffers = initCubeBuffers(gl); 
 
     model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
+    //model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
+    model_ref['player'] = new Animation(gl, "/public/model/player_running.json",  programInfo, texture_counter);
+    //console.log(model_ref['player'].vertices)
+    
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/items/SimpleBoot.obj", "", false, texture_counter, programInfo);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
 
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[1] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[2] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
+    
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
         const deltaTime = (now - then) / 1000;
         $('#fps').html(Math.floor(1 / deltaTime));
         $('#render').html(Math.ceil(deltaTime * 1000));
-
         then = now;
-
+        model_ref['player'].updateJoints(now)
+        //console.log("vertices: ", model_ref['player'].vertices)
+        //console.log(model_ref['player'].vertices);
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
             // do nothing
@@ -402,8 +385,18 @@ function main() {
                 socket.emit('movement', JSON.stringify('stay'));
             } else {
                 socket.emit('movement', JSON.stringify(direction));
-            }   
+            }
             prev_direction = direction;
+        }
+
+        // Attack
+        if (Key.isDown('MELEE')) {
+            delete Key._pressed['MELEE'];
+            socket.emit('melee');
+        }
+        else if (Key.isDown('SHOOT')) {
+            delete Key._pressed['SHOOT'];
+            socket.emit('shoot');
         }
 
         // Skill
@@ -467,7 +460,7 @@ function drawScene(gl, programInfo, objects, camera) {
         false,
         modelViewMatrix);
     gl.uniform3fv(programInfo.uniformLocations.viewPosition, camera.Position);
-    
+
 
     const to_render = {};
     Object.keys(objects).forEach(function (obj_name) {
@@ -591,11 +584,11 @@ const mouseDown = function (e) {
                 // survivors
                 if (casting == 0) {
                     console.log('arrow fired');
-                    const skillsParams = { skillNum: 0, position: cursor, name: uid };
+                    const skillsParams = { skillNum: 0, cursor: cursor, name: uid };
                     socket.emit('skill', JSON.stringify(skillsParams));
                 }
             }
-            
+
             break;
         case 3:
             // right click
@@ -677,25 +670,13 @@ const Key = {
             // do nothing
         } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
             handleSkill(uid, event.keyCode - 49);
-        } else if (event.keyCode == 74) {
-            // shoot
-            socket.emit('shoot');
-        } else if (event.keyCode == 75) {
-            // melee
-            socket.emit('melee');
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
 
     onKeyup: function (event) {
-        if (event.keyCode == 74) {
-            // stop_shoot
-            socket.emit('stop_shoot');
-        } else if (event.keyCode == 75) {
-            // melee
-            socket.emit('stop_melee');
-        } else if (event.keyCode in this.cmd) {
+        if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
 
