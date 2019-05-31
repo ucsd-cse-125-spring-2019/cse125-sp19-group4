@@ -45,9 +45,12 @@ class GameInstance {
         }
         this.loadConfig(config);
         this.generateEnvironment();
+        this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
     }
 
     loadConfig(config) {
+        this.worldHalfWidth = Number(config.map.width)/2;
+        this.worldHalfHeight = Number(config.map.height)/2;
         this.max_survivors = config.game.max_survivors;
         this.itemDropProb = config.game.item_drop_prob;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
@@ -154,7 +157,9 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, { x: -10, y: 20, z: 1 }, survivor.maxJump, false);
+            this.initializePlayerLocation(survivor);
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, 
+                { x: survivor.position[0], y: survivor.position[1], z: survivor.position[2] }, survivor.maxJump, false);
             this.skillables[survivor.name] = survivor;
             return true;
         }
@@ -166,6 +171,33 @@ class GameInstance {
             return false;
         }
         return true;
+    }
+
+    initializePlayerLocation(survivor) {
+        const index = Math.floor(Math.random() * this.locationLottery.length);
+        switch(this.locationLottery[index]) {
+            case 0:
+                // upper left
+                survivor.position = [-this.worldHalfWidth + 5, 20, -this.worldHalfHeight + 5];
+                survivor.direction = [0, 0, 1];
+                break;
+            case 1:
+                // upper right
+                survivor.position = [this.worldHalfWidth - 5, 20, -this.worldHalfHeight + 5];
+                survivor.direction = [0, 0, 1];
+                break;
+            case 2:
+                // lower left
+                survivor.position = [-this.worldHalfWidth + 5, 20, this.worldHalfHeight - 5];
+                survivor.direction = [0, 0, -1];
+                break;
+            case 3:
+                // lower right
+                survivor.position = [this.worldHalfWidth - 5, 20, this.worldHalfHeight - 5];
+                survivor.direction = [0, 0, -1];
+                break;
+            }
+        this.locationLottery.splice(index, 1);
     }
 
     numPlayersStatusToString() {
