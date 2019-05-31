@@ -22,7 +22,7 @@ const model_ref = {};
 
 const transform_ref = {
     '': glMatrix.mat4.create(),
-    'terrain': glMatrix.mat4.create(), //glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
@@ -356,6 +356,7 @@ function main() {
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[1] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[2] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
+    cast_models[3] = { m: 'tree', t: glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [4, 4, 4]) };
     let then = 0;
     // Draw the scene repeatedly
     function render(now) {
@@ -616,6 +617,11 @@ const mouseDown = function (e) {
                     console.log('melee slime fired');
                     const skillsParams = { skillNum: 2, position: cursor };
                     socket.emit('skill', JSON.stringify(skillsParams));
+                }
+                else if (casting = 3) {
+                    console.log("tree planted");
+                    const skillParams = { skillNum : 3, position: cursor };
+                    socket.emit('skill', JSON.stringify(skillParams)); 
                 }
             } else {
                 // survivors
