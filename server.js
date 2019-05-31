@@ -285,6 +285,7 @@ function notifyAll(message, type) {
 }
 
 function notifySurvivorDied(name) {
+    movementEvents[name] = 'stay';
     io.emit('Survivor Died', JSON.stringify({ name }));
 }
 
