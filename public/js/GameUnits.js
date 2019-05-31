@@ -34,6 +34,7 @@ class Slime {
         this.progressPoint = 5;
         if (attackMode === "explode") this.minDistanceFromPlayer = 0;
         else if (attackMode === "shoot") {
+            this.model = 'cactus';
             this.minDistanceFromPlayer = 10;
             this.shootingSpeed = 20;
         } else if (attackMode === "melee") this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime

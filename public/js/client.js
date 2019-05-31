@@ -28,6 +28,7 @@ const transform_ref = {
     'player': glMatrix.mat4.create(),
     'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
     'slime': glMatrix.mat4.create(),
+    'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
@@ -339,10 +340,12 @@ function main() {
     // Here's where we call the routine that builds all the objects we'll be drawing.
     // const buffers = initCubeBuffers(gl); 
 
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
+    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
     model_ref['player_running'] = new Animation(gl, "/public/model/player_running.json", programInfo, texture_counter);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
+    model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/cactus.obj", "/public/model/cactus.mtl", true, texture_counter, programInfo);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
@@ -354,7 +357,7 @@ function main() {
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
-    cast_models[1] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
+    cast_models[1] = { m: 'cactus', t: glMatrix.mat4.clone(transform_ref['cactus']) };
     cast_models[2] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[3] = { m: 'tree', t: glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [4, 4, 4]) };
     let then = 0;
