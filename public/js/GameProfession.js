@@ -147,7 +147,7 @@ class God {
                     const position = params.position;
                     const tree = new Tree(game.treeId++, 4);
                     tree.position = position;
-                    game.putTreeOnTheMap(tree, false);
+                    return game.putTreeOnTheMap(tree, false);
                 } 
             }
         };
