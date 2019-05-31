@@ -48,6 +48,8 @@ class GameInstance {
         this.generateEnvironment();
         this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
         this.monsterSpawnTimer = 0;
+        this.monsterSpawnProb = this.monsterSpawnBaseProb;
+        this.monsterSpawnIncreaseSlope = (1 - this.monsterSpawnBaseProb)/this.monsterSpawnFullProbTime;
     }
 
     loadConfig(config) {
@@ -55,8 +57,9 @@ class GameInstance {
         this.worldHalfHeight = Number(config.map.height)/2;
         this.max_survivors = config.game.max_survivors;
         this.itemDropProb = config.game.item_drop_prob;
-        this.monsterSpawnProb = Number(config.game.monster_spawn_prob);
+        this.monsterSpawnBaseProb = Number(config.game.monster_spawn_base_prob);
         this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
+        this.monsterSpawnFullProbTime = Number(config.game.monster_spawn_full_prob_time);
         this.monsterSpawnInterval = Number(config.game.monster_spawn_interval); //in game tick;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
@@ -625,13 +628,14 @@ class GameInstance {
      * Randomly spawn monster
      */
     spawnMonster() { 
-        // Adjust spawn difficulty
-        this.adjustSpawnSetting();
+        // Adjust spawn probability
+        this.adjustSpawnProb();
 
         if (this.monsterSpawnTimer < this.monsterSpawnInterval) {
             this.monsterSpawnTimer++;
             return;
         }
+        console.log(this.monsterSpawnProb);
         const monsterLottery = [0, 0, 1, 1, 2, 2];
         if (Math.random() < this.monsterSpawnProb) {
             // spawn monsters
@@ -670,8 +674,8 @@ class GameInstance {
     /**
      * Helper function to adjust spawn interval when game progresses
      */
-    adjustSpawnSetting() {
-
+    adjustSpawnProb() {
+        if (this.monsterSpawnProb < 1) this.monsterSpawnProb += this.monsterSpawnIncreaseSlope;
     }
 
     initializeFilterFunctions() {
