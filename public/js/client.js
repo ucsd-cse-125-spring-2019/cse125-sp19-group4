@@ -329,6 +329,9 @@ function main() {
     model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
     model_ref['player_running'] = new Animation(gl, "/public/model/player_running.json", programInfo, texture_counter);
+    model_ref['player_running'].addInstance(gl);
+    model_ref['player_running'].addInstance(gl);
+    model_ref['player_running'].removeInstance(gl);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
@@ -337,7 +340,6 @@ function main() {
     model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
@@ -351,8 +353,7 @@ function main() {
         $('#render').html(Math.ceil(deltaTime * 1000));
         then = now;
 
-        model_ref['player_running'].updateJoints(deltaTime, true);
-
+        model_ref['player_running'].updateJoints(deltaTime, 0, true);
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
             // do nothing

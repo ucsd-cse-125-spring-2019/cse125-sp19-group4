@@ -1,14 +1,13 @@
 class Animation {
     constructor(gl, json_name, programInfo, texture_counter) {
-        this.scaled_then = 0;
-        this.scaled_now = 0;
+        this.scaled_now = [];
         this.then = 0;
         this.programInfo = programInfo
         var ObjectJSON = JSON.parse(readTextFile(json_name))
         this.init_vertices = ObjectJSON.vertices
         this.init_normals = ObjectJSON.normals
-        this.vertices = new Array(this.init_vertices.length);
-        this.normals = new Array(this.init_normals.length);
+        //this.vertices = new Array(this.init_vertices.length);
+        //this.normals = new Array(this.init_normals.length);
         this.uvs = ObjectJSON.uvs
         const init_bones = ObjectJSON.bones
         this.keyframes = ObjectJSON.animation.hierarchy;
@@ -81,96 +80,117 @@ class Animation {
             value[2] = element.inv_bind_mat
             this.bones.push(value)
         })
+        this.vertices = [];
+        this.normals = [];
+        this.vertexBuffers = [];
+        this.normalBuffers = [];
+        /*
         this.vertex_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
         //normal buffer
         this.normal_buffer = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, this.normal_buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
-        //indexbuffer
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);*/
     }
+    addInstance(gl) {
+        let i_vertices = new Array(this.init_vertices.length)
+        let i_vertexBuffer = gl.createBuffer()
+        this.vertices.push(i_vertices)
+        this.vertexBuffers.push(i_vertexBuffer)
 
+        let i_normals = new Array(this.init_normals.length)
+        let i_normalBuffer = gl.createBuffer()
+        this.normals.push(i_normals)
+        this.normalBuffers.push(i_normalBuffer)
+
+        this.scaled_now.push(0);
+    }
+    removeInstance(index) {
+        this.vertices.splice(index, 1);
+        this.normals.splice(index, 1);
+        this.vertexBuffers.splice(index, 1);
+        this.normalBuffers.splice(index, 1);
+        this.scaled_now.splice(index, 1);
+    }
     render(gl, transformMatrix_array) {
-        for (let i = 0; i < this.normals.length / 3; i += 3) {
-            let temp_nor = glMatrix.vec3.fromValues(this.normals[i], this.normals[i + 1], this.normals[i + 2]);
-            glMatrix.vec3.normalize(temp_nor, temp_nor);
-            this.normals[i] = temp_nor[0]
-            this.normals[i + 1] = temp_nor[1]
-            this.normals[i + 2] = temp_nor[2]
-        }
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.vertex_buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices), gl.STATIC_DRAW);
-        gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
+        this.vertices.forEach((element, index) => {
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers[index]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(element), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffers[index]);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals[index]), gl.STATIC_DRAW);
+            gl.vertexAttribPointer(this.programInfo.attribLocations.normal, 3, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(this.programInfo.attribLocations.normal);
+            if (this.hasTexture) {
+                gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
+            } else {
+                gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
+            }
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this.normal_buffer);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals), gl.STATIC_DRAW);
-        gl.vertexAttribPointer(this.programInfo.attribLocations.normal, 3, gl.FLOAT, false, 0, 0);
-        gl.enableVertexAttribArray(this.programInfo.attribLocations.normal);
-        //gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-        if (this.hasTexture) {
-            gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-        } else {
-            gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-        }
-        Object.keys(this.materials).forEach((index) => {
-            gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.materials[index].colorAmbient);
-            gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, this.materials[index].colorDiffuse);
-            gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[index].colorSpecular);
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[index]);
-            gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
-            if (Object.keys(this.texture_files[index].map).length) {
-                Object.keys(this.texture_files[index].map).forEach((e) => {
-                    gl.activeTexture(gl.TEXTURE0 + this.texture_files[index].index);
-                    gl.bindTexture(gl.TEXTURE_2D, this.texture_files[index].map[e]);
-                    gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[index].index);
-                });
-            }
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[index]);
-            transformMatrix_array.forEach((t) => {
-                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
-                gl.drawElements(gl.TRIANGLES, this.indices[index].length, gl.UNSIGNED_SHORT, 0);
-            });
+            Object.keys(this.materials).forEach((i) => {
+                gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.materials[i].colorAmbient);
+                gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, this.materials[i].colorDiffuse);
+                gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[i].colorSpecular);
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[i]);
+                gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
+                if (Object.keys(this.texture_files[i].map).length) {
+                    Object.keys(this.texture_files[i].map).forEach((e) => {
+                        gl.activeTexture(gl.TEXTURE0 + this.texture_files[i].index);
+                        gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i].map[e]);
+                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[i].index);
+                    });
+                }
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
+                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[index]);
+                gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+            })
+
         })
+
+        //gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
+
+
     }
-    resetTime() {//use this to reset animation
-        this.scaled_now = 0;
+    
+    resetTime(index) {//use this to reset animation
+        this.scaled_now[index] = 0;
     }
-    updateJoints(deltaTime, loop = true, scale = 1.0, start = this.start_time, end = this.end_time) {
+
+    updateJoints(deltaTime, index, loop = true, scale = 1.0, start = this.start_time, end = this.end_time) {
         //use scale to adjust speed, start and end defines which part of animation you want to play
-        this.scaled_now += deltaTime * scale;
-        while (this.scaled_now < start) {
-            this.scaled_now += (end - start)
+        this.scaled_now[index] += deltaTime * scale;
+        while (this.scaled_now[index] < start) {
+            this.scaled_now[index] += (end - start)
         }
-        if(loop) {
-            while (this.scaled_now > end) {
-                this.scaled_now -= (end - start)
+        if (loop) {
+            while (this.scaled_now[index] > end) {
+                this.scaled_now[index] -= (end - start)
             }
-        } else if(this.scaled_now > end) {
-            this.scaled_now = end;
+        } else if (this.scaled_now[index] > end) {
+            this.scaled_now[index] = end;
         }
-        
-        
-        this.bones.forEach((element, index, array) => {
+
+        this.bones.forEach((element, i, array) => {
             let local = glMatrix.mat4.create()
             let world = glMatrix.mat4.create()
             let position = glMatrix.vec3.create()
             let rotation = glMatrix.quat.create()
             let scaling = glMatrix.vec3.create()
             scaling.fill(1)
-            let keys = this.keyframes[index].keys
+            let keys = this.keyframes[i].keys
             if (keys.length == 2) { //such bones have no change during the animation
                 position = keys[0].pos;
                 rotation = keys[0].rot;
                 scaling = keys[0].scl;
             } else {
-                keys.forEach((element, index, array) => {
-                    if (this.scaled_now == element.time) {//if the time is a keyframe
+                keys.forEach((element, i, array) => {
+                    if (this.scaled_now[index] == element.time) {//if the time is a keyframe
                         position = element.pos;
                         rotation = element.rot;
                         scaling = element.scl;
-                    } else if (this.scaled_now > element.time && this.scaled_now < array[index + 1].time) {//if time is in between keyframes
+                    } else if (this.scaled_now[index] > element.time && this.scaled_now[index] < array[i + 1].time) {//if time is in between keyframes
                         let pre_pos = glMatrix.vec3.create()
                         let pre_rot = glMatrix.quat.create()
                         let pre_scl = glMatrix.vec3.create()
@@ -182,10 +202,10 @@ class Animation {
                         pre_pos = element.pos;
                         pre_rot = element.rot;
                         pre_scl = element.scl
-                        post_pos = array[index + 1].pos
-                        post_rot = array[index + 1].rot
-                        post_scl = array[index + 1].scl
-                        let diff = (this.scaled_now - element.time) / this.frame_time
+                        post_pos = array[i + 1].pos
+                        post_rot = array[i + 1].rot
+                        post_scl = array[i + 1].scl
+                        let diff = (this.scaled_now[index] - element.time) / this.frame_time
                         glMatrix.vec3.lerp(position, pre_pos, post_pos, diff)//interpolate two keyframes
                         glMatrix.quat.slerp(rotation, pre_rot, post_rot, diff)
                         glMatrix.vec3.lerp(scaling, pre_scl, post_scl, diff)
@@ -221,9 +241,9 @@ class Animation {
             glMatrix.vec4.scale(frac_pos0, frac_pos0, this.skinWeights[i]);
             glMatrix.vec4.scale(frac_pos1, frac_pos1, this.skinWeights[i + 1]);
             glMatrix.vec4.add(temp_pos, frac_pos0, frac_pos1);
-            this.vertices[i * 3 / 2] = temp_pos[0]
-            this.vertices[i * 3 / 2 + 1] = temp_pos[1]
-            this.vertices[i * 3 / 2 + 2] = temp_pos[2]
+            this.vertices[index][i * 3 / 2] = temp_pos[0]
+            this.vertices[index][i * 3 / 2 + 1] = temp_pos[1]
+            this.vertices[index][i * 3 / 2 + 2] = temp_pos[2]
 
             glMatrix.vec4.transformMat4(frac_nor0, temp_nor, M0);
             glMatrix.vec4.transformMat4(frac_nor1, temp_nor, M1);
@@ -231,9 +251,9 @@ class Animation {
             glMatrix.vec4.scale(frac_nor1, frac_nor1, this.skinWeights[i + 1]);
             glMatrix.vec4.add(temp_nor, frac_nor0, frac_nor1);
             glMatrix.vec4.normalize(temp_nor, temp_nor)//normals need normalize
-            this.normals[i * 3 / 2] = temp_nor[0]
-            this.normals[i * 3 / 2 + 1] = temp_nor[1]
-            this.normals[i * 3 / 2 + 2] = temp_nor[2]
+            this.normals[index][i * 3 / 2] = temp_nor[0]
+            this.normals[index][i * 3 / 2 + 1] = temp_nor[1]
+            this.normals[index][i * 3 / 2 + 2] = temp_nor[2]
         }
     }
 }
