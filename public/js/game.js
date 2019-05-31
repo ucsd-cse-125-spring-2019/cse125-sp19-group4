@@ -64,6 +64,8 @@ class GameInstance {
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
+        this.minDistanceSurvivorTree = Number(config.minDistanceToSurvivor.tree);
+        this.minDistanceSurvivorSlime = Number(config.minDistanceToSurvivor.slime);
     }
 
     generateEnvironment() {
@@ -699,7 +701,8 @@ class GameInstance {
      * @param {boolean} randomLocation whether to randomly generate location in physics engine
      */
     putTreeOnTheMap(tree, randomLocation) {
-        if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position)) return false;
+        if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position, this.minDistanceSurvivorTree)) 
+            return false;
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
@@ -737,9 +740,9 @@ class GameInstance {
             Math.abs(Math.floor(position[2])) > this.worldHalfHeight
     }
 
-    checkIfTooCloseToSurvivor(position) {
+    checkIfTooCloseToSurvivor(position, allowedDistance) {
         for (let i = 0; i < this.liveSurvivors.length; i++) {
-            if (glMatrix.vec3.distance(this.objects[this.liveSurvivors[i]].position, position) < 5)
+            if (glMatrix.vec3.distance(this.objects[this.liveSurvivors[i]].position, position) < allowedDistance)
                 return true;
         }
         return false;
