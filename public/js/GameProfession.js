@@ -97,7 +97,7 @@ class God {
                     const slime = new Slime(game.slimeCount, "explode");
                     slime.position = position;
                     slime.position[1] += 2;
-                    game.putSlimeOnTheMap(slime);
+                    return game.putSlimeOnTheMap(slime);
                 },
             },
             1: {
@@ -114,7 +114,7 @@ class God {
                     const slime = new Slime(game.slimeCount, "shoot");
                     slime.position = position;
                     slime.position[1] += 2;
-                    game.putSlimeOnTheMap(slime);
+                    return game.putSlimeOnTheMap(slime);
                 },
             },
             2: {
@@ -131,7 +131,7 @@ class God {
                     const slime = new Slime(game.slimeCount, "melee");
                     slime.position = position;
                     slime.position[1] += 2;
-                    game.putSlimeOnTheMap(slime);
+                    return game.putSlimeOnTheMap(slime);
                 },
             },
             3: {
@@ -147,7 +147,7 @@ class God {
                     const position = params.position;
                     const tree = new Tree(game.treeId++, 4);
                     tree.position = position;
-                    game.putTreeOnTheMap(tree, false);
+                    return game.putTreeOnTheMap(tree, false);
                 } 
             }
         };
