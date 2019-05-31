@@ -169,6 +169,8 @@ class PhysicsEngine {
         slimeBody.role = 'enemy';
         slimeBody.name = name;
         slimeBody.movementSpeed = speed;
+        slimeBody.exploded = false;
+
         this.world.add(slimeBody);
         this.obj[name] = slimeBody;
         this.monsters[name] = slimeBody;
@@ -176,7 +178,11 @@ class PhysicsEngine {
         if (attackMode === 'explode'){
             const engine = this;
             slimeBody.addEventListener("collide", function (e) { 
+                if (slimeBody.exploded) {
+                    return;
+                }
                 if (e.body.role === 'survivor') {
+                    slimeBody.exploded = true;
                     engine.slimeExplosion.push({ name: slimeBody.name, attacking: e.body.name });
                 }
             })
