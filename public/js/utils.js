@@ -46,6 +46,13 @@ function recursiveSetPropertiesFilter(obj) {
     obj.toJSON = PropertiesFilter;
 }
 
+function calculateDistance(loc1, loc2) {
+    let distance = (loc1[0] - loc2[0]) ** 2 + (loc1[2] - loc2[2]) ** 2;
+    distance = distance ** 0.5;
+    return distance;
+}
+
 exports.PropertiesFilter = PropertiesFilter;
 exports.recursiveSetPropertiesFilter = recursiveSetPropertiesFilter;
 exports.stringifyReplacer = stringifyReplacer;
+exports.calculateDistance = calculateDistance;

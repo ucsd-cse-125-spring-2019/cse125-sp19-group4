@@ -326,15 +326,6 @@ function updateItems(items) {
     }
 }
 
-function teammateDied(teammate) {
-    let img = document.getElementById(teammate + "Icon");
-    img.style.filter = "grayscale(70%)";
-}
-
-function teammateRevived(teammate) {
-
-}
-
 let notificationTimer = null;
 
 function updateNotification(msg, type) {
@@ -365,6 +356,6 @@ function updateProgressBar(progress) {
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate,
+         teammatesUpdate, InitializeVault, updateItems, buffUpdate, healthUpdate,
          updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate
  }

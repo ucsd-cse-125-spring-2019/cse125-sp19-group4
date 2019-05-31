@@ -2,6 +2,7 @@ const tick_rate = 60;
 
 module.exports = {
     notifySurvivorDied,
+    notifySurvivorRevived,
     notifyAll,
     endGame,
     tick_rate,
@@ -286,6 +287,11 @@ function notifyAll(message, type) {
 function notifySurvivorDied(name) {
     io.emit('Survivor Died', JSON.stringify({ name }));
 }
+
+function notifySurvivorRevived(name) {
+    io.emit('Survivor Revived', JSON.stringify({ name }));
+}
+
 
 function endGame(survivorsWon) {
     clearInterval(interval);

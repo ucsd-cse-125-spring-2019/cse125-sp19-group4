@@ -207,7 +207,8 @@ class GameInstance {
     handleSkill(name, skillParams) {
         const obj = this.objects[name];
         let { skillNum, position } = skillParams;
-        let skill = Object.values(obj.skills)[skillNum]
+        let skill = Object.values(obj.skills)[skillNum];
+        let skillSucceeed = false;
 
         if (!('maxCharge' in skill) && skill.curCoolDown > 0) { // not cooled down
             return;
@@ -220,7 +221,7 @@ class GameInstance {
         this.toSend.push(name);
         switch (skill.type) {
             case SKILL_TYPE.SELF:
-                skill.function(obj, skillParams);
+                skillSucceeed = skill.function(obj, skillParams);
                 obj.KEYS.push("status")
                 break;
 
@@ -229,21 +230,25 @@ class GameInstance {
                     console.log("skill out of world");
                     return;
                 }
-                skill.function(this, skillParams);
+                skillSucceeed = skill.function(this, obj, skillParams)
                 break;
 
             case SKILL_TYPE.ONGOING:
-                skill.function(this, obj, skillParams);
+                skillSucceeed = skill.function(this, obj, skillParams);
                 break;
 
             default:
                 console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
-        if ('maxCharge' in skill) {
-            skill.curCharge -= 1;
-        } else {
-            skill.curCoolDown = skill.coolDown;
+
+        if (skillSucceeed || skillSucceeed == undefined) {
+            if ('maxCharge' in skill) {
+                skill.curCharge -= 1;
+            } else {
+                skill.curCoolDown = skill.coolDown;
+            }
         }
+
     }
 
     /**
@@ -514,11 +519,9 @@ class GameInstance {
                 return;
             }
             deadSurvivors.push(name);
-            gameInstance.survivorHasDied(name);
         });
         deadSurvivors.forEach(function (name) {
-            const index = gameInstance.liveSurvivors.indexOf(name);
-            gameInstance.liveSurvivors.splice(index, 1);
+            gameInstance.survivorHasDied(name);
         });
 
         const deadSlimes = [];
@@ -603,16 +606,23 @@ class GameInstance {
     }
 
     survivorHasDied(name) {
+        this.objects[name].dead = true;
         this.deadSurvivors.push(name);
+        this.liveSurvivors.splice(this.liveSurvivors.indexOf(name), 1);
         if (this.deadSurvivors.length == this.max_survivors) {
             server.endGame(false);
             return;
         }
         server.notifySurvivorDied(name);
+        server.notifyAll(name + " was killed!", NotificationType.EVENT)
     }
 
     survivorHasRevived(name) {
-
+        this.objects[name].dead = false;
+        this.liveSurvivors.push(name);
+        this.deadSurvivors.splice(this.deadSurvivors.indexOf(name), 1);
+        server.notifySurvivorRevived(name);
+        server.notifyAll(name + " has been revived!", NotificationType.EVENT)
     }
 
 
@@ -637,8 +647,7 @@ class GameInstance {
         let result = []
         for (let key in this.objects) {
             let obj = this.objects[key];
-            let distance = (obj.position[0] - position[0]) ** 2 + (obj.position[2] - position[2]) ** 2
-            distance = distance ** 0.5
+            let distance = Utils.calculateDistance(obj.position, position);
             if (distance < radius) {
                 result.push(obj)
             }

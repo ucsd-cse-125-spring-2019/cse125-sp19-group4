@@ -8,6 +8,7 @@ const buff = {
     'attackSpeed': 0
 }
 const server = require('../../server.js')
+const Utils = require('./utils')
 
 const SKILL_TYPE = {
     SELF: "SELF",
@@ -29,6 +30,7 @@ class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;
         this.type = "player"
+        this.dead = false;
         this.socketid = socketid;
         this.position = [0, 0, 0]; // location (x, y, z)
         this.direction = [0, 0, -1]; // facing (x, y, z)
@@ -169,7 +171,7 @@ class Fighter {
                 'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const name = params.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
@@ -190,7 +192,7 @@ class Fighter {
                 'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const name = params.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
@@ -226,7 +228,7 @@ class Archer {
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const name = params.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
@@ -246,7 +248,7 @@ class Archer {
                 'curCharge': 0,
                 'description': 'Throw a grenade and explode',
                 'iconPath': '/public/images/skills/SKILL_Grenade.png',
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const name = params.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
@@ -322,7 +324,7 @@ class Healer {
                         const radius = 10;
                         const objsInRadius = game.getObjInRadius(position, radius);
                         objsInRadius.forEach(function(obj) {
-                            if (obj.type === "player") {
+                            if (obj.type === "player" && !obj.dead) {
                                 obj.status.curHealth = Math.min(obj.status.curHealth + 10 / server.tick_rate, obj.status.maxHealth)
                                 obj.KEYS.push("status");
                                 game.toSend.push(obj.name)
@@ -355,7 +357,7 @@ class Healer {
                         }
 
                         objsInRadius.forEach(function(obj) {
-                            if (obj.type === "player" && obj != self) {
+                            if (obj.type === "player" && obj != self && !obj.dead) {
                                 obj.tempBuff.damage += 10;
                                 obj.KEYS.push("status");
                                 obj.KEYS.push("tempBuff");
@@ -379,14 +381,32 @@ class Healer {
             },
 
             2: {
-                'name': 'selfHeal',
+                'name': 'Revive',
                 'coolDown': 10,
                 'curCoolDown': 0,
-                'description': 'a',
-                'iconPath': 'a',
-                'type': SKILL_TYPE.SELF,
-                'function': function(mySelf) {
-                    mySelf.status.curHealth = 100;
+                'description': 'Revive a dead player',
+                'iconPath': '/public/images/skills/SKILL_Surgery.png',
+                'type': SKILL_TYPE.LOCATION,
+                'function': function(game, self, params) {
+                    const name = params.name;
+                    const location = params.position;
+                    // skill location too far from invoker
+                    if (Utils.calculateDistance(self.position, location) > 5) {
+                        return false;
+                    }
+                    const radius = 1;
+                    const objsInRadius = game.getObjInRadius(location, radius);
+
+                    objsInRadius.forEach(function(obj) {
+                        if (obj.type === "player" && obj.status.curHealth <= 0) {
+                            obj.status.curHealth = 10;
+                            obj.KEYS.push("status");
+                            game.toSend.push(obj.name);
+                            game.survivorHasRevived(obj.name);
+                            return true;
+                        }
+                    })
+                    return false;
                 }
             },
 
