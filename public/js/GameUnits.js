@@ -32,23 +32,29 @@ class Slime {
         this.attackMode = attackMode;
         this.attackTimer = this.status.attackInterval;
         this.progressPoint = 5;
-        if (attackMode === "explode") this.minDistanceFromPlayer = 0;
+        if (attackMode === "explode") {
+            this.status.damage = 40;
+            this.minDistanceFromPlayer = 0;
+        }
         else if (attackMode === "shoot") {
             this.model = 'cactus';
             this.minDistanceFromPlayer = 10;
             this.shootingSpeed = 20;
-        } else if (attackMode === "melee") this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime
-        
+        } else if (attackMode === "melee") {
+            this.status.damage = 20;
+            this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime
+        }
+
         this.KEYS = ["model", "position", "direction", "status"];
         Utils.recursiveSetPropertiesFilter(this);
     }
-    
+
     onHit(game, damage) {
         this.status.curHealth -= damage;
         this.KEYS.push("status");
         game.toSend.push(this.name);
     }
-    
+
     /**
     * Find the closest survivor and set it to be the attackee of object given by name
     */
@@ -56,27 +62,27 @@ class Slime {
         const slime = this;
         let closestSurvivor;
         let minDistance = Number.MAX_VALUE;
-        game.liveSurvivors.forEach(function(s) {
+        game.liveSurvivors.forEach(function (s) {
             const survivor = game.objects[s]
             // const distance = glMatrix.vec3.distance(slime.position, survivor.position);
             // const distance = glMatrix.vec3.length(survivor.position); // distance to center
-            let distance = Math.min(glMatrix.vec3.distance(slime.position, survivor.position), 
+            let distance = Math.min(glMatrix.vec3.distance(slime.position, survivor.position),
                 glMatrix.vec3.length(survivor.position));
             if (distance < minDistance) {
                 minDistance = distance;
                 closestSurvivor = survivor;
             }
         });
-        
+
         const direction = glMatrix.vec3.create();
         glMatrix.vec3.subtract(direction, closestSurvivor.position, this.position);
         direction[1] = 0;
         glMatrix.vec3.normalize(direction, direction);
         //TODO: Assume slime only stays on plane ground
         if (minDistance < slime.minDistanceFromPlayer)
-        game.move(this.name, direction, true);
+            game.move(this.name, direction, true);
         else game.move(this.name, direction, false);
-        
+
         this.attacking = closestSurvivor;
     }
 }
@@ -89,9 +95,10 @@ class Tile {
 }
 
 class Bullet {
-    constructor(position, direction, bulletId) {
+    constructor(position, direction, radius, bulletId) {
         this.name = "Bullet " + bulletId;
-        this.radius = 0.2;
+        this.radius = radius;
+        this.size = radius / 0.2;
         this.position = position;
         this.direction = direction;
         this.model = "bullet";

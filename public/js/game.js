@@ -51,8 +51,8 @@ class GameInstance {
     }
 
     loadConfig(config) {
-        this.worldHalfWidth = Number(config.map.width)/2;
-        this.worldHalfHeight = Number(config.map.height)/2;
+        this.worldHalfWidth = Number(config.map.width) / 2;
+        this.worldHalfHeight = Number(config.map.height) / 2;
         this.max_survivors = config.game.max_survivors;
         this.itemDropProb = config.game.item_drop_prob;
         this.monsterSpawnProb = Number(config.game.monster_spawn_prob);
@@ -163,7 +163,7 @@ class GameInstance {
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
             this.initializePlayerLocation(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, 
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius,
                 { x: survivor.position[0], y: survivor.position[1], z: survivor.position[2] }, survivor.maxJump, false);
             this.skillables[survivor.name] = survivor;
             return true;
@@ -180,7 +180,7 @@ class GameInstance {
 
     initializePlayerLocation(survivor) {
         const index = Math.floor(Math.random() * this.locationLottery.length);
-        switch(this.locationLottery[index]) {
+        switch (this.locationLottery[index]) {
             case 0:
                 // upper left
                 survivor.position = [-this.worldHalfWidth + 5, 20, -this.worldHalfHeight + 5];
@@ -201,7 +201,7 @@ class GameInstance {
                 survivor.position = [this.worldHalfWidth - 5, 20, this.worldHalfHeight - 5];
                 survivor.direction = [0, 0, -1];
                 break;
-            }
+        }
         this.locationLottery.splice(index, 1);
     }
 
@@ -292,7 +292,7 @@ class GameInstance {
      * Create a bullet for the attacker
      * @param {string} name the name of object that initiates the attack
      */
-    shoot(name) {
+    shoot(name, speed, damage, radius) {
         const initiator = this.objects[name];
         if (initiator.attackTimer > 0) {
             return;
@@ -300,11 +300,11 @@ class GameInstance {
         if (name === 'God' && !initiator.canAttack) {
             return;
         }
-        const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
+        const bullet = new Bullet(initiator.position, initiator.direction, radius, this.bulletId++);
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.damage, bullet.name, bullet.radius);
+        this.physicsEngine.shoot(name, initiator.direction, speed, damage, bullet.name, bullet.radius);
         initiator.attackTimer = initiator.status.attackInterval;
     }
 
@@ -363,10 +363,10 @@ class GameInstance {
         if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 const object = game.objects[name];
-                if (game.objects[name].attackMode === 'shoot') {
-                    game.shoot(name);
+                if (object.attackMode === 'shoot') {
+                    game.shoot(name, 20, object.status.damage, 0.2);
                 }
-                else if (game.objects[name].attackMode === 'melee') {
+                else if (object.attackMode === 'melee') {
                     game.melee(name);
                 }
             });
@@ -385,10 +385,10 @@ class GameInstance {
             }
         })
     }
-    
+
     clearTempBuff() {
         let gameInstance = this;
-        this.survivors.forEach(function(survivor) {
+        this.survivors.forEach(function (survivor) {
             for (let key in survivor.tempBuff) {
                 if (key === 'toJSON') {
                     continue;
@@ -421,7 +421,7 @@ class GameInstance {
 
         // The reason we do it here is that we don't know who has been buffed
         // by aoe
-        this.survivors.forEach(function(survivor) {
+        this.survivors.forEach(function (survivor) {
             gameInstance.calculatePlayerStatus(survivor.name);
         })
     }
@@ -474,8 +474,6 @@ class GameInstance {
             if (typeof attackee !== 'undefined') {
                 console.log(hit.from);
                 attackee.onHit(gameInstance, hit.damage);
-                console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:',
-                    attackee.status.curHealth, '/', attackee.status.maxHealth);
             }
             gameInstance.toClean.push(hit_name);
         });
@@ -491,8 +489,6 @@ class GameInstance {
             const slime = gameInstance.objects[e.name];
             attackee.onHit(gameInstance, slime.status.damage);
             slime.status.curHealth = 0;
-            console.log(attackee.name, 'lost', slime.status.damage, 'health. Current Health:',
-                attackee.status.curHealth, '/', attackee.status.maxHealth);
         })
     }
 
@@ -624,7 +620,7 @@ class GameInstance {
     /**
      * Randomly spawn monster
      */
-    spawnMonster() { 
+    spawnMonster() {
         // Adjust spawn difficulty
         this.adjustSpawnSetting();
 
@@ -698,9 +694,9 @@ class GameInstance {
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
-        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5, 
+        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5,
             { x: position[0], y: position[1], z: position[2] });
-        
+
     }
 
     survivorHasDied(name) {
@@ -733,7 +729,7 @@ class GameInstance {
     calculatePlayerStatus(name) {
         let survivor = this.objects[name];
         for (let key in survivor.baseStatus) {
-            if (key === "toJSON" ) {
+            if (key === "toJSON") {
                 continue;
             }
             survivor.status[key] = survivor.baseStatus[key] + survivor.buff[key] + survivor.tempBuff[key];

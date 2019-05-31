@@ -23,7 +23,7 @@ class onGoingSkill {
         this.effect = effect;
         this.invoker = invoker;
         this.isSelfBuff = isSelfBuff;
-        this.endEffect =endEffect;
+        this.endEffect = endEffect;
     }
 }
 
@@ -52,6 +52,9 @@ class Survivor {
     }
 
     onHit(game, damage) {
+        console.log(this.name, 'lost', damage, '*', (100 - this.status.defense) / 100, 'health. Current Health:',
+            this.status.curHealth, '/', this.status.maxHealth);
+        damage = Math.max(0, Math.floor(damage * (100 - this.status.defense) / 100));
         this.status.curHealth = Math.max(this.status.curHealth - damage, 0);
         this.KEYS.push('status');
         game.toSend.push(this.name);
@@ -61,7 +64,7 @@ class Survivor {
     itemEnhance(item) {
         this.items[item].count += 1;
         items[item].enhance(this.buff, this.status); //TODO two ways to update buff, one is to increament for each item, 
-                                             // the other is to sum all items each time. PICK ONE 
+        // the other is to sum all items each time. PICK ONE 
         this.KEYS.push("items");
         this.KEYS.push("buff");
         this.KEYS.push("status");
@@ -148,7 +151,7 @@ class God {
                     const tree = new Tree(game.treeId++, 4);
                     tree.position = position;
                     game.putTreeOnTheMap(tree, false);
-                } 
+                }
             }
         };
         this.status = {
@@ -176,7 +179,7 @@ class Fighter {
             'maxHealth': 100,
             'curHealth': 100,
             'damage': 10,
-            'defense': 10,
+            'defense': 20,
             'speed': 10,
             'attackInterval': 60,
             'attackSpeed': 1,
@@ -192,14 +195,14 @@ class Fighter {
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
-                    const name = params.name;
+                    const name = self.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
-                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    glMatrix.vec3.subtract(direction, cursor, self.position);
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
-                    game.objects[name].direction = direction;
-                    game.shoot(name);
+                    self.direction = direction;
+                    // game.shoot(name);
                 },
             },
 
@@ -222,7 +225,7 @@ class Fighter {
                     const radius = 3;
                     const objsInRadius = game.getObjInRadius(location, radius);
                     let cut = false;
-                    objsInRadius.forEach(function(obj) {
+                    objsInRadius.forEach(function (obj) {
                         if (obj.type === "tree") {
                             game.toClean.push(obj.name)
                             cut = true;
@@ -243,7 +246,7 @@ class Archer {
             'curHealth': 100,
             'damage': 10,
             'defense': 10,
-            'speed': 10,
+            'speed': 20,
             'attackInterval': 60,
             'attackSpeed': 1,
         };
@@ -257,14 +260,15 @@ class Archer {
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
-                    const name = params.name;
+                    const name = self.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
-                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    glMatrix.vec3.subtract(direction, cursor, self.position);
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
-                    game.objects[name].direction = direction;
-                    game.shoot(name);
+                    self.direction = direction;
+                    game.shoot(name, 50, self.status.damage, 0.2);
+
                 },
             },
             1: {
@@ -277,14 +281,14 @@ class Archer {
                 'description': 'Throw a grenade and explode',
                 'iconPath': '/public/images/skills/SKILL_Grenade.png',
                 'function': function (game, self, params) {
-                    const name = params.name;
+                    const name = self.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
-                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
+                    glMatrix.vec3.subtract(direction, cursor, self.position);
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
-                    game.objects[name].direction = direction;
-                    game.shoot(name);
+                    self.direction = direction;
+                    game.shoot(name, 20, 50, 1);
                 },
             },
             2: {
@@ -292,12 +296,12 @@ class Archer {
                 'type': SKILL_TYPE.ONGOING,
                 'coolDown': 10,
                 'curCoolDown': 0,
-                'description': 'Run! Increase speed by 50 for 1 sec',
+                'description': 'Run! Increase speed by 100% for 1 sec',
                 'iconPath': '/public/images/skills/SKILL_Run.png',
                 'function': function (game, self, params) {
                     let duration = 1;
-                    let effect = function(game, self) {
-                        self.tempBuff.speed += 50;
+                    let effect = function (game, self) {
+                        self.tempBuff.speed += self.baseStatus.speed + self.buff.speed;
                     };
                     game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true);
                 },
@@ -311,7 +315,7 @@ class Archer {
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
                     let duration = 3;
-                    let effect = function(game, self) {
+                    let effect = function (game, self) {
                         self.tempBuff.attackSpeed += (self.baseStatus.attackSpeed + self.buff.attackSpeed) * 2;
                     };
                     game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self, true);
@@ -329,8 +333,8 @@ class Healer {
             'maxHealth': 100,
             'curHealth': 100,
             'damage': 10,
-            'defense': 10,
-            'speed': 10,
+            'defense': 0,
+            'speed': 15,
             'attackInterval': 60,
             'attackSpeed': 1,
         };
@@ -340,18 +344,18 @@ class Healer {
                 'name': 'Sing',
                 'coolDown': 10,
                 'curCoolDown': 0,
-                'description': 'The wizard starts singing. Because his voice is too beatiful,' +  
-                               'whoever hears it can heal 5 health per seconds',
+                'description': 'The wizard starts singing. Because his voice is too beatiful,' +
+                    'whoever hears it can heal 5 health per seconds',
                 'iconPath': '/public/images/skills/SKILL_Heal.png',
                 'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
-                    const duration = 3;
-                    const effect = function(game, self) {
+                    const duration = 3;
+                    const effect = function (game, self) {
                         const position = self.position;
                         const radius = 10;
                         const objsInRadius = game.getObjInRadius(position, radius);
-                        objsInRadius.forEach(function(obj) {
+                        objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && !obj.dead) {
                                 obj.status.curHealth = Math.min(obj.status.curHealth + 10 / server.tick_rate, obj.status.maxHealth)
                                 obj.KEYS.push("status");
@@ -372,9 +376,9 @@ class Healer {
                 'type': SKILL_TYPE.ONGOING,
                 'iconPath': '/public/images/skills/SKILL_Medicine.png',
                 'function': function (game, self, params) {
-                    const duration = 3;
-                    const buffedUnit = {}; 
-                    const effect = function(game, self) {
+                    const duration = 3;
+                    const buffedUnit = {};
+                    const effect = function (game, self) {
                         const position = self.position;
                         const radius = 10;
                         const objsInRadius = game.getObjInRadius(position, radius);
@@ -384,7 +388,7 @@ class Healer {
                             buffedUnit[key] = false;
                         }
 
-                        objsInRadius.forEach(function(obj) {
+                        objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && obj != self && !obj.dead) {
                                 obj.tempBuff.damage += 10;
                                 obj.KEYS.push("status");
@@ -399,17 +403,17 @@ class Healer {
                             if (!buffedUnit[key]) {
                                 delete buffedUnit[key];
                                 game.toSend.push(key);
-                                game.objects[key].KEYS.push("status");
-                                game.objects[key].KEYS.push("tempBuff");
+                                self[key].KEYS.push("status");
+                                self[key].KEYS.push("tempBuff");
                             }
                         }
                     };
-                    const endEffect = function(game, self) {
+                    const endEffect = function (game, self) {
                         for (let key in buffedUnit) {
                             delete buffedUnit[key];
                             game.toSend.push(key);
-                            game.objects[key].KEYS.push("status");
-                            game.objects[key].KEYS.push("tempBuff");
+                            self[key].KEYS.push("status");
+                            self[key].KEYS.push("tempBuff");
                         }
                     }
                     game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false, endEffect);
@@ -423,8 +427,8 @@ class Healer {
                 'description': 'Revive a dead player',
                 'iconPath': '/public/images/skills/SKILL_Surgery.png',
                 'type': SKILL_TYPE.LOCATION,
-                'function': function(game, self, params) {
-                    const name = params.name;
+                'function': function (game, self, params) {
+                    const name = self.name;
                     const location = params.position;
                     // skill location too far from invoker
                     if (Utils.calculateDistance(self.position, location) > 5) {
@@ -434,7 +438,7 @@ class Healer {
                     const objsInRadius = game.getObjInRadius(location, radius);
                     let revived = false;
 
-                    objsInRadius.forEach(function(obj) {
+                    objsInRadius.forEach(function (obj) {
                         if (obj.type === "player" && obj.status.curHealth <= 0) {
                             obj.status.curHealth = 10;
                             obj.KEYS.push("status");
@@ -456,13 +460,13 @@ class Healer {
 
             // },
         };
-        
+
     }
 }
 
 function initializeProfession(survivor, msg) {
     let profession = null;
-    switch(msg) {
+    switch (msg) {
         case "Fighter":
             profession = new Fighter();
             break;
