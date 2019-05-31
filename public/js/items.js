@@ -36,7 +36,6 @@ items = {
         prob: Number(config.item.hearts.prob),
         description: "each heart you have will increase your health by 10",
         enhance(buff, status) {
-            buff.maxHealth += 10;
             status.maxHealth += 10;
             status.curHealth += 10;
         },

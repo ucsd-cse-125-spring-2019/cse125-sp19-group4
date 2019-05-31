@@ -169,14 +169,15 @@ socket.on('game_status', function (msg) {
             // console.log(player.position);
         }
         // Update UI
-        if (typeof player.baseStatus !== 'undefined') {
-            UI.statusUpdate(player.baseStatus);
-        }
         if (typeof player.status !== 'undefined') {
             UI.healthUpdate(player.status);
+            UI.statusUpdate(player.status);
         }
         if (typeof player.buff !== 'undefined') {
             UI.buffUpdate(player.buff);
+        }
+        if (typeof player.tempBuff !== 'undefined') {
+            UI.tempBuffUpdate(player.tempBuff);
         }
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
@@ -777,6 +778,7 @@ function handleSkill(uid, skillNum) {
             casting = skillNum;
             break;
         case "SELF":
+        case "ONGOING":
             const skillsParams = { skillNum };
             socket.emit("skill", JSON.stringify(skillsParams));
             break;

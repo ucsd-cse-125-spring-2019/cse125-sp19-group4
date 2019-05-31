@@ -16,10 +16,6 @@ function stringifyReplacer(key, value) {
         return arr
     }
 
-    // if (key.startsWith('Tree')) {
-    //     return undefined;
-    // }
-
     return value
 }
 

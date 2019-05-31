@@ -209,7 +209,7 @@ class GameInstance {
         let { skillNum, position } = skillParams;
         let skill = Object.values(obj.skills)[skillNum]
 
-        if (!'maxCharge' in skill && skill.curCoolDown > 0) { // not cooled down
+        if (!('maxCharge' in skill) && skill.curCoolDown > 0) { // not cooled down
             return;
         }
         if ('maxCharge' in skill && skill.curCharge == 0) {
@@ -232,17 +232,17 @@ class GameInstance {
                 skill.function(this, skillParams);
                 break;
 
-            case SKILL_TYPE.ONGING:
+            case SKILL_TYPE.ONGOING:
                 skill.function(this, obj, skillParams);
                 break;
 
             default:
                 console.log("THIS SKILL DOESN'T HAVE A TYPE!!!")
         }
-        if (!'maxCharge' in skill) {
-            skill.curCoolDown = skill.coolDown;
-        } else {
+        if ('maxCharge' in skill) {
             skill.curCharge -= 1;
+        } else {
+            skill.curCoolDown = skill.coolDown;
         }
     }
 
@@ -285,7 +285,7 @@ class GameInstance {
         this.slimesChase();
         this.slimesAttack();
         this.updateAttackTimer();
-        this.resetStatus();
+        this.clearTempBuff();
         this.handleOnGoingSkills();
     }
 
@@ -344,22 +344,40 @@ class GameInstance {
             }
         })
     }
-
-    resetStatus() {
-        // gameInstance = this;
-        // this.survivors.forEach(function(survivor) {
-        //     for (let key in survivor.status) {
-        //         survivor.status[key] = survivor.baseStatus[key] + survivor.buff[key]
-        //     }
-        // })
+    
+    clearTempBuff() {
+        let gameInstance = this;
+        this.survivors.forEach(function(survivor) {
+            for (let key in survivor.tempBuff) {
+                if (key === 'toJSON') {
+                    continue;
+                }
+                survivor.tempBuff[key] = 0;
+            }
+        })
     }
 
-
+    // Execute the ongoings skills and reclculate status if needed
     handleOnGoingSkills() {
-        // for (let key in onGoingSkills) {
-            // skill = onGoingSkills[key];
-// 
-        // }
+        let gameInstance = this;
+        for (let key in this.onGoingSkills) {
+            let skill = gameInstance.onGoingSkills[key];
+            let invoker = skill.invoker;
+
+            gameInstance.toSend.push(invoker.name);
+            invoker.KEYS.push('status')
+            invoker.KEYS.push('tempBuff')
+
+            skill.duration -= 1 / server.tick_rate;
+            if (skill.duration < 0) {
+                delete gameInstance.onGoingSkills[key];
+            } else {
+                skill.effect(gameInstance, invoker);
+            }
+
+            gameInstance.calculatePlayerStatus(invoker.name);
+
+        }
     }
     // ==================================== Before Step ===================================
     //#endregion
@@ -514,6 +532,7 @@ class GameInstance {
         });
     }
 
+
     checkProgress() {
         if (this.curProgress > this.winProgress) {
             // dosomething
@@ -597,6 +616,18 @@ class GameInstance {
         return Math.abs(Math.floor(position[0])) > this.worldHalfWidth ||
             Math.abs(Math.floor(position[2])) > this.worldHalfHeight
     }
+
+    calculatePlayerStatus(name) {
+        let survivor = this.objects[name];
+        for (let key in survivor.baseStatus) {
+            if (key === "toJSON" ) {
+                continue;
+            }
+            survivor.status[key] = survivor.baseStatus[key] + survivor.buff[key] + survivor.tempBuff[key];
+        }
+        survivor.status.attackInterval = Math.ceil(server.tick_rate / survivor.status.attackSpeed);
+    }
+
 }
 
 module.exports = GameInstance;

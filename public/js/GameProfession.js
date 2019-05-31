@@ -40,6 +40,7 @@ class Survivor {
         this.baseStatus = {};
         this.status = {};
         this.buff = JSON.parse(JSON.stringify(buff));
+        this.tempBuff = JSON.parse(JSON.stringify(buff));
         this.items = JSON.parse(JSON.stringify(items));
         this.attackTimer = 0;
     }
@@ -258,21 +259,16 @@ class Archer {
             2: {
                 'name': 'Run',
                 'type': SKILL_TYPE.ONGOING,
-                'coolDown': 0.5,
+                'coolDown': 10,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'description': 'Run! Increase speed by 50 for 1 sec',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
-                'function': function (game, params) {
-                    const name = params.name;
-                    const cursor = params.position;
-                    const direction = glMatrix.vec3.create();
-                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
-                    direction[1] = 0;
-                    glMatrix.vec3.normalize(direction, direction);
-                    game.objects[name].direction = direction;
-                    game.shoot(name);
+                'function': function (game, self, params) {
+                    let duration = 1;
+                    let effect = function(game, self) {
+                        self.tempBuff.speed += 50;
+                    };
+                    game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self);
                 },
             },
             3: {
@@ -285,9 +281,8 @@ class Archer {
                 'function': function (game, self, params) {
                     let duration = 3;
                     let effect = function(game, self) {
-                        self.status.attackSpeed = (self.baseStatus.attackSpeed + self.buff.attackSpeed) * 3;
+                        self.tempBuff.attackSpeed += (self.baseStatus.attackSpeed + self.buff.attackSpeed) * 2;
                     };
-                    effect(game, self);
                     game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self);
                 },
             },
@@ -306,6 +301,7 @@ class Healer {
             'defense': 10,
             'speed': 10,
             'attackInterval': 60,
+            'attackSpeed': 1,
         };
 
         this.skills = {
@@ -379,7 +375,8 @@ function initializeProfession(survivor, msg) {
     survivor.status = profession.status;
     let baseStatus = JSON.parse(JSON.stringify(profession.status));
     delete baseStatus.maxHealth;
-    delete baseStatus.curHealth
+    delete baseStatus.curHealth;
+    survivor.baseStatus = baseStatus;
     survivor.iconPath = profession.iconPath;
     for (i in survivor.skills) {
         survivor.skills[i].KEYS = ['coolDown', 'curCoolDown', 'curCharge', 'maxCharge'];

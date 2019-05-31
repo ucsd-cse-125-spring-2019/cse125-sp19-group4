@@ -1,7 +1,10 @@
+const tick_rate = 60;
+
 module.exports = {
     notifySurvivorDied,
     notifyAll,
-    endGame
+    endGame,
+    tick_rate,
 }
 
 const express = require('express');
@@ -173,7 +176,6 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 60;
 
 function enterGame() {
     // Game begins, notify all participants to enter

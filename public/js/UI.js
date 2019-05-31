@@ -47,9 +47,15 @@ function createStatusItem(statusName, initialValue) {
     buff.innerHTML = "+0"
     buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 9pt";
 
+    let tempbuff = document.createElement("span");
+    tempbuff.id = "tempbuff" + statusName;
+    tempbuff.innerHTML = ""
+    tempbuff.style = "display: inline-block; margin: 0 0 0 5px; color:red; font-size: 9pt";
+
     div.appendChild(img);
     div.appendChild(text);
     div.appendChild(buff);
+    div.appendChild(tempbuff);
     document.getElementById("statusList").appendChild(div);     // Append <li> to <ul> with id="myList"
 }
 
@@ -228,8 +234,19 @@ function statusUpdate(status) {
 function buffUpdate(buff) {
     for (let i in buff) {
         if (isStatusValid(i)) {
-            console.log(i)
             document.getElementById("buff" + i).innerHTML = "+" + buff[i];
+        }
+    }
+}
+
+function tempBuffUpdate(buff) {
+    for (let i in buff) {
+        if (isStatusValid(i)) {
+            if (buff[i] == 0) {
+                document.getElementById("tempbuff" + i).innerHTML = "";
+            } else {
+                document.getElementById("tempbuff" + i).innerHTML = "+" + buff[i];
+            }
         }
     }
 }
@@ -239,7 +256,7 @@ function coolDownUpdate(skills) {
         let mask = document.getElementById(skill + "Mask");
         let span = document.getElementById(skill + "Countdown");
 
-        if (!'maxCharge' in skills[skill] || skills[skill].curCharge == 0) {
+        if (!('maxCharge' in skills[skill]) || skills[skill].curCharge == 0) {
             let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
             mask.style.height = coolDownPercent + "%";
 
@@ -349,5 +366,5 @@ function updateProgressBar(progress) {
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
          teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate,
-         updateNotification, NOTIFICATION_STYLE , updateProgressBar
+         updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate
  }
