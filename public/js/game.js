@@ -663,11 +663,12 @@ class GameInstance {
                 // Randomly generate monster position
                 const radius = monster.radius;
                 do {
-                    monster.position[0] = Math.floor(Math.random() * (this.worldHalfWidth * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfWidth;
-                    monster.position[1] = 2;
-                    monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
-                } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk     
-                this.putSlimeOnTheMap(monster); // TODO: Add similar function for monster other than slime
+                    do {
+                        monster.position[0] = Math.floor(Math.random() * (this.worldHalfWidth * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfWidth;
+                        monster.position[1] = 2;
+                        monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
+                    } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk 
+                } while (!this.putSlimeOnTheMap(monster));    
             }
         }
         this.monsterSpawnTimer = 0;
@@ -687,6 +688,7 @@ class GameInstance {
     }
 
     putSlimeOnTheMap(slime) {
+        if (this.checkIfTooCloseToSurvivor(slime.position, this.minDistanceSurvivorSlime)) return false;
         const position = slime.position;
         this.toSend.push(slime.name)
         this.slimeCount++;
@@ -694,6 +696,7 @@ class GameInstance {
         this.slimes.push(slime.name);
         this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
             { x: position[0], y: position[1], z: position[2] }, slime.status.speed, slime.attackMode);
+        return true;
     }
 
     /**
