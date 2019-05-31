@@ -16,6 +16,8 @@ const FACE = [0.0, 0.0, -1.0];
 const NEG_FACE = glMatrix.vec3.create();
 glMatrix.vec3.negate(NEG_FACE, FACE);
 
+let defaultCursor = "public/images/mouse/normal.cur"
+
 let player = {};
 
 const model_ref = {};
@@ -48,6 +50,7 @@ const cursor = glMatrix.vec3.create();
 
 const positions = {}
 const directions = {}
+const skillCursors = {}
 
 
 // ============================ Network IO ================================
@@ -77,6 +80,7 @@ socket.on('role already taken', function (msg) {
 socket.on('enter game', function (msg) {
     console.log('enter game');
 
+    setCursor(defaultCursor);
     UIInitialize();
     main();
 
@@ -87,6 +91,12 @@ socket.on('enter game', function (msg) {
     uid = players[socket.id].name;
     player = players[socket.id];
     console.log("my name is", uid);
+    
+    // get the skill cursor
+    for (let key in player.skills) {
+        skillCursors[key] = player.skills[key].cursorPath
+        console.log(skillCursors)
+    }
 
     UI.InitializeStatus(player.status);
     UI.InitializeSkills(player.skills);
@@ -605,37 +615,9 @@ const mouseDown = function (e) {
     switch (e.which) {
         case 1:
             // left click
-            if (isGod) {
-                if (casting == 0) {
-                    console.log('slime fired');
-                    const skillsParams = { skillNum: 0, position: cursor };
-                    socket.emit('skill', JSON.stringify(skillsParams));
-                }
-                else if (casting == 1) {
-                    console.log('shooting slime fired');
-                    const skillsParams = { skillNum: 1, position: cursor };
-                    socket.emit('skill', JSON.stringify(skillsParams));
-                }
-                else if (casting == 2) {
-                    console.log('melee slime fired');
-                    const skillsParams = { skillNum: 2, position: cursor };
-                    socket.emit('skill', JSON.stringify(skillsParams));
-                }
-                else if (casting = 3) {
-                    console.log("tree planted");
-                    const skillParams = { skillNum : 3, position: cursor };
-                    socket.emit('skill', JSON.stringify(skillParams)); 
-                }
-            } else {
-                // survivors
-                if (casting == 0) {
-                    console.log('arrow fired');
-                    const skillsParams = { skillNum: 0, position: cursor, name: uid };
-                    socket.emit('skill', JSON.stringify(skillsParams));
-                } else if (casting > 0) {
-                    const skillsParams = { skillNum: casting, position: cursor, name: uid };
-                    socket.emit('skill', JSON.stringify(skillsParams));
-                }
+            if (casting > 0) {
+                const skillsParams = { skillNum: casting, position: cursor };
+                socket.emit('skill', JSON.stringify(skillsParams));
             }
 
             break;
@@ -643,8 +625,8 @@ const mouseDown = function (e) {
             // right click
             if (casting >= 0) {
                 casting = -1;
-                console.log('stop casting');
                 delete objects['casting'];
+                setCursor(defaultCursor);
             }
             break;
         default:
@@ -773,6 +755,7 @@ function UIInitialize() {
             return false;
         }
     });
+    setCursor(defaultCursor);
 }
 
 function openChatBox() {
@@ -786,6 +769,10 @@ function chatBoxFade() {
         $("#messages").animate({ opacity: 0 }, 1000);
     }, closeMessageCountDown);
 }
+
+function setCursor(url) {
+    $('.game-area').css('cursor', 'url(' + url + '), auto')
+}
 /*================================End of UI===================================*/
 
 /*================================= Skill ===================================*/
@@ -796,6 +783,9 @@ function handleSkill(uid, skillNum) {
     switch (skill.type) {
         case "LOCATION":
             casting = skillNum;
+            if (skillCursors[skillNum] != undefined) {
+                setCursor(skillCursors[skillNum])
+            }
             break;
         case "SELF":
         case "ONGOING":
