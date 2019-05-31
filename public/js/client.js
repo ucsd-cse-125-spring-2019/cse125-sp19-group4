@@ -63,7 +63,6 @@ socket.on('chat message', function (msg) {
 
 socket.on('notification', function (msg) {
     const data = JSON.parse(msg);
-    console.log(data)
     const { message, type } = data;
     UI.updateNotification(message, type);
 });
@@ -128,7 +127,18 @@ socket.on('Survivor Died', function (msg) {
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)')
     } else {
-        UI.teammateDied(name);
+        let img = document.getElementById(name + "Icon").style.filter = "grayscale(70%)";
+    }
+});
+
+socket.on('Survivor Revived', function (msg) {
+    const data = JSON.parse(msg);
+    const { name } = data;
+
+    if (name === uid) {
+        $('.game-area').css('filter', 'none')
+    } else {
+        let img = document.getElementById(name + "Icon").style.filter = "none";
     }
 });
 
@@ -166,17 +176,17 @@ socket.on('game_status', function (msg) {
             $('#y').html(player.position[1]);
             $('#z').html(player.position[2]);
             camera.setPosition(player.position);
-            // console.log(player.position);
         }
         // Update UI
-        if (typeof player.baseStatus !== 'undefined') {
-            UI.statusUpdate(player.baseStatus);
-        }
         if (typeof player.status !== 'undefined') {
             UI.healthUpdate(player.status);
+            UI.statusUpdate(player.status);
         }
         if (typeof player.buff !== 'undefined') {
             UI.buffUpdate(player.buff);
+        }
+        if (typeof player.tempBuff !== 'undefined') {
+            UI.tempBuffUpdate(player.tempBuff);
         }
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
@@ -256,7 +266,6 @@ socket.on('game_status', function (msg) {
 });
 
 socket.on('pong', (latency) => {
-    // console.log(socket.id, 'Ping:', latency, 'ms');
     $('#ping').html(latency);
 });
 
@@ -620,6 +629,9 @@ const mouseDown = function (e) {
                     console.log('arrow fired');
                     const skillsParams = { skillNum: 0, position: cursor, name: uid };
                     socket.emit('skill', JSON.stringify(skillsParams));
+                } else if (casting > 0) {
+                    const skillsParams = { skillNum: casting, position: cursor, name: uid };
+                    socket.emit('skill', JSON.stringify(skillsParams));
                 }
             }
 
@@ -783,6 +795,7 @@ function handleSkill(uid, skillNum) {
             casting = skillNum;
             break;
         case "SELF":
+        case "ONGOING":
             const skillsParams = { skillNum };
             socket.emit("skill", JSON.stringify(skillsParams));
             break;

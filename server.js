@@ -1,7 +1,11 @@
+const tick_rate = 60;
+
 module.exports = {
     notifySurvivorDied,
+    notifySurvivorRevived,
     notifyAll,
-    endGame
+    endGame,
+    tick_rate,
 }
 
 const express = require('express');
@@ -173,7 +177,6 @@ http.listen(8080, function () {
 
 // Server loop
 // server loop tick rate, in Hz
-const tick_rate = 60;
 
 function enterGame() {
     // Game begins, notify all participants to enter
@@ -284,6 +287,11 @@ function notifyAll(message, type) {
 function notifySurvivorDied(name) {
     io.emit('Survivor Died', JSON.stringify({ name }));
 }
+
+function notifySurvivorRevived(name) {
+    io.emit('Survivor Revived', JSON.stringify({ name }));
+}
+
 
 function endGame(survivorsWon) {
     clearInterval(interval);

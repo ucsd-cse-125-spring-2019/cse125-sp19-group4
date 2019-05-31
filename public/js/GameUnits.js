@@ -21,16 +21,16 @@ class Slime {
         this.model = "slime";
         this.radius = 2;
         this.status = {
-            STATUS_maxHealth: 30,
-            STATUS_curHealth: 30,
-            STATUS_damage: 10,
-            STATUS_defense: 0,
-            STATUS_speed: 5,
-            STATUS_attackInterval: 60,
+            maxHealth: 30,
+            curHealth: 30,
+            damage: 10,
+            defense: 0,
+            speed: 5,
+            attackInterval: 60,
         };
         this.attacking = {};
         this.attackMode = attackMode;
-        this.attackTimer = this.status.STATUS_attackInterval;
+        this.attackTimer = this.status.attackInterval;
         this.progressPoint = 5;
         if (attackMode === "explode") this.minDistanceFromPlayer = 0;
         else if (attackMode === "shoot") {
@@ -43,7 +43,7 @@ class Slime {
     }
     
     onHit(game, damage) {
-        this.status.STATUS_curHealth -= damage;
+        this.status.curHealth -= damage;
         this.KEYS.push("status");
         game.toSend.push(this.name);
     }
@@ -105,6 +105,7 @@ class Tree {
         this.direction = [0, 0, -1];
         this.model = 'tree';
         this.size = size;
+        this.type = "tree"
     }
 }
 

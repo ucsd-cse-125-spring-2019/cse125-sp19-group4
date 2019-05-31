@@ -18,7 +18,7 @@ if (!String.prototype.format) {
 }
 
 /* ---------------------------- helper functions --------------------------- */
-const invalidStatus = ['STATUS_maxHealth', 'STATUS_curHealth']
+const invalidStatus = ['maxHealth', 'curHealth', 'attackInterval']
 function isStatusValid(status) {
     return invalidStatus.indexOf(status) < 0;
 }
@@ -27,7 +27,7 @@ function isStatusValid(status) {
 /* -------------------------Initialize status bar--------------------------- */
 function createStatusItem(statusName, initialValue) {
     let div = document.createElement("div");
-    let imgSrc = "/public/images/" + statusName + ".png";
+    let imgSrc = "/public/images/status/" + statusName + ".png";
 
     let img = document.createElement("img");
     img.src = imgSrc;
@@ -47,9 +47,15 @@ function createStatusItem(statusName, initialValue) {
     buff.innerHTML = "+0"
     buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 9pt";
 
+    let tempbuff = document.createElement("span");
+    tempbuff.id = "tempbuff" + statusName;
+    tempbuff.innerHTML = ""
+    tempbuff.style = "display: inline-block; margin: 0 0 0 5px; color:red; font-size: 9pt";
+
     div.appendChild(img);
     div.appendChild(text);
     div.appendChild(buff);
+    div.appendChild(tempbuff);
     document.getElementById("statusList").appendChild(div);     // Append <li> to <ul> with id="myList"
 }
 
@@ -57,7 +63,7 @@ function InitializeStatus(status) {
     //------------------------health bar---------------------------
     let div = document.createElement("div");
     let img = document.createElement("img");
-    img.src = "/public/images/STATUS_maxHealth.png";
+    img.src = "/public/images/status/maxHealth.png";
     img.height = 20;
     img.weight = 20;
     img.style = "vertical-align: middle; margin: 2px";
@@ -209,8 +215,8 @@ function timerUpdate(second) {
 }
 
 function healthUpdate(status) {
-    const curHealth = status.STATUS_curHealth;
-    const maxHealth = status.STATUS_maxHealth;
+    const curHealth = status.curHealth;
+    const maxHealth = status.maxHealth;
     const width = Math.floor(curHealth / maxHealth * 100);
     document.getElementById('healthBar').style = healthBarStyle.format(width);
     document.getElementById('healthBar').innerHTML = Math.floor(curHealth) + "/" + maxHealth;
@@ -233,12 +239,24 @@ function buffUpdate(buff) {
     }
 }
 
+function tempBuffUpdate(buff) {
+    for (let i in buff) {
+        if (isStatusValid(i)) {
+            if (buff[i] == 0) {
+                document.getElementById("tempbuff" + i).innerHTML = "";
+            } else {
+                document.getElementById("tempbuff" + i).innerHTML = "+" + buff[i];
+            }
+        }
+    }
+}
+
 function coolDownUpdate(skills) {
     for (let skill in skills) {
         let mask = document.getElementById(skill + "Mask");
         let span = document.getElementById(skill + "Countdown");
 
-        if (!'maxCharge' in skills[skill] || skills[skill].curCharge == 0) {
+        if (!('maxCharge' in skills[skill]) || skills[skill].curCharge == 0) {
             let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
             mask.style.height = coolDownPercent + "%";
 
@@ -264,8 +282,8 @@ function teammatesUpdate(data) {
         if (name in data) {
             const player = data[name];
             if ('status' in player) {
-                const curHealth = player.status.STATUS_curHealth;
-                const maxHealth = player.status.STATUS_maxHealth;
+                const curHealth = player.status.curHealth;
+                const maxHealth = player.status.maxHealth;
                 const width = Math.floor(curHealth / maxHealth * 100);
                 document.getElementById(name + 'healthBar').style = healthBarStyle.format(width);
                 // document.getElementById('healthBar').innerHTML = Math.floor(status[i]) + "/" + status['STATUS_maxHealth'];
@@ -308,15 +326,6 @@ function updateItems(items) {
     }
 }
 
-function teammateDied(teammate) {
-    let img = document.getElementById(teammate + "Icon");
-    img.style.filter = "grayscale(70%)";
-}
-
-function teammateRevived(teammate) {
-
-}
-
 let notificationTimer = null;
 
 function updateNotification(msg, type) {
@@ -347,6 +356,6 @@ function updateProgressBar(progress) {
 
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
-         teammatesUpdate, teammateDied, teammateRevived, InitializeVault, updateItems, buffUpdate, healthUpdate,
-         updateNotification, NOTIFICATION_STYLE , updateProgressBar
+         teammatesUpdate, InitializeVault, updateItems, buffUpdate, healthUpdate,
+         updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate
  }
