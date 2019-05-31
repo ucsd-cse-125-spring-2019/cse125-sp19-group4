@@ -91,7 +91,7 @@ class God {
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const position = params.position;
                     const slime = new Slime(game.slimeCount, "explode");
                     slime.position = position;
@@ -107,7 +107,7 @@ class God {
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const position = params.position;
                     const slime = new Slime(game.slimeCount, "shoot");
                     slime.position = position;
@@ -123,7 +123,7 @@ class God {
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
                 'type': SKILL_TYPE.LOCATION,
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const position = params.position;
                     const slime = new Slime(game.slimeCount, "melee");
                     slime.position = position;
@@ -138,6 +138,7 @@ class God {
                 'maxCharge': 3,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Tree.png',
+                'cursorPath': '/public/images/mouse/tree.cur',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, params) {
                     const position = params.position;
