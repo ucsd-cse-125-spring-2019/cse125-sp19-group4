@@ -115,6 +115,21 @@ class God {
                     game.putSlimeOnTheMap(slime);
                 },
             },
+            3: {
+                'name': 'Tree',
+                'coolDown': 1,
+                'curCoolDown': 0,
+                'maxCharge': 3,
+                'curCharge': 0,
+                'iconPath': '/public/images/skills/SKILL_Tree.png',
+                'type': SKILL_TYPE.LOCATION,
+                'function': function (game, params) {
+                    const position = params.position;
+                    const tree = new Tree(game.treeId++, 4);
+                    tree.position = position;
+                    game.putTreeOnTheMap(tree, false);
+                } 
+            }
         };
         this.status = {
             'STATUS_maxHealth': 100,

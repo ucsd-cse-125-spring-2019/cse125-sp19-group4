@@ -45,11 +45,18 @@ class GameInstance {
         }
         this.loadConfig(config);
         this.generateEnvironment();
+        this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
+        this.monsterSpawnTimer = 0;
     }
 
     loadConfig(config) {
+        this.worldHalfWidth = Number(config.map.width)/2;
+        this.worldHalfHeight = Number(config.map.height)/2;
         this.max_survivors = config.game.max_survivors;
         this.itemDropProb = config.game.item_drop_prob;
+        this.monsterSpawnProb = Number(config.game.monster_spawn_prob);
+        this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
+        this.monsterSpawnInterval = Number(config.game.monster_spawn_interval); //in game tick;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
@@ -61,9 +68,7 @@ class GameInstance {
             let diff = this.treeUpperSize - this.treeLowerSize + 1;
             const size = Math.floor(Math.random() * diff) + this.treeLowerSize;
             const tree = new Tree(this.treeId++, size);
-            this.toSend.push(tree.name);
-            this.insertObjListAndMap(tree);
-            this.physicsEngine.addTree(tree.name, true, tree.size);
+            this.putTreeOnTheMap(tree, true);
         }
     }
 
@@ -154,7 +159,9 @@ class GameInstance {
             this.clientSockets.push(socketid);
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, { x: -10, y: 20, z: 1 }, survivor.maxJump, false);
+            this.initializePlayerLocation(survivor);
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, 
+                { x: survivor.position[0], y: survivor.position[1], z: survivor.position[2] }, survivor.maxJump, false);
             this.skillables[survivor.name] = survivor;
             return true;
         }
@@ -166,6 +173,33 @@ class GameInstance {
             return false;
         }
         return true;
+    }
+
+    initializePlayerLocation(survivor) {
+        const index = Math.floor(Math.random() * this.locationLottery.length);
+        switch(this.locationLottery[index]) {
+            case 0:
+                // upper left
+                survivor.position = [-this.worldHalfWidth + 5, 20, -this.worldHalfHeight + 5];
+                survivor.direction = [0, 0, 1];
+                break;
+            case 1:
+                // upper right
+                survivor.position = [this.worldHalfWidth - 5, 20, -this.worldHalfHeight + 5];
+                survivor.direction = [0, 0, 1];
+                break;
+            case 2:
+                // lower left
+                survivor.position = [-this.worldHalfWidth + 5, 20, this.worldHalfHeight - 5];
+                survivor.direction = [0, 0, -1];
+                break;
+            case 3:
+                // lower right
+                survivor.position = [this.worldHalfWidth - 5, 20, this.worldHalfHeight - 5];
+                survivor.direction = [0, 0, -1];
+                break;
+            }
+        this.locationLottery.splice(index, 1);
     }
 
     numPlayersStatusToString() {
@@ -352,6 +386,7 @@ class GameInstance {
         this.handleBullets();
         this.checkHealth();
         this.cleanup();
+        this.spawnMonster();
         this.comparePosition();
         this.checkProgress();
     }
@@ -533,10 +568,58 @@ class GameInstance {
         }
     }
 
+    /**
+     * Randomly spawn monster
+     */
+    spawnMonster() { 
+        // Adjust spawn difficulty
+        this.adjustSpawnSetting();
 
+        if (this.monsterSpawnTimer < this.monsterSpawnInterval) {
+            this.monsterSpawnTimer++;
+            return;
+        }
+        const monsterLottery = [0, 0, 1, 1, 2, 2];
+        if (Math.random() < this.monsterSpawnProb) {
+            // spawn monsters
+            for (let i = 0; i < this.monsterSpawnAmount; i++) {
+                // Randomly generate monster type 
+                const pick = Math.floor(Math.random() * monsterLottery.length);
+                let monster = null;
+                switch (monsterLottery[pick]) {
+                    case 0:
+                        // generate explosion monster
+                        monster = new Slime(this.slimeCount, "explode");
+                        break;
+                    case 1:
+                        // generate shooting monster
+                        monster = new Slime(this.slimeCount, "shoot");
+                        break;
+                    case 2:
+                        // generate melee monster
+                        monster = new Slime(this.slimeCount, "melee");
+                        break;
+                }
 
+                // Randomly generate monster position
+                const radius = monster.radius;
+                do {
+                    monster.position[0] = Math.floor(Math.random() * (this.worldHalfWidth * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfWidth;
+                    monster.position[1] = 2;
+                    monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
+                } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk     
+                this.putSlimeOnTheMap(monster); // TODO: Add similar function for monster other than slime
+            }
+        }
+        this.monsterSpawnTimer = 0;
+    }
 
+    /**
+     * Helper function to adjust spawn interval when game progresses
+     */
+    adjustSpawnSetting() {
 
+    }
 
     initializeFilterFunctions() {
         for (let obj in this.objects) {
@@ -552,6 +635,19 @@ class GameInstance {
         this.slimes.push(slime.name);
         this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
             { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
+    }
+
+    /**
+     * @param {object} tree tree object
+     * @param {boolean} randomLocation whether to randomly generate location in physics engine
+     */
+    putTreeOnTheMap(tree, randomLocation) {
+        const position = tree.position;
+        this.toSend.push(tree.name);
+        this.objects[tree.name] = tree;
+        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5, 
+            { x: position[0], y: position[1], z: position[2] });
+        
     }
 
     survivorHasDied(name) {

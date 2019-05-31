@@ -186,10 +186,12 @@ class PhysicsEngine {
 
     addTree(name, random, size, radius = 0.5, position = { x: 20, y: 0, z: -20 }) {
         if (random) {
-            // randomly generate tree position
-            position.x = Math.floor(Math.random() * (this.mapWidth - Math.ceil(radius)) + Math.ceil(radius)) - this.mapWidth/2;
-            position.y = 0;
-            position.z = Math.floor(Math.random() * (this.mapHeight - Math.ceil(radius)) + Math.ceil(radius)) - this.mapHeight/2;
+            do {
+                 // randomly generate tree position
+                position.x = Math.floor(Math.random() * (this.mapWidth - Math.ceil(radius)) + Math.ceil(radius)) - this.mapWidth/2;
+                position.y = 0;
+                position.z = Math.floor(Math.random() * (this.mapHeight - Math.ceil(radius)) + Math.ceil(radius)) - this.mapHeight/2;
+            } while (Math.abs(position.x) < 10 || Math.abs(position.z) < 10); // TODO: Change 10 to better match with center obelisk
         }
         // tree should be static 
         const treeShape = new CANNON.Box(new CANNON.Vec3(radius, size * 4 * radius, radius));
