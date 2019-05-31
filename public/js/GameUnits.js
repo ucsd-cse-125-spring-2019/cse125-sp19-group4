@@ -57,7 +57,10 @@ class Slime {
         let minDistance = Number.MAX_VALUE;
         game.liveSurvivors.forEach(function(s) {
             const survivor = game.objects[s]
-            const distance = glMatrix.vec3.distance(slime.position, survivor.position);
+            // const distance = glMatrix.vec3.distance(slime.position, survivor.position);
+            // const distance = glMatrix.vec3.length(survivor.position); // distance to center
+            let distance = Math.min(glMatrix.vec3.distance(slime.position, survivor.position), 
+                glMatrix.vec3.length(survivor.position));
             if (distance < minDistance) {
                 minDistance = distance;
                 closestSurvivor = survivor;
