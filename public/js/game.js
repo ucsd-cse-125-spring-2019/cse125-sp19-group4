@@ -711,6 +711,7 @@ class GameInstance {
             server.endGame(false);
             return;
         }
+        this.physicsEngine.handleSurvivorDeath(name);
         server.notifySurvivorDied(name);
         server.notifyAll(name + " was killed!", NotificationType.EVENT)
     }
@@ -719,6 +720,7 @@ class GameInstance {
         this.objects[name].dead = false;
         this.liveSurvivors.push(name);
         this.deadSurvivors.splice(this.deadSurvivors.indexOf(name), 1);
+        this.physicsEngine.handleSurvivorRevival(name);
         server.notifySurvivorRevived(name);
         server.notifyAll(name + " has been revived!", NotificationType.EVENT)
     }
