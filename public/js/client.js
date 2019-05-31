@@ -22,7 +22,7 @@ const model_ref = {};
 
 const transform_ref = {
     '': glMatrix.mat4.create(),
-    'terrain': glMatrix.mat4.create(), //glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
