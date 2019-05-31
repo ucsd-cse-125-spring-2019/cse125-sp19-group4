@@ -438,8 +438,8 @@ function main() {
         }
 
         // Skill
-        if (casting >= 0) {
-            if (typeof objects['casting'] === 'undefined') {
+        if (isGod && casting >= 0) {
+            if (typeof objects['casting'] === 'undefined' || objects['casting'].m != cast_models[casting].m) {
                 objects['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
             }
             const normal = [0.0, 1.0, 0.0];
