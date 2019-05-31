@@ -46,6 +46,7 @@ class GameInstance {
         this.loadConfig(config);
         this.generateEnvironment();
         this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
+        this.monsterSpawnTimer = 0;
     }
 
     loadConfig(config) {
@@ -53,6 +54,9 @@ class GameInstance {
         this.worldHalfHeight = Number(config.map.height)/2;
         this.max_survivors = config.game.max_survivors;
         this.itemDropProb = config.game.item_drop_prob;
+        this.monsterSpawnProb = Number(config.game.monster_spawn_prob);
+        this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
+        this.monsterSpawnInterval = Number(config.game.monster_spawn_interval); //in game tick;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
@@ -384,6 +388,7 @@ class GameInstance {
         this.handleBullets();
         this.checkHealth();
         this.cleanup();
+        this.spawnMonster();
         this.comparePosition();
         this.checkProgress();
     }
@@ -565,10 +570,58 @@ class GameInstance {
         }
     }
 
+    /**
+     * Randomly spawn monster
+     */
+    spawnMonster() { 
+        // Adjust spawn difficulty
+        this.adjustSpawnSetting();
 
+        if (this.monsterSpawnTimer < this.monsterSpawnInterval) {
+            this.monsterSpawnTimer++;
+            return;
+        }
+        const monsterLottery = [0, 0, 1, 1, 2, 2];
+        if (Math.random() < this.monsterSpawnProb) {
+            // spawn monsters
+            for (let i = 0; i < this.monsterSpawnAmount; i++) {
+                // Randomly generate monster type 
+                const pick = Math.floor(Math.random() * monsterLottery.length);
+                let monster = null;
+                switch (monsterLottery[pick]) {
+                    case 0:
+                        // generate explosion monster
+                        monster = new Slime(this.slimeCount, "explode");
+                        break;
+                    case 1:
+                        // generate shooting monster
+                        monster = new Slime(this.slimeCount, "shoot");
+                        break;
+                    case 2:
+                        // generate melee monster
+                        monster = new Slime(this.slimeCount, "melee");
+                        break;
+                }
 
+                // Randomly generate monster position
+                const radius = monster.radius;
+                do {
+                    monster.position[0] = Math.floor(Math.random() * (this.worldHalfWidth * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfWidth;
+                    monster.position[1] = 2;
+                    monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
+                } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk     
+                this.putSlimeOnTheMap(monster); // TODO: Add similar function for monster other than slime
+            }
+        }
+        this.monsterSpawnTimer = 0;
+    }
 
+    /**
+     * Helper function to adjust spawn interval when game progresses
+     */
+    adjustSpawnSetting() {
 
+    }
 
     initializeFilterFunctions() {
         for (let obj in this.objects) {
