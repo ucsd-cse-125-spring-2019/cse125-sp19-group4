@@ -183,24 +183,32 @@ class Fighter {
                 },
             },
 
-            0: {
-                'name': 'Attack',
+            1: {
+                'name': 'Cut tree',
                 'type': SKILL_TYPE.LOCATION,
-                'coolDown': 0.5,
+                'coolDown': 5,
                 'curCoolDown': 0,
-                'maxCharge': 5,
+                'maxCharge': 2,
                 'curCharge': 0,
-                'description': 'Shoot an arrow',
-                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'description': 'Cut a tree',
+                'iconPath': '/public/images/skills/SKILL_CutTree.png',
                 'function': function (game, self, params) {
-                    const name = params.name;
-                    const cursor = params.position;
-                    const direction = glMatrix.vec3.create();
-                    glMatrix.vec3.subtract(direction, cursor, game.objects[name].position);
-                    direction[1] = 0;
-                    glMatrix.vec3.normalize(direction, direction);
-                    game.objects[name].direction = direction;
-                    game.shoot(name);
+                    const location = params.position;
+                    // skill location too far from invoker
+                    if (Utils.calculateDistance(self.position, location) > 5) {
+                        return false;
+                    }
+
+                    const radius = 3;
+                    const objsInRadius = game.getObjInRadius(location, radius);
+                    let cut = false;
+                    objsInRadius.forEach(function(obj) {
+                        if (obj.type === "tree") {
+                            game.toClean.push(obj.name)
+                            cut = true;
+                        }
+                    })
+                    return cut;
                 },
             },
         };
@@ -396,6 +404,7 @@ class Healer {
                     }
                     const radius = 1;
                     const objsInRadius = game.getObjInRadius(location, radius);
+                    let revived = false;
 
                     objsInRadius.forEach(function(obj) {
                         if (obj.type === "player" && obj.status.curHealth <= 0) {
@@ -403,21 +412,21 @@ class Healer {
                             obj.KEYS.push("status");
                             game.toSend.push(obj.name);
                             game.survivorHasRevived(obj.name);
-                            return true;
+                            revived = true;
                         }
                     })
-                    return false;
+                    return revived;
                 }
             },
 
-            3: {
-                'name': 'Surgery',
-                'coolDown': 300,
-                'curCoolDown': 0,
-                'description': 'The healer performs a surgery on a near-death person and revives him. Surgery takes a while to finish. The healer can only perform surgery once a while because it is exhausting',
-                'iconPath': '/public/images/skills/SKILL_Surgery.png',
+            // 3: {
+            //     'name': 'Surgery',
+            //     'coolDown': 300,
+            //     'curCoolDown': 0,
+            //     'description': 'The healer performs a surgery on a near-death person and revives him. Surgery takes a while to finish. The healer can only perform surgery once a while because it is exhausting',
+            //     'iconPath': '/public/images/skills/SKILL_Surgery.png',
 
-            },
+            // },
         };
         
     }

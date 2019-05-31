@@ -104,8 +104,10 @@ class GameInstance {
                 let send = false;
 
                 if (skill.curCoolDown > 0) {
-                    skill.curCoolDown -= amount;
-                    send = true;
+                    if (!('maxCharge' in skill) || skill.maxCharge != skill.curCharge) {
+                        skill.curCoolDown -= amount;
+                        send = true;
+                    }
                 } else {
                     if (skill.curCoolDown != 0) { //TODO handle case when cooldown is exactly 0 from decrementing 
                         send = true;

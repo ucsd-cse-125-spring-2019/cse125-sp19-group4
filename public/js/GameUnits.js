@@ -102,6 +102,7 @@ class Tree {
         this.direction = [0, 0, -1];
         this.model = 'tree';
         this.size = size;
+        this.type = "tree"
     }
 }
 
