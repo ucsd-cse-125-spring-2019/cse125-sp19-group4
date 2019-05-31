@@ -628,6 +628,19 @@ class GameInstance {
         survivor.status.attackInterval = Math.ceil(server.tick_rate / survivor.status.attackSpeed);
     }
 
+    getObjInRadius(position, radius) {
+        let result = []
+        for (let key in this.objects) {
+            let obj = this.objects[key];
+            let distance = (obj.position[0] - position[0]) ** 2 + (obj.position[2] - position[2]) ** 2
+            distance = distance ** 0.5
+            if (distance < radius) {
+                result.push(obj)
+            }
+        }
+        return result;
+    }
+
 }
 
 module.exports = GameInstance;

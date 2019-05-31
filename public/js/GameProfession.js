@@ -7,6 +7,7 @@ const buff = {
     'speed': 0,
     'attackSpeed': 0
 }
+const server = require('../../server.js')
 
 const SKILL_TYPE = {
     SELF: "SELF",
@@ -26,6 +27,7 @@ class onGoingSkill {
 class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;
+        this.type = "player"
         this.socketid = socketid;
         this.position = [0, 0, 0]; // location (x, y, z)
         this.direction = [0, 0, -1]; // facing (x, y, z)
@@ -219,10 +221,8 @@ class Archer {
             0: {
                 'name': 'Shoot',
                 'type': SKILL_TYPE.LOCATION,
-                'coolDown': 0.5,
+                'coolDown': 0,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, params) {
@@ -243,8 +243,8 @@ class Archer {
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
-                'description': 'Shoot an arrow',
-                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'description': 'Throw a grenade and explode',
+                'iconPath': '/public/images/skills/SKILL_Grenade.png',
                 'function': function (game, params) {
                     const name = params.name;
                     const cursor = params.position;
@@ -262,7 +262,7 @@ class Archer {
                 'coolDown': 10,
                 'curCoolDown': 0,
                 'description': 'Run! Increase speed by 50 for 1 sec',
-                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'iconPath': '/public/images/skills/SKILL_Run.png',
                 'function': function (game, self, params) {
                     let duration = 1;
                     let effect = function(game, self) {
@@ -306,15 +306,30 @@ class Healer {
 
         this.skills = {
             0: {
-                'name': 'Heal',
+                'name': 'Sing',
                 'coolDown': 10,
                 'curCoolDown': 0,
-                'description': 'The healer heals an unit and recovers ' + this.strength + ' per second',
+                'description': 'The healer starts singing. Because his voice is too beatiful,' +  
+                               'whoever hears it can heal 5 health per seconds',
                 'iconPath': '/public/images/skills/SKILL_Heal.png',
                 'strength': 10,
-                'function': function () {
-                    // TODO
-                }, 
+                'type': SKILL_TYPE.ONGOING,
+                'function': function (game, self, params) {
+                    const duration = 3;
+                    const effect = function(game, self) {
+                        const position = self.position;
+                        const radius = 10;
+                        const objsInRadius = game.getObjInRadius(position, radius);
+                        objsInRadius.forEach(function(obj) {
+                            if (obj.type === "player") {
+                                obj.status.curHealth = Math.min(obj.status.curHealth + 10 / server.tick_rate, obj.status.maxHealth)
+                                obj.KEYS.push("status");
+                                game.toSend.push(obj.name)
+                            }
+                        })
+                    };
+                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self);
+                },
             },
 
             1: {
@@ -348,9 +363,7 @@ class Healer {
                 'curCoolDown': 0,
                 'description': 'The healer performs a surgery on a near-death person and revives him. Surgery takes a while to finish. The healer can only perform surgery once a while because it is exhausting',
                 'iconPath': '/public/images/skills/SKILL_Surgery.png',
-                'function': function () {
-                    // TODO
-                }, 
+
             },
         };
         
