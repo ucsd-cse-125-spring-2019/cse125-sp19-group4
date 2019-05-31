@@ -68,9 +68,7 @@ class GameInstance {
             let diff = this.treeUpperSize - this.treeLowerSize + 1;
             const size = Math.floor(Math.random() * diff) + this.treeLowerSize;
             const tree = new Tree(this.treeId++, size);
-            this.toSend.push(tree.name);
-            this.insertObjListAndMap(tree);
-            this.physicsEngine.addTree(tree.name, true, tree.size);
+            this.putTreeOnTheMap(tree, true);
         }
     }
 
@@ -639,11 +637,15 @@ class GameInstance {
             { x: position[0], y: position[1], z: position[2] }, slime.status.STATUS_speed, slime.attackMode);
     }
 
-    putTreeOnTheMap(tree) {
+    /**
+     * @param {object} tree tree object
+     * @param {boolean} randomLocation whether to randomly generate location in physics engine
+     */
+    putTreeOnTheMap(tree, randomLocation) {
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
-        this.physicsEngine.addTree(tree.name, 0, tree.size, 0.5, 
+        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5, 
             { x: position[0], y: position[1], z: position[2] });
         
     }
