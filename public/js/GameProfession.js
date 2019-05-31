@@ -18,11 +18,12 @@ const SKILL_TYPE = {
 }
 
 class onGoingSkill {
-    constructor(duration, effect, invoker, isSelfBuff) {
+    constructor(duration, effect, invoker, isSelfBuff, endEffect = null) {
         this.duration = duration;
         this.effect = effect;
         this.invoker = invoker;
         this.isSelfBuff = isSelfBuff;
+        this.endEffect =endEffect;
     }
 }
 
@@ -384,7 +385,15 @@ class Healer {
                             }
                         }
                     };
-                    game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false);
+                    const endEffect = function(game, self) {
+                        for (let key in buffedUnit) {
+                            delete buffedUnit[key];
+                            game.toSend.push(key);
+                            game.objects[key].KEYS.push("status");
+                            game.objects[key].KEYS.push("tempBuff");
+                        }
+                    }
+                    game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false, endEffect);
                 },
             },
 
