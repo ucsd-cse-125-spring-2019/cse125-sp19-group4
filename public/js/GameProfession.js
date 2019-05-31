@@ -90,6 +90,7 @@ class God {
                 'maxCharge': 5,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
+                'cursorPath': '/public/images/mouse/empty.cur',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -106,6 +107,7 @@ class God {
                 'maxCharge': 5,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
+                'cursorPath': '/public/images/mouse/empty.cur',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -122,6 +124,7 @@ class God {
                 'maxCharge': 5,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
+                'cursorPath': '/public/images/mouse/empty.cur',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -138,9 +141,9 @@ class God {
                 'maxCharge': 3,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Tree.png',
-                'cursorPath': '/public/images/mouse/tree.cur',
+                'cursorPath': '/public/images/mouse/empty.cur',
                 'type': SKILL_TYPE.LOCATION,
-                'function': function (game, params) {
+                'function': function (game, self, params) {
                     const position = params.position;
                     const tree = new Tree(game.treeId++, 4);
                     tree.position = position;
