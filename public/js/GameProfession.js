@@ -17,10 +17,11 @@ const SKILL_TYPE = {
 }
 
 class onGoingSkill {
-    constructor(duration, effect, invoker) {
+    constructor(duration, effect, invoker, isSelfBuff) {
         this.duration = duration;
         this.effect = effect;
         this.invoker = invoker;
+        this.isSelfBuff = isSelfBuff;
     }
 }
 
@@ -268,7 +269,7 @@ class Archer {
                     let effect = function(game, self) {
                         self.tempBuff.speed += 50;
                     };
-                    game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self);
+                    game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true);
                 },
             },
             3: {
@@ -283,7 +284,7 @@ class Archer {
                     let effect = function(game, self) {
                         self.tempBuff.attackSpeed += (self.baseStatus.attackSpeed + self.buff.attackSpeed) * 2;
                     };
-                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self);
+                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self, true);
                 },
             },
         };
@@ -309,7 +310,7 @@ class Healer {
                 'name': 'Sing',
                 'coolDown': 10,
                 'curCoolDown': 0,
-                'description': 'The healer starts singing. Because his voice is too beatiful,' +  
+                'description': 'The wizard starts singing. Because his voice is too beatiful,' +  
                                'whoever hears it can heal 5 health per seconds',
                 'iconPath': '/public/images/skills/SKILL_Heal.png',
                 'strength': 10,
@@ -328,21 +329,53 @@ class Healer {
                             }
                         })
                     };
-                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self);
+                    game.onGoingSkills[self.name + 0] = new onGoingSkill(duration, effect, self, false);
                 },
             },
 
             1: {
-                'name': 'MakeMedicine',
+                'name': 'Chant',
                 'coolDown': 10,
                 'curCoolDown': 0,
-                'description': 'The healer makes a medicine that recovers ' + this.strenth + ' health for an unit',
+                'description': 'The wizard starts chanting. The chanting strenghthens whoever hears it',
                 'strength': 10,
-                'type': SKILL_TYPE.SELF,
+                'type': SKILL_TYPE.ONGOING,
                 'iconPath': '/public/images/skills/SKILL_Medicine.png',
-                'function': function (mySelf) {
-                    mySelf.itemEnhance('boots');
-                }, 
+                'function': function (game, self, params) {
+                    const duration = 3;
+                    const buffedUnit = {}; 
+                    const effect = function(game, self) {
+                        const position = self.position;
+                        const radius = 10;
+                        const objsInRadius = game.getObjInRadius(position, radius);
+
+                        // use this to remember who has been buffed before
+                        for (let key in buffedUnit) {
+                            buffedUnit[key] = false;
+                        }
+
+                        objsInRadius.forEach(function(obj) {
+                            if (obj.type === "player" && obj != self) {
+                                obj.tempBuff.damage += 10;
+                                obj.KEYS.push("status");
+                                obj.KEYS.push("tempBuff");
+                                game.toSend.push(obj.name);
+                                buffedUnit[obj.name] = true;
+                            }
+                        })
+
+                        // reset whose who has been buffed before but no longer being buffed
+                        for (let key in buffedUnit) {
+                            if (!buffedUnit[key]) {
+                                delete buffedUnit[key];
+                                game.toSend.push(key);
+                                game.objects[key].KEYS.push("status");
+                                game.objects[key].KEYS.push("tempBuff");
+                            }
+                        }
+                    };
+                    game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false);
+                },
             },
 
             2: {

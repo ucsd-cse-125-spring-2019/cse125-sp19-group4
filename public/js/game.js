@@ -364,9 +364,11 @@ class GameInstance {
             let skill = gameInstance.onGoingSkills[key];
             let invoker = skill.invoker;
 
-            gameInstance.toSend.push(invoker.name);
-            invoker.KEYS.push('status')
-            invoker.KEYS.push('tempBuff')
+            if (skill.isSelfBuff) {
+                gameInstance.toSend.push(invoker.name);
+                invoker.KEYS.push('status')
+                invoker.KEYS.push('tempBuff')
+            }
 
             skill.duration -= 1 / server.tick_rate;
             if (skill.duration < 0) {
@@ -374,10 +376,13 @@ class GameInstance {
             } else {
                 skill.effect(gameInstance, invoker);
             }
-
-            gameInstance.calculatePlayerStatus(invoker.name);
-
         }
+
+        // The reason we do it here is that we don't know who has been buffed
+        // by aoe
+        this.survivors.forEach(function(survivor) {
+            gameInstance.calculatePlayerStatus(survivor.name);
+        })
     }
     // ==================================== Before Step ===================================
     //#endregion
