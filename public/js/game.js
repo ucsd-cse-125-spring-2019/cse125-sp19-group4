@@ -695,12 +695,13 @@ class GameInstance {
      * @param {boolean} randomLocation whether to randomly generate location in physics engine
      */
     putTreeOnTheMap(tree, randomLocation) {
+        if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position)) return false;
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
         this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5, 
             { x: position[0], y: position[1], z: position[2] });
-        
+        return true;
     }
 
     survivorHasDied(name) {
@@ -730,6 +731,14 @@ class GameInstance {
     outOfWorld(position) {
         return Math.abs(Math.floor(position[0])) > this.worldHalfWidth ||
             Math.abs(Math.floor(position[2])) > this.worldHalfHeight
+    }
+
+    checkIfTooCloseToSurvivor(position) {
+        for (let i = 0; i < this.liveSurvivors.length; i++) {
+            if (glMatrix.vec3.distance(this.objects[this.liveSurvivors[i]].position, position) < 5)
+                return true;
+        }
+        return false;
     }
 
     calculatePlayerStatus(name) {
