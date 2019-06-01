@@ -137,12 +137,19 @@ function InitializeSkills(skills) {
         border2.style["animation-delay"] = "-4s";
         border2.id = i + "skillBorder2";
 
+        let border3 = document.createElement('div');
+        border3.className += "castingAnimation";
+        border3.style.animation = "none";
+        border3.style.display = "block";
+        border3.id = i + "skillBorder3"
+
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask);
         skill.appendChild(span);
         skill.appendChild(border1);
         skill.appendChild(border2);
+        skill.appendChild(border3);
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
@@ -288,12 +295,14 @@ function coolDownUpdate(skills) {
 
 function switchCasting(skillNum, hideAll) {
     for (let i = 0; i < 4; i++) {
-        document.getElementById(i + "skillBorder2").style.display = "none"
-        document.getElementById(i + "skillBorder1").style.display = "none"    
+        document.getElementById(i + "skillBorder1").style.display = "none"; 
+        document.getElementById(i + "skillBorder2").style.display = "none";
+        document.getElementById(i + "skillBorder3").style.display = "block"; 
     }
     if (!hideAll) {
-        document.getElementById(skillNum + "skillBorder2").style.display = "block"
-        document.getElementById(skillNum + "skillBorder1").style.display = "block"
+        document.getElementById(skillNum + "skillBorder1").style.display = "block";
+        document.getElementById(skillNum + "skillBorder2").style.display = "block";
+        document.getElementById(skillNum + "skillBorder3").style.display = "none";
     }
 }
 
@@ -332,7 +341,7 @@ function updateItems(items) {
 
         let count = document.createElement('span');
         count.style = "color: white; position: absolute; right: 5px; bottom: 0; font-size: 10pt;" + 
-                     "font-size: 10pt;";
+                      "font-size: 10pt;";
         count.innerHTML = item.count;
         div.appendChild(count);
 
