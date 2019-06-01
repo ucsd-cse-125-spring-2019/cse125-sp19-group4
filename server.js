@@ -37,8 +37,6 @@ const inputs = [];
 const movementEvents = {};
 const jumpEvents = {};
 const skillEvents = {};
-const shootEvents = {};
-const meleeEvents = {};
 
 
 io.on('connection', function (socket) {
@@ -93,46 +91,6 @@ io.on('connection', function (socket) {
         }
         const direction = JSON.parse(msg);
         movementEvents[gameInstance.socketidToPlayer[socket.id].name] = direction;
-    });
-
-    socket.on('shoot', function () {
-        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
-            return;
-        }
-        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
-            return;
-        }
-        shootEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
-    });
-
-    socket.on('stop_shoot', function () {
-        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
-            return;
-        }
-        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
-            return;
-        }
-        shootEvents[gameInstance.socketidToPlayer[socket.id].name] = false;
-    });
-
-    socket.on('melee', function () {
-        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
-            return;
-        }
-        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
-            return;
-        }
-        meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = true;
-    });
-
-    socket.on('stop_melee', function () {
-        if (typeof gameInstance.socketidToPlayer[socket.id] === 'undefined') {
-            return;
-        }
-        if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
-            return;
-        }
-        meleeEvents[gameInstance.socketidToPlayer[socket.id].name] = false;
     });
 
     socket.on('jump', function () {
@@ -231,18 +189,6 @@ function gameLoop() {
     Object.keys(skillEvents).forEach((name) => {
         gameInstance.handleSkill(name, skillEvents[name]);
         delete skillEvents[name];
-    });
-
-    // Handle attacks
-    Object.keys(shootEvents).forEach((name) => {
-        if (shootEvents[name]) {
-            gameInstance.shoot(name);
-        }
-    });
-    Object.keys(meleeEvents).forEach((name) => {
-        if (meleeEvents[name]) {
-            gameInstance.melee(name);
-        }
     });
 
     // Step and update objects

@@ -288,15 +288,11 @@ class GameInstance {
     }
 
     /**
-     * TODO: Add more attack forms besides bullet
      * Create a bullet for the attacker
      * @param {string} name the name of object that initiates the attack
      */
     shoot(name, speed, damage, radius) {
         const initiator = this.objects[name];
-        if (initiator.attackTimer > 0) {
-            return;
-        }
         if (name === 'God' && !initiator.canAttack) {
             return;
         }
@@ -310,9 +306,6 @@ class GameInstance {
 
     melee(name) {
         const initiator = this.objects[name];
-        if (initiator.attackTimer > 0) {
-            return;
-        }
         if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.damage);
@@ -363,6 +356,9 @@ class GameInstance {
         if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 const object = game.objects[name];
+                if (object.attackTimer > 0) {
+                    return;
+                }
                 if (object.attackMode === 'shoot') {
                     game.shoot(name, 20, object.status.damage, 0.2);
                 }

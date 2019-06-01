@@ -159,7 +159,7 @@ class God {
             'curHealth': 100,
             'damage': 10,
             'defense': 10,
-            'speed': 20,
+            'speed': 40,
             'attackInterval': 10,
         };
 
@@ -188,13 +188,14 @@ class Fighter {
             0: {
                 'name': 'Attack',
                 'type': SKILL_TYPE.LOCATION,
-                'coolDown': 0.5,
+                'coolDown': 0,
                 'curCoolDown': 0,
-                'maxCharge': 5,
-                'curCharge': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
+                    if (self.attackTimer > 0) {
+                        return;
+                    }
                     const name = self.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
@@ -202,7 +203,7 @@ class Fighter {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    // game.shoot(name);
+                    game.shoot(name, 50, self.status.damage, 0.2);
                 },
             },
 
@@ -260,6 +261,9 @@ class Archer {
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
+                    if (self.attackTimer > 0) {
+                        return;
+                    }
                     const name = self.name;
                     const cursor = params.position;
                     const direction = glMatrix.vec3.create();
@@ -268,7 +272,6 @@ class Archer {
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
                     game.shoot(name, 50, self.status.damage, 0.2);
-
                 },
             },
             1: {
@@ -332,7 +335,7 @@ class Healer {
         this.status = {
             'maxHealth': 100,
             'curHealth': 100,
-            'damage': 10,
+            'damage': 5,
             'defense': 0,
             'speed': 15,
             'attackInterval': 60,
@@ -341,6 +344,28 @@ class Healer {
 
         this.skills = {
             0: {
+                'name': 'Shoot',
+                'type': SKILL_TYPE.LOCATION,
+                'coolDown': 0,
+                'curCoolDown': 0,
+                'description': 'Shoot an arrow',
+                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'function': function (game, self, params) {
+                    if (self.attackTimer > 0) {
+                        return;
+                    }
+                    const name = self.name;
+                    const cursor = params.position;
+                    const direction = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(direction, cursor, self.position);
+                    direction[1] = 0;
+                    glMatrix.vec3.normalize(direction, direction);
+                    self.direction = direction;
+                    game.shoot(name, 50, self.status.damage, 0.2);
+                },
+            },
+
+            1: {
                 'name': 'Sing',
                 'coolDown': 10,
                 'curCoolDown': 0,
@@ -367,7 +392,7 @@ class Healer {
                 },
             },
 
-            1: {
+            2: {
                 'name': 'Chant',
                 'coolDown': 10,
                 'curCoolDown': 0,
@@ -420,7 +445,7 @@ class Healer {
                 },
             },
 
-            2: {
+            3: {
                 'name': 'Revive',
                 'coolDown': 10,
                 'curCoolDown': 0,
@@ -450,15 +475,6 @@ class Healer {
                     return revived;
                 }
             },
-
-            // 3: {
-            //     'name': 'Surgery',
-            //     'coolDown': 300,
-            //     'curCoolDown': 0,
-            //     'description': 'The healer performs a surgery on a near-death person and revives him. Surgery takes a while to finish. The healer can only perform surgery once a while because it is exhausting',
-            //     'iconPath': '/public/images/skills/SKILL_Surgery.png',
-
-            // },
         };
 
     }
