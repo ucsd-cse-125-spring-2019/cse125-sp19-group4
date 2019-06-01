@@ -117,7 +117,7 @@ function InitializeSkills(skills) {
         let skill = document.createElement('div');
         let img = document.createElement('img');
         img.src = skills[i].iconPath;
-        img.style = "width: 100%; height: 100%"
+        img.style = "width: 100%; height: 100%; padding: 3px"
         img.title = skills[i].description;
         let mask = document.createElement('div'); // cooldown mask
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
@@ -128,11 +128,28 @@ function InitializeSkills(skills) {
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
 
+        let border1 = document.createElement('div');
+        border1.className += "castingAnimation";
+        border1.id = i + "skillBorder1"
+
+        let border2 = document.createElement('div');
+        border2.className += "castingAnimation";
+        border2.style["animation-delay"] = "-4s";
+        border2.id = i + "skillBorder2";
+
+        let border3 = document.createElement('div');
+        border3.className += "castingAnimation";
+        border3.style.animation = "none";
+        border3.style.display = "block";
+        border3.id = i + "skillBorder3"
 
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask);
         skill.appendChild(span);
+        skill.appendChild(border1);
+        skill.appendChild(border2);
+        skill.appendChild(border3);
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
@@ -276,6 +293,19 @@ function coolDownUpdate(skills) {
     }
 }
 
+function switchCasting(skillNum, hideAll) {
+    for (let i = 0; i < 4; i++) {
+        document.getElementById(i + "skillBorder1").style.display = "none"; 
+        document.getElementById(i + "skillBorder2").style.display = "none";
+        document.getElementById(i + "skillBorder3").style.display = "block"; 
+    }
+    if (!hideAll) {
+        document.getElementById(skillNum + "skillBorder1").style.display = "block";
+        document.getElementById(skillNum + "skillBorder2").style.display = "block";
+        document.getElementById(skillNum + "skillBorder3").style.display = "none";
+    }
+}
+
 function teammatesUpdate(data) {
     for (let i in teammatesName) {
         const name = teammatesName[i];
@@ -311,7 +341,7 @@ function updateItems(items) {
 
         let count = document.createElement('span');
         count.style = "color: white; position: absolute; right: 5px; bottom: 0; font-size: 10pt;" + 
-                     "font-size: 10pt;";
+                      "font-size: 10pt;";
         count.innerHTML = item.count;
         div.appendChild(count);
 
@@ -357,5 +387,5 @@ function updateProgressBar(progress) {
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
          teammatesUpdate, InitializeVault, updateItems, buffUpdate, healthUpdate,
-         updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate
+         updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate, switchCasting
  }
