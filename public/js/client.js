@@ -7,6 +7,7 @@ const UIdebug = true;
 
 const camera = new Camera();
 let uid = '';
+let left_cursor_down = false;
 let isGod = false;
 let prev_direction = glMatrix.vec3.create();
 
@@ -91,7 +92,7 @@ socket.on('enter game', function (msg) {
     uid = players[socket.id].name;
     player = players[socket.id];
     console.log("my name is", uid);
-    
+
     // get the skill cursor
     for (let key in player.skills) {
         skillCursors[key] = player.skills[key].cursorPath
@@ -257,7 +258,7 @@ socket.on('game_status', function (msg) {
             const transformation = glMatrix.mat4.create();
             glMatrix.mat4.multiply(transformation, translation, rotation);
             let t = glMatrix.mat4.clone(transform_ref[objects[name].m]);
-            if (objects[name].m === 'tree') {
+            if (typeof obj.size !== 'undefined') {
                 t = glMatrix.mat4.fromScaling(t, [obj.size, obj.size, obj.size]);
             }
             glMatrix.mat4.multiply(objects[name].t, transformation, t);
@@ -296,10 +297,10 @@ function main() {
 
     window.addEventListener("mousedown", mouseDown, false);
     window.addEventListener("contextmenu", contextmenu, false);
-    // canvas.addEventListener("mouseup", mouseUp, false);
+    window.addEventListener("mouseup", mouseUp, false);
     // canvas.addEventListener("mouseout", mouseUp, false);
     window.addEventListener("mousemove", mouseMove, false);
-    window.addEventListener("wheel", zoom, {passive: false});
+    window.addEventListener("wheel", zoom, { passive: false });
 
     window.addEventListener('keyup', function (event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function (event) { Key.onKeydown(event); }, false);
@@ -448,10 +449,8 @@ function main() {
         }
 
         // Skill
-        if (isGod && casting >= 0) {
-            if (typeof objects['casting'] === 'undefined' || objects['casting'].m != cast_models[casting].m) {
-                objects['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
-            }
+        if (casting >= 0) {
+
             const normal = [0.0, 1.0, 0.0];
             const center = [0.0, 0.0, 0.0];
 
@@ -463,9 +462,19 @@ function main() {
                 const t = glMatrix.vec3.dot(difference, normal) / denominator;
                 glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
             }
-            const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
-            if (typeof objects['casting'] !== 'undefined') {
-                glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
+
+
+            if (isGod) {
+                if (typeof objects['casting'] === 'undefined' || objects['casting'].m != cast_models[casting].m) {
+                    objects['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
+                }
+                const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
+                if (typeof objects['casting'] !== 'undefined') {
+                    glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
+                }
+            } else if (casting == 0 && left_cursor_down) {
+                const skillsParams = { skillNum: casting, position: cursor };
+                socket.emit('skill', JSON.stringify(skillsParams));
             }
         }
         drawScene(gl, programInfo, objects, camera);
@@ -615,6 +624,7 @@ const mouseDown = function (e) {
     switch (e.which) {
         case 1:
             // left click
+            left_cursor_down = true;
             if (casting > 0) {
                 const skillsParams = { skillNum: casting, position: cursor };
                 socket.emit('skill', JSON.stringify(skillsParams));
@@ -635,6 +645,10 @@ const mouseDown = function (e) {
     return false;
 };
 
+const mouseUp = function (e) {
+    left_cursor_down = false;
+}
+
 const mouseMove = function (e) {
     mouse_pos.x = e.pageX;
     mouse_pos.y = e.pageY;
@@ -644,7 +658,7 @@ const zoom = function (e) {
     e.preventDefault();
     if (e.deltaY > 0) {
         camera.zoomIn();
-    } else if(e.deltaY < 0) {
+    } else if (e.deltaY < 0) {
         camera.zoomOut(isGod);
     }
 }
@@ -665,8 +679,6 @@ const Key = {
         65: 'LEFT',         // A
         68: 'RIGHT',        // D
         69: 'ROTRIGHT',     // E
-        74: 'SHOOT',        // J   
-        75: 'MELEE',        // K  
         81: 'ROTLEFT',      // Q
         83: 'DOWN',         // S
         87: 'UP',           // W
@@ -709,25 +721,13 @@ const Key = {
             // do nothing
         } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
             handleSkill(uid, event.keyCode - 49);
-        } else if (event.keyCode == 74) {
-            // shoot
-            socket.emit('shoot');
-        } else if (event.keyCode == 75) {
-            // melee
-            socket.emit('melee');
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;
         }
     },
 
     onKeyup: function (event) {
-        if (event.keyCode == 74) {
-            // stop_shoot
-            socket.emit('stop_shoot');
-        } else if (event.keyCode == 75) {
-            // melee
-            socket.emit('stop_melee');
-        } else if (event.keyCode in this.cmd) {
+        if (event.keyCode in this.cmd) {
             delete this._pressed[this.cmd[event.keyCode]];
         }
 

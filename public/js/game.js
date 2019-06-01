@@ -48,19 +48,24 @@ class GameInstance {
         this.generateEnvironment();
         this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
         this.monsterSpawnTimer = 0;
+        this.monsterSpawnProb = this.monsterSpawnBaseProb;
+        this.monsterSpawnIncreaseSlope = (1 - this.monsterSpawnBaseProb)/this.monsterSpawnFullProbTime;
     }
 
     loadConfig(config) {
-        this.worldHalfWidth = Number(config.map.width)/2;
-        this.worldHalfHeight = Number(config.map.height)/2;
+        this.worldHalfWidth = Number(config.map.width) / 2;
+        this.worldHalfHeight = Number(config.map.height) / 2;
         this.max_survivors = config.game.max_survivors;
         this.itemDropProb = config.game.item_drop_prob;
-        this.monsterSpawnProb = Number(config.game.monster_spawn_prob);
+        this.monsterSpawnBaseProb = Number(config.game.monster_spawn_base_prob);
         this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
+        this.monsterSpawnFullProbTime = Number(config.game.monster_spawn_full_prob_time);
         this.monsterSpawnInterval = Number(config.game.monster_spawn_interval); //in game tick;
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
+        this.minDistanceSurvivorTree = Number(config.minDistanceToSurvivor.tree);
+        this.minDistanceSurvivorSlime = Number(config.minDistanceToSurvivor.slime);
     }
 
     generateEnvironment() {
@@ -163,7 +168,7 @@ class GameInstance {
             this.socketidToPlayer[socketid] = survivor;
             this.insertObjListAndMap(survivor);
             this.initializePlayerLocation(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius, 
+            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius,
                 { x: survivor.position[0], y: survivor.position[1], z: survivor.position[2] }, survivor.maxJump, false);
             this.skillables[survivor.name] = survivor;
             return true;
@@ -180,7 +185,7 @@ class GameInstance {
 
     initializePlayerLocation(survivor) {
         const index = Math.floor(Math.random() * this.locationLottery.length);
-        switch(this.locationLottery[index]) {
+        switch (this.locationLottery[index]) {
             case 0:
                 // upper left
                 survivor.position = [-this.worldHalfWidth + 5, 20, -this.worldHalfHeight + 5];
@@ -201,7 +206,7 @@ class GameInstance {
                 survivor.position = [this.worldHalfWidth - 5, 20, this.worldHalfHeight - 5];
                 survivor.direction = [0, 0, -1];
                 break;
-            }
+        }
         this.locationLottery.splice(index, 1);
     }
 
@@ -288,31 +293,24 @@ class GameInstance {
     }
 
     /**
-     * TODO: Add more attack forms besides bullet
      * Create a bullet for the attacker
      * @param {string} name the name of object that initiates the attack
      */
-    shoot(name) {
+    shoot(name, speed, damage, radius) {
         const initiator = this.objects[name];
-        if (initiator.attackTimer > 0) {
-            return;
-        }
         if (name === 'God' && !initiator.canAttack) {
             return;
         }
-        const bullet = new Bullet(initiator.position, initiator.direction, this.bulletId++);
+        const bullet = new Bullet(initiator.position, initiator.direction, radius, this.bulletId++);
         this.toSend.push(bullet.name);
 
         this.objects[bullet.name] = bullet; // Bullet + id, e.g. Bullet 0
-        this.physicsEngine.shoot(name, initiator.direction, 20, initiator.status.damage, bullet.name, bullet.radius);
+        this.physicsEngine.shoot(name, initiator.direction, speed, damage, bullet.name, bullet.radius);
         initiator.attackTimer = initiator.status.attackInterval;
     }
 
     melee(name) {
         const initiator = this.objects[name];
-        if (initiator.attackTimer > 0) {
-            return;
-        }
         if (name === 'God' && !initiator.canAttack) return;
         const meleeId = "Melee " + (this.meleeId++);
         this.physicsEngine.melee(name, initiator.direction, meleeId, initiator.status.damage);
@@ -363,10 +361,13 @@ class GameInstance {
         if (this.liveSurvivors.length > 0) {
             this.slimes.forEach(function (name) {
                 const object = game.objects[name];
-                if (game.objects[name].attackMode === 'shoot') {
-                    game.shoot(name);
+                if (object.attackTimer > 0) {
+                    return;
                 }
-                else if (game.objects[name].attackMode === 'melee') {
+                if (object.attackMode === 'shoot') {
+                    game.shoot(name, 20, object.status.damage, 0.2);
+                }
+                else if (object.attackMode === 'melee') {
                     game.melee(name);
                 }
             });
@@ -385,10 +386,10 @@ class GameInstance {
             }
         })
     }
-    
+
     clearTempBuff() {
         let gameInstance = this;
-        this.survivors.forEach(function(survivor) {
+        this.survivors.forEach(function (survivor) {
             for (let key in survivor.tempBuff) {
                 if (key === 'toJSON') {
                     continue;
@@ -421,7 +422,7 @@ class GameInstance {
 
         // The reason we do it here is that we don't know who has been buffed
         // by aoe
-        this.survivors.forEach(function(survivor) {
+        this.survivors.forEach(function (survivor) {
             gameInstance.calculatePlayerStatus(survivor.name);
         })
     }
@@ -474,8 +475,6 @@ class GameInstance {
             if (typeof attackee !== 'undefined') {
                 console.log(hit.from);
                 attackee.onHit(gameInstance, hit.damage);
-                console.log(attackee.name, 'lost', hit.damage, 'health. Current Health:',
-                    attackee.status.curHealth, '/', attackee.status.maxHealth);
             }
             gameInstance.toClean.push(hit_name);
         });
@@ -491,8 +490,6 @@ class GameInstance {
             const slime = gameInstance.objects[e.name];
             attackee.onHit(gameInstance, slime.status.damage);
             slime.status.curHealth = 0;
-            console.log(attackee.name, 'lost', slime.status.damage, 'health. Current Health:',
-                attackee.status.curHealth, '/', attackee.status.maxHealth);
         })
     }
 
@@ -625,13 +622,14 @@ class GameInstance {
      * Randomly spawn monster
      */
     spawnMonster() { 
-        // Adjust spawn difficulty
-        this.adjustSpawnSetting();
+        // Adjust spawn probability
+        this.adjustSpawnProb();
 
         if (this.monsterSpawnTimer < this.monsterSpawnInterval) {
             this.monsterSpawnTimer++;
             return;
         }
+        console.log(this.monsterSpawnProb);
         const monsterLottery = [0, 0, 1, 1, 2, 2];
         if (Math.random() < this.monsterSpawnProb) {
             // spawn monsters
@@ -657,11 +655,12 @@ class GameInstance {
                 // Randomly generate monster position
                 const radius = monster.radius;
                 do {
-                    monster.position[0] = Math.floor(Math.random() * (this.worldHalfWidth * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfWidth;
-                    monster.position[1] = 2;
-                    monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
-                } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk     
-                this.putSlimeOnTheMap(monster); // TODO: Add similar function for monster other than slime
+                    do {
+                        monster.position[0] = Math.floor(Math.random() * (this.worldHalfWidth * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfWidth;
+                        monster.position[1] = 2;
+                        monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
+                    } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk 
+                } while (!this.putSlimeOnTheMap(monster));    
             }
         }
         this.monsterSpawnTimer = 0;
@@ -670,8 +669,8 @@ class GameInstance {
     /**
      * Helper function to adjust spawn interval when game progresses
      */
-    adjustSpawnSetting() {
-
+    adjustSpawnProb() {
+        if (this.monsterSpawnProb < 1) this.monsterSpawnProb += this.monsterSpawnIncreaseSlope;
     }
 
     initializeFilterFunctions() {
@@ -681,6 +680,7 @@ class GameInstance {
     }
 
     putSlimeOnTheMap(slime) {
+        if (this.checkIfTooCloseToSurvivor(slime.position, this.minDistanceSurvivorSlime)) return false;
         const position = slime.position;
         this.toSend.push(slime.name)
         this.slimeCount++;
@@ -688,6 +688,7 @@ class GameInstance {
         this.slimes.push(slime.name);
         this.physicsEngine.addSlime(slime.name, slime.mass, slime.radius,
             { x: position[0], y: position[1], z: position[2] }, slime.status.speed, slime.attackMode);
+        return true;
     }
 
     /**
@@ -695,12 +696,14 @@ class GameInstance {
      * @param {boolean} randomLocation whether to randomly generate location in physics engine
      */
     putTreeOnTheMap(tree, randomLocation) {
+        if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position, this.minDistanceSurvivorTree)) 
+            return false;
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
-        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5, 
+        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5,
             { x: position[0], y: position[1], z: position[2] });
-        
+        return true;
     }
 
     survivorHasDied(name) {
@@ -711,6 +714,7 @@ class GameInstance {
             server.endGame(false);
             return;
         }
+        this.physicsEngine.handleSurvivorDeath(name);
         server.notifySurvivorDied(name);
         server.notifyAll(name + " was killed!", NotificationType.EVENT)
     }
@@ -719,6 +723,7 @@ class GameInstance {
         this.objects[name].dead = false;
         this.liveSurvivors.push(name);
         this.deadSurvivors.splice(this.deadSurvivors.indexOf(name), 1);
+        this.physicsEngine.handleSurvivorRevival(name);
         server.notifySurvivorRevived(name);
         server.notifyAll(name + " has been revived!", NotificationType.EVENT)
     }
@@ -730,10 +735,18 @@ class GameInstance {
             Math.abs(Math.floor(position[2])) > this.worldHalfHeight
     }
 
+    checkIfTooCloseToSurvivor(position, allowedDistance) {
+        for (let i = 0; i < this.liveSurvivors.length; i++) {
+            if (glMatrix.vec3.distance(this.objects[this.liveSurvivors[i]].position, position) < allowedDistance)
+                return true;
+        }
+        return false;
+    }
+
     calculatePlayerStatus(name) {
         let survivor = this.objects[name];
         for (let key in survivor.baseStatus) {
-            if (key === "toJSON" ) {
+            if (key === "toJSON") {
                 continue;
             }
             survivor.status[key] = survivor.baseStatus[key] + survivor.buff[key] + survivor.tempBuff[key];
