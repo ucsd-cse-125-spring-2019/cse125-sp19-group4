@@ -255,6 +255,18 @@ class PhysicsEngine {
             (SURVIVORS | ENVIRONMENT | BOUNDARY | BULLET | MELEE) : BOUNDARY;
     }
 
+    handleSurvivorDeath(name) {
+        const survivor = this.obj[name];
+        survivor.collisionFilterGroup = GOD;
+        survivor.collisionFilterMask = BOUNDARY;
+    }
+
+    handleSurvivorRevival(name) {
+        const survivor = this.obj[name];
+        survivor.collisionFilterGroup = SURVIVORS;
+        survivor.collisionFilterMask = SURVIVORS | ENEMY | ENVIRONMENT | OBJECT | BOUNDARY | BULLET | MELEE;
+    }
+
     updateVelocity(name, direction, speed) {
         this.obj[name].velocity.x = direction[0] * speed;
         this.obj[name].velocity.z = direction[2] * speed;
