@@ -128,14 +128,21 @@ function InitializeSkills(skills) {
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
 
-        let border = document.createElement('div');
-        border.className += "castingAnimation";
+        let border1 = document.createElement('div');
+        border1.className += "castingAnimation";
+        border1.id = i + "skillBorder1"
+
+        let border2 = document.createElement('div');
+        border2.className += "castingAnimation";
+        border2.style["animation-delay"] = "-4s";
+        border2.id = i + "skillBorder2";
 
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask);
         skill.appendChild(span);
-        skill.appendChild(border);
+        skill.appendChild(border1);
+        skill.appendChild(border2);
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
@@ -279,6 +286,17 @@ function coolDownUpdate(skills) {
     }
 }
 
+function switchCasting(skillNum, hideAll) {
+    for (let i = 0; i < 4; i++) {
+        document.getElementById(i + "skillBorder2").style.display = "none"
+        document.getElementById(i + "skillBorder1").style.display = "none"    
+    }
+    if (!hideAll) {
+        document.getElementById(skillNum + "skillBorder2").style.display = "block"
+        document.getElementById(skillNum + "skillBorder1").style.display = "block"
+    }
+}
+
 function teammatesUpdate(data) {
     for (let i in teammatesName) {
         const name = teammatesName[i];
@@ -360,5 +378,5 @@ function updateProgressBar(progress) {
 
 export { coolDownUpdate, InitializeSkills, InitializeStatus, timerUpdate, statusUpdate, InitializeTeammates,
          teammatesUpdate, InitializeVault, updateItems, buffUpdate, healthUpdate,
-         updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate
+         updateNotification, NOTIFICATION_STYLE , updateProgressBar, tempBuffUpdate, switchCasting
  }

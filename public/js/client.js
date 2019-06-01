@@ -625,7 +625,7 @@ const mouseDown = function (e) {
         case 1:
             // left click
             left_cursor_down = true;
-            if (casting > 0) {
+            if (casting >= 0) {
                 const skillsParams = { skillNum: casting, position: cursor };
                 socket.emit('skill', JSON.stringify(skillsParams));
             }
@@ -637,6 +637,7 @@ const mouseDown = function (e) {
                 casting = -1;
                 delete objects['casting'];
                 setCursor(defaultCursor);
+                UI.switchCasting(casting, true);
             }
             break;
         default:
@@ -786,6 +787,7 @@ function handleSkill(uid, skillNum) {
             if (skillCursors[skillNum] != undefined) {
                 setCursor(skillCursors[skillNum])
             }
+            UI.switchCasting(casting, false);
             break;
         case "SELF":
         case "ONGOING":
