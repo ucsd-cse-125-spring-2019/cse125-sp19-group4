@@ -670,7 +670,7 @@ class GameInstance {
      * Helper function to adjust spawn interval when game progresses
      */
     adjustSpawnProb() {
-        if (this.monsterSpawnProb < 1) this.monsterSpawnProb += this.monsterSpawnIncreaseSlope;
+        if (this.monsterSpawnProb < 0.5) this.monsterSpawnProb += this.monsterSpawnIncreaseSlope;
     }
 
     initializeFilterFunctions() {

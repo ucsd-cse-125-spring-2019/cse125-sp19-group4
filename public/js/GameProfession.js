@@ -181,7 +181,7 @@ class Fighter {
             'damage': 10,
             'defense': 20,
             'speed': 10,
-            'attackInterval': 60,
+            'attackInterval': 30,
             'attackSpeed': 1,
         };
         this.skills = {
@@ -289,7 +289,7 @@ class Archer {
             'damage': 10,
             'defense': 10,
             'speed': 20,
-            'attackInterval': 60,
+            'attackInterval': 30,
             'attackSpeed': 1,
         };
         this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg';
@@ -332,7 +332,7 @@ class Archer {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    game.shoot(name, 20, 50, 1);
+                    game.shoot(name, 50, 50, 1);
                 },
             },
             2: {
@@ -379,7 +379,7 @@ class Healer {
             'damage': 5,
             'defense': 0,
             'speed': 15,
-            'attackInterval': 60,
+            'attackInterval': 30,
             'attackSpeed': 1,
         };
 

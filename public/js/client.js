@@ -25,7 +25,7 @@ const model_ref = {};
 
 const transform_ref = {
     '': glMatrix.mat4.create(),
-    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 1, 1]),
     'bullet': glMatrix.mat4.create(),
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
@@ -625,7 +625,7 @@ const mouseDown = function (e) {
         case 1:
             // left click
             left_cursor_down = true;
-            if (casting > 0) {
+            if (casting >= 0) {
                 const skillsParams = { skillNum: casting, position: cursor };
                 socket.emit('skill', JSON.stringify(skillsParams));
             }
