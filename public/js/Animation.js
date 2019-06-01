@@ -113,10 +113,18 @@ class Animation {
         this.normalBuffers.splice(index, 1);
         this.scaled_now.splice(index, 1);
     }
-    render(gl, transformMatrix_array) {
-        this.vertices.forEach((element, index) => {
+    render(gl, transformMatrix_array, instance_ids) {
+        let array_index = 1;
+        instance_ids.forEach(element => {
+            let index = 0;
+            if(element == "Survivor 1") {
+                index = 1
+            }
+            if(element == "Survivor 2") {
+                index = 2
+            }
             gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers[index]);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(element), gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices[index]), gl.STATIC_DRAW);
             gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(this.programInfo.attribLocations.vertexPosition);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffers[index]);
@@ -143,10 +151,10 @@ class Animation {
                     });
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
-                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[index]);
+                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[array_index]);
                 gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
             })
-
+            array_index ++;
         })
 
         //gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);

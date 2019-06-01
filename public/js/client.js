@@ -211,7 +211,6 @@ socket.on('game_status', function (msg) {
             objects[name].m = obj['model'];
             transform = true;
         }
-
         if (transform) {
             // update face
             const dot = glMatrix.vec3.dot(direction, FACE);
@@ -331,7 +330,8 @@ function main() {
     model_ref['player_running'] = new Animation(gl, "/public/model/player_running.json", programInfo, texture_counter);
     model_ref['player_running'].addInstance(gl);
     model_ref['player_running'].addInstance(gl);
-    model_ref['player_running'].removeInstance(gl);
+    model_ref['player_running'].addInstance(gl);
+    //model_ref['player_running'].removeInstance(gl);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
@@ -352,8 +352,9 @@ function main() {
         $('#fps').html(Math.floor(1 / deltaTime));
         $('#render').html(Math.ceil(deltaTime * 1000));
         then = now;
-
         model_ref['player_running'].updateJoints(deltaTime, 0, true);
+        model_ref['player_running'].updateJoints(0, 1, true);
+        model_ref['player_running'].updateJoints(deltaTime, 2, true);
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
             // do nothing
@@ -490,11 +491,17 @@ function drawScene(gl, programInfo, objects, camera) {
         }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
+            to_render[obj.m][0] = [];
         }
+        to_render[obj.m][0].push(obj_name)
         to_render[obj.m].push(obj.t);
     });
     Object.keys(to_render).forEach(function (m) {
-        model_ref[m].render(gl, to_render[m]);
+        if(model_ref[m].constructor.name == "Animation") {
+            model_ref[m].render(gl, to_render[m], to_render[m][0]);
+        } else {
+            model_ref[m].render(gl, to_render[m]);
+        }
     });
 }
 
