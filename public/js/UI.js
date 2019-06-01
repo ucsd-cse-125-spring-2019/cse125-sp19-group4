@@ -117,7 +117,7 @@ function InitializeSkills(skills) {
         let skill = document.createElement('div');
         let img = document.createElement('img');
         img.src = skills[i].iconPath;
-        img.style = "width: 100%; height: 100%"
+        img.style = "width: 100%; height: 100%; padding: 3px"
         img.title = skills[i].description;
         let mask = document.createElement('div'); // cooldown mask
         mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
@@ -128,11 +128,14 @@ function InitializeSkills(skills) {
         span.id = i + 'Countdown';
         mask.id = i + 'Mask';
 
+        let border = document.createElement('div');
+        border.className += "castingAnimation";
 
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask);
         skill.appendChild(span);
+        skill.appendChild(border);
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
