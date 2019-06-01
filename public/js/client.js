@@ -53,6 +53,22 @@ const positions = {}
 const directions = {}
 const skillCursors = {}
 
+// ============================ Sound ================================
+
+const bgm = new Audio('/public/audio/Hopes_and_Dreams.mp3');
+bgm.volume = 0.5;
+if (typeof bgm.loop == 'boolean') {
+    bgm.loop = true;
+}
+else {
+    bgm.addEventListener('ended', function () {
+        this.currentTime = 0;
+        this.play();
+    }, false);
+}
+
+const punch = new Audio('/public/audio/punch.mp3');
+const moan = new Audio('/public/audio/moan.mp3');
 
 // ============================ Network IO ================================
 
@@ -135,9 +151,9 @@ socket.on('wait for game begin', function (msg) {
 socket.on('Survivor Died', function (msg) {
     const data = JSON.parse(msg);
     const { name } = data;
-
+    
     if (name === uid) {
-        $('.game-area').css('filter', 'grayscale(70%)')
+        $('.game-area').css('filter', 'grayscale(70%)');
     } else {
         let img = document.getElementById(name + "Icon").style.filter = "grayscale(70%)";
     }
@@ -266,6 +282,9 @@ socket.on('game_status', function (msg) {
     });
 
     status.toClean.forEach(function (name) {
+        if (objects[name].m == 'slime' || objects[name].m == 'cactus') {
+            moan.play();
+        }
         delete objects[name];
     });
     const end = Date.now();
@@ -289,6 +308,10 @@ socket.on('pong', (latency) => {
  */
 function main() {
 
+    
+    bgm.play();
+
+    
     /** @type {HTMLCanvasElement} */
     const canvas = document.querySelector("#glCanvas");
     // set the canvas resolution
