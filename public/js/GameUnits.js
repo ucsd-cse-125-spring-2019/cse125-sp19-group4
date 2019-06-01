@@ -19,6 +19,7 @@ class Slime {
         this.mass = 100;
         this.movementSpeed = 8;
         this.model = "slime";
+        this.type = "slime";
         this.radius = 2;
         this.status = {
             maxHealth: 30,
@@ -52,7 +53,18 @@ class Slime {
     /**
     * Find the closest survivor and set it to be the attackee of object given by name
     */
-    chase(game) {
+    chase(game, name = null) {
+        // chasing the warrior
+        if (name != null) {
+            const obj = game.objects[name]
+            const direction = glMatrix.vec3.create();
+            glMatrix.vec3.subtract(direction, obj.position, this.position);
+            direction[1] = 0;
+            glMatrix.vec3.normalize(direction, direction);
+            game.move(this.name, direction, false);
+            return;
+        }
+
         const slime = this;
         let closestSurvivor;
         let minDistance = Number.MAX_VALUE;
@@ -74,7 +86,7 @@ class Slime {
         glMatrix.vec3.normalize(direction, direction);
         //TODO: Assume slime only stays on plane ground
         if (minDistance < slime.minDistanceFromPlayer)
-        game.move(this.name, direction, true);
+            game.move(this.name, direction, true);
         else game.move(this.name, direction, false);
         
         this.attacking = closestSurvivor;

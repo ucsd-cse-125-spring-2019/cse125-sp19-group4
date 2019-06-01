@@ -231,6 +231,47 @@ class Fighter {
                     return cut;
                 },
             },
+
+            2: {
+                'name': 'harder',
+                'coolDown': 10,
+                'curCoolDown': 0,
+                'description': 'Gains 10 defense for 3 seconds',
+                'iconPath': '/public/images/skills/SKILL_Heal.png',
+                'strength': 10,
+                'type': SKILL_TYPE.ONGOING,
+                'function': function (game, self, params) {
+                    const duration = 3;
+                    const effect = function(game, self) {
+                        self.tempBuff.defense += 10;
+                    };
+                    game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true);
+                },
+            },
+
+            3: {
+                'name': 'Attract slimes',
+                'type': SKILL_TYPE.ONGOING,
+                'coolDown': 30,
+                'curCoolDown': 0,
+                'description': 'Attract nearby slimes',
+                'iconPath': '/public/images/skills/SKILL_CutTree.png',
+                'function': function (game, self, params) {
+                    let duration = 5;
+                    let effect = function(game, self) {
+                        const position = self.position;
+                        const radius = 40;
+                        const objsInRadius = game.getObjInRadius(position, radius);
+                        objsInRadius.forEach(function(obj) {
+                            if (obj.type === "slime") {
+                                obj.chase(game, self.name);
+                                game.toSend.push(obj.name);
+                            }
+                        })
+                    };
+                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self, false);
+                },
+            },
         };
     }
 }

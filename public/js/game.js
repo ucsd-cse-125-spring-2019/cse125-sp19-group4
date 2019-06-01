@@ -324,10 +324,10 @@ class GameInstance {
     beforeStep() {
         this.clearKeys();
         this.slimesChase();
-        this.slimesAttack();
-        this.updateAttackTimer();
         this.clearTempBuff();
         this.handleOnGoingSkills();
+        this.updateAttackTimer();
+        this.slimesAttack();
     }
 
     // at the begining of each loop, set all omitable properties to not be sent,
