@@ -584,17 +584,25 @@ function drawScene(gl, programInfo, objects, camera) {
             model_ref[m].render(gl, to_render[m], to_render[m][0]);
             if (m == "player_die") {
                 to_render[m][0].forEach(element => {
-                    if (element == "Survivor 0" && !player_0_died) {
-                        model_ref[m].resetTime(0)
-                        player_0_died = true
-                    }
-                    if (element == "Survivor 1" && !player_1_died) {
-                        model_ref[m].resetTime(1)
-                        player_1_died = true
-                    }
-                    if (element == "Survivor 2" && !player_2_died) {
-                        model_ref[m].resetTime(2)
-                        player_2_died = true
+                    switch (element) {
+                        case "Survivor 0":
+                            if (!player_0_died) {
+                                model_ref[m].resetTime(0)
+                                player_0_died = true
+                            }
+                            break;
+                        case "Survivor 1":
+                            if (!player_1_died) {
+                                model_ref[m].resetTime(1)
+                                player_1_died = true
+                            }
+                            break;
+                        case "Survivor 2":
+                            if (!player_2_died) {
+                                model_ref[m].resetTime(2)
+                                player_0_died = true
+                            }
+                            break;
                     }
                 })
             }
