@@ -370,7 +370,8 @@ class PhysicsEngine {
         attackBody.addEventListener("collide", function (e) {
             if (e.body.name != name && e.body.role != attackBody.fromRole) {
                 console.log("Melee hit:", name, "->", e.body.name);
-                if (e.body.role === 'enemy' || e.body.role === 'survivor') {
+                if (e.body.role === 'enemy' || e.body.role === 'survivor' 
+                    || (e.body.role === 'tower' && attackBody.fromRole === 'survivor')) {
                     attackBody.to = e.body.name; // TODO: Change to array?
                     engine.hits.push(meleeId);
                 }
@@ -436,6 +437,9 @@ class PhysicsEngine {
                     bulletBody.to = e.body.name; // TODO: Change to array?
                 } else if (e.body.role === 'survivor') {
                     // console.log("Collide with survivor");
+                    bulletBody.to = e.body.name;
+                }
+                else if (e.body.role === 'tower' && bulletBody.fromRole === 'survivor') {
                     bulletBody.to = e.body.name;
                 }
             }

@@ -140,4 +140,9 @@ class Tower {
         this.curHealth = this.maxHealth;
     }
 
+    onHit(game, damage) {
+        this.curHealth -= damage;
+    }
+}
+
 module.exports.Units = { Item, Slime, Tile, Bullet, Tree, Tower };
