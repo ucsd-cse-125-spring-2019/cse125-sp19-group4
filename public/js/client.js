@@ -519,7 +519,7 @@ function main() {
  * @param  {Camera} camera
  */
 function drawScene(gl, programInfo, objects, camera) {
-    gl.clearColor(200.0, 200.0, 200.0, 1.0);  // Clear to black, fully opaque
+    gl.clearColor(0.68, 1.0, 0.18, 0.4);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
