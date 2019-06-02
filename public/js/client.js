@@ -36,6 +36,7 @@ const transform_ref = {
     'slime': glMatrix.mat4.create(),
     'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'tower': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 5, 1]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
     'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
@@ -401,12 +402,12 @@ function main() {
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/cactus.obj", "/public/model/cactus.mtl", true, texture_counter, programInfo);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
+    model_ref['tower'] = new OBJObject(gl, "tower", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/items/SimpleBoot.obj", "", false, texture_counter, programInfo);
     model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
@@ -542,7 +543,7 @@ function main() {
  * @param  {Camera} camera
  */
 function drawScene(gl, programInfo, objects, camera) {
-    gl.clearColor(200.0, 200.0, 200.0, 1.0);  // Clear to black, fully opaque
+    gl.clearColor(0.68, 1.0, 0.18, 0.4); // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things

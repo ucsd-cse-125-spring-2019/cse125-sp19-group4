@@ -374,8 +374,8 @@ class Healer {
         this.profession = "Healer";
         this.iconPath = 'public/images/professions/PROFESSION_Healer.jpg'
         this.status = {
-            'maxHealth': 100,
-            'curHealth': 100,
+            'maxHealth': 100000,
+            'curHealth': 100000,
             'damage': 5,
             'defense': 0,
             'speed': 15,
@@ -469,8 +469,8 @@ class Healer {
                             if (!buffedUnit[key]) {
                                 delete buffedUnit[key];
                                 game.toSend.push(key);
-                                self[key].KEYS.push("status");
-                                self[key].KEYS.push("tempBuff");
+                                game.objects[key].KEYS.push("status");
+                                game.objects[key].KEYS.push("tempBuff");
                             }
                         }
                     };
@@ -478,8 +478,8 @@ class Healer {
                         for (let key in buffedUnit) {
                             delete buffedUnit[key];
                             game.toSend.push(key);
-                            self[key].KEYS.push("status");
-                            self[key].KEYS.push("tempBuff");
+                            game.objects[key].KEYS.push("status");
+                            game.objects[key].KEYS.push("tempBuff");
                         }
                     }
                     game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false, endEffect);
