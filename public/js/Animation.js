@@ -1,9 +1,10 @@
 class Animation {
-    constructor(gl, json_name, programInfo, texture_counter) {
+    constructor(gl, json_name, programInfo, texture_counter, defaultColor = [0, 0, 255, 255]) {
         this.scaled_now = [];
         this.then = 0;
         this.programInfo = programInfo
         var ObjectJSON = JSON.parse(readTextFile(json_name))
+        console.log(ObjectJSON)
         this.init_vertices = ObjectJSON.vertices
         this.init_normals = ObjectJSON.normals
         //this.vertices = new Array(this.init_vertices.length);
@@ -48,8 +49,12 @@ class Animation {
             this.indexBuffers[index] = gl.createBuffer();
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[index]);
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices[index]), gl.STATIC_DRAW);
-            this
         })
+        if (!this.hasTexture) {
+            this.texture_index = texture_counter.i;
+            this.texture = loadTexture(gl, "", defaultColor);
+            texture_counter.i += 1;
+        }
         this.fps = ObjectJSON.animation.fps;
         this.frame_time = 1 / this.fps;
         this.start_time = 0;
@@ -132,11 +137,7 @@ class Animation {
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.normals[index]), gl.STATIC_DRAW);
                 gl.vertexAttribPointer(this.programInfo.attribLocations.normal, 3, gl.FLOAT, false, 0, 0);
                 gl.enableVertexAttribArray(this.programInfo.attribLocations.normal);
-                if (this.hasTexture) {
-                    gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-                } else {
-                    gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-                }
+                gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
 
                 Object.keys(this.materials).forEach((i) => {
                     gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.materials[i].colorAmbient);
@@ -144,13 +145,20 @@ class Animation {
                     gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[i].colorSpecular);
                     gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[i]);
                     gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
-                    if (Object.keys(this.texture_files[i].map).length) {
-                        Object.keys(this.texture_files[i].map).forEach((e) => {
-                            gl.activeTexture(gl.TEXTURE0 + this.texture_files[i].index);
-                            gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i].map[e]);
-                            gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[i].index);
-                        });
+                    if (this.hasTexture) {
+                        if (Object.keys(this.texture_files[i].map).length) {
+                            Object.keys(this.texture_files[i].map).forEach((e) => {
+                                gl.activeTexture(gl.TEXTURE0 + this.texture_files[i].index);
+                                gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i].map[e]);
+                                gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[i].index);
+                            });
+                        }
+                    } else {
+                        gl.activeTexture(gl.TEXTURE0 + this.texture_index);
+                        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
                     }
+
                     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
                     gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[array_index]);
                     gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
@@ -168,23 +176,25 @@ class Animation {
             gl.vertexAttribPointer(this.programInfo.attribLocations.normal, 3, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(this.programInfo.attribLocations.normal);
             //gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-            if (this.hasTexture) {
-                gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-            } else {
-                gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-            }
+            gl.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
             Object.keys(this.materials).forEach((i) => {
                 gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, this.materials[i].colorAmbient);
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, this.materials[i].colorDiffuse);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[i].colorSpecular);
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[i]);
                 gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
-                if (Object.keys(this.texture_files[i].map).length) {
-                    Object.keys(this.texture_files[i].map).forEach((e) => {
-                        gl.activeTexture(gl.TEXTURE0 + this.texture_files[i].index);
-                        gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i].map[e]);
-                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[i].index);
-                    });
+                if (this.hasTexture) {
+                    if (Object.keys(this.texture_files[i].map).length) {
+                        Object.keys(this.texture_files[i].map).forEach((e) => {
+                            gl.activeTexture(gl.TEXTURE0 + this.texture_files[i].index);
+                            gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i].map[e]);
+                            gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[i].index);
+                        });
+                    }
+                } else {
+                    gl.activeTexture(gl.TEXTURE0 + this.texture_index);
+                    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                    gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
                 }
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
                 transformMatrix_array.forEach((t, index) => {
