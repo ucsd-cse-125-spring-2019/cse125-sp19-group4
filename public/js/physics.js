@@ -245,6 +245,20 @@ class PhysicsEngine {
         });
     }
 
+    addTower(name, radius) {
+        const shape = new CANNON.Box(new CANNON.Vec3(1, 10, 1));
+        const body = new CANNON.Body({
+            mass: 0,
+            shape: shape,
+            collisionFilterGroup: ENVIRONMENT,
+            collisionFilterMask: SURVIVORS | ENEMY | BOUNDARY | BULLET | MELEE
+        })
+        this.world.add(body);
+        this.obj[name] = body;
+        body.role = "tower";
+        body.name = name;
+    }
+
     /**
      * This function would immunity of god
      */

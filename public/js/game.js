@@ -1,7 +1,7 @@
 const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
 const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
-const { Item, Slime, Tile, Bullet, Tree } = require('./GameUnits.js').Units;
+const { Item, Slime, Tile, Bullet, Tree, Tower } = require('./GameUnits.js').Units;
 const items = require('./items.js');
 const server = require('../../server.js');
 
@@ -61,6 +61,7 @@ class GameInstance {
         this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
         this.monsterSpawnFullProbTime = Number(config.game.monster_spawn_full_prob_time);
         this.monsterSpawnInterval = Number(config.game.monster_spawn_interval); //in game tick;
+        this.towerHealth = Number(config.game.tower_health);        
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
@@ -69,6 +70,10 @@ class GameInstance {
     }
 
     generateEnvironment() {
+        // Add tower at the center
+        this.tower = new Tower(this.towerHealth);
+        this.putTowerOnTheMap(this.tower);
+
         // Generate Tree
         for (let i = 0; i < this.treeNum; i++) {
             let diff = this.treeUpperSize - this.treeLowerSize + 1;
@@ -704,6 +709,12 @@ class GameInstance {
         this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5,
             { x: position[0], y: position[1], z: position[2] });
         return true;
+    }
+
+    putTowerOnTheMap(tower) {
+        this.toSend.push(tower.name);
+        this.objects[tower.name] = tower;
+        this.physicsEngine.addTower(tower.name, tower.radius);
     }
 
     survivorHasDied(name) {
