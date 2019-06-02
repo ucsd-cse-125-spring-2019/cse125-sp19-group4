@@ -1,7 +1,7 @@
 const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
 const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
-const { Item, Slime, Tile, Bullet, Tree, Tower } = require('./GameUnits.js').Units;
+const { Item, Slime, Tile, Bullet, Tree } = require('./GameUnits.js').Units;
 const items = require('./items.js');
 const server = require('../../server.js');
 
@@ -49,7 +49,7 @@ class GameInstance {
         this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
         this.monsterSpawnTimer = 0;
         this.monsterSpawnProb = this.monsterSpawnBaseProb;
-        this.monsterSpawnIncreaseSlope = (1 - this.monsterSpawnBaseProb)/this.monsterSpawnFullProbTime;
+        this.monsterSpawnIncreaseSlope = (1 - this.monsterSpawnBaseProb) / this.monsterSpawnFullProbTime;
     }
 
     loadConfig(config) {
@@ -61,7 +61,6 @@ class GameInstance {
         this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
         this.monsterSpawnFullProbTime = Number(config.game.monster_spawn_full_prob_time);
         this.monsterSpawnInterval = Number(config.game.monster_spawn_interval); //in game tick;
-        this.towerHealth = Number(config.game.tower_health);        
         this.treeLowerSize = parseInt(config.map.tree.lower_size);
         this.treeUpperSize = parseInt(config.map.tree.upper_size);
         this.treeNum = config.map.tree.num;
@@ -70,10 +69,6 @@ class GameInstance {
     }
 
     generateEnvironment() {
-        // Add tower at the center
-        this.tower = new Tower(this.towerHealth);
-        this.putTowerOnTheMap(this.tower);
-
         // Generate Tree
         for (let i = 0; i < this.treeNum; i++) {
             let diff = this.treeUpperSize - this.treeLowerSize + 1;
@@ -241,7 +236,7 @@ class GameInstance {
 
     stay(name) {
         const obj = this.objects[name];
-        if (obj instanceof Survivor) {
+        if (obj instanceof Survivor && !this.deadSurvivors.includes(name)) {
             obj.model = 'player';
             obj.KEYS.push('model');
         }
@@ -571,7 +566,7 @@ class GameInstance {
             }
             deadSlimes.push(name);
             gameInstance.toClean.push(name);
-            // gameInstance.curProgress += slime.progressPoint;
+            gameInstance.curProgress += slime.progressPoint;
         });
         deadSlimes.forEach(function (name) {
             gameInstance.generateItem(name);
@@ -581,9 +576,8 @@ class GameInstance {
 
 
     checkProgress() {
-        // if (this.curProgress > this.winProgress) {
-        if (this.tower.curHealth <= 0) {
-            server.endGame(true);
+        if (this.curProgress > this.winProgress) {
+            // dosomething
         }
     }
     // ==================================== After Step ===================================
@@ -627,7 +621,7 @@ class GameInstance {
     /**
      * Randomly spawn monster
      */
-    spawnMonster() { 
+    spawnMonster() {
         // Adjust spawn probability
         this.adjustSpawnProb();
 
@@ -666,7 +660,7 @@ class GameInstance {
                         monster.position[1] = 2;
                         monster.position[2] = Math.floor(Math.random() * (this.worldHalfHeight * 2 - Math.ceil(radius)) + Math.ceil(radius)) - this.worldHalfHeight;
                     } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk 
-                } while (!this.putSlimeOnTheMap(monster));    
+                } while (!this.putSlimeOnTheMap(monster));
             }
         }
         this.monsterSpawnTimer = 0;
@@ -702,7 +696,7 @@ class GameInstance {
      * @param {boolean} randomLocation whether to randomly generate location in physics engine
      */
     putTreeOnTheMap(tree, randomLocation) {
-        if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position, this.minDistanceSurvivorTree)) 
+        if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position, this.minDistanceSurvivorTree))
             return false;
         const position = tree.position;
         this.toSend.push(tree.name);
@@ -712,13 +706,12 @@ class GameInstance {
         return true;
     }
 
-    putTowerOnTheMap(tower) {
-        this.toSend.push(tower.name);
-        this.objects[tower.name] = tower;
-        this.physicsEngine.addTower(tower.name, tower.radius);
-    }
-
     survivorHasDied(name) {
+        const obj = this.objects[name];
+
+        obj.model = 'player_die';
+        obj.KEYS.push('model');
+
         this.objects[name].dead = true;
         this.deadSurvivors.push(name);
         this.liveSurvivors.splice(this.liveSurvivors.indexOf(name), 1);
@@ -732,6 +725,7 @@ class GameInstance {
     }
 
     survivorHasRevived(name) {
+        const obj = this.objects[name];
         this.objects[name].dead = false;
         this.liveSurvivors.push(name);
         this.deadSurvivors.splice(this.deadSurvivors.indexOf(name), 1);

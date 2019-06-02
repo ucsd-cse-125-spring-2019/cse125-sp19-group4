@@ -4,7 +4,9 @@ import Camera from '/public/js/camera.js'
 import * as UI from '/public/js/UI.js'
 
 const UIdebug = true;
-
+let player_0_died = false;
+let player_1_died = false;
+let player_2_died = false;
 const camera = new Camera();
 let uid = '';
 let left_cursor_down = false;
@@ -30,10 +32,10 @@ const transform_ref = {
     'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
     'player': glMatrix.mat4.create(),
     'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'player_die': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
     'slime': glMatrix.mat4.create(),
     'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
     // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'tower': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 5, 1]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
     'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
     'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
@@ -152,7 +154,7 @@ socket.on('wait for game begin', function (msg) {
 socket.on('Survivor Died', function (msg) {
     const data = JSON.parse(msg);
     const { name } = data;
-    
+
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)');
     } else {
@@ -163,7 +165,17 @@ socket.on('Survivor Died', function (msg) {
 socket.on('Survivor Revived', function (msg) {
     const data = JSON.parse(msg);
     const { name } = data;
-
+    switch (name) {
+        case "Survivor 0":
+            player_0_died = false;
+            break;
+        case "Survivor 1":
+            player_1_died = false;
+            break;
+        case "Survivor 2":
+            player_2_died = false;
+            break;
+    }
     if (name === uid) {
         $('.game-area').css('filter', 'none')
     } else {
@@ -309,10 +321,10 @@ socket.on('pong', (latency) => {
  */
 function main() {
 
-    
+
     bgm.play();
 
-    
+
     /** @type {HTMLCanvasElement} */
     const canvas = document.querySelector("#glCanvas");
     // set the canvas resolution
@@ -379,11 +391,16 @@ function main() {
     model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
     model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
     model_ref['player_running'] = new Animation(gl, "/public/model/player_running.json", programInfo, texture_counter);
+    model_ref['player_running'].addInstance(gl);
+    //model_ref['player_running'].addInstance(gl);
+    model_ref['player_die'] = new Animation(gl, "/public/model/player_die.json", programInfo, texture_counter);
+    model_ref['player_die'].addInstance(gl);
+    model_ref['player_die'].addInstance(gl);
+    model_ref['player_die'].addInstance(gl);
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/cactus.obj", "/public/model/cactus.mtl", true, texture_counter, programInfo);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
-    model_ref['tower'] = new OBJObject(gl, "tower", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);    
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/items/SimpleBoot.obj", "", false, texture_counter, programInfo);
     model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
@@ -405,8 +422,14 @@ function main() {
 
         then = now;
 
+        model_ref['player_running'].updateJoints(deltaTime, 0, true);
 
-        model_ref['player_running'].updateJoints(now);
+        if (player_0_died)
+            model_ref['player_die'].updateJoints(deltaTime, 0, false);
+        if (player_1_died)
+            model_ref['player_die'].updateJoints(deltaTime, 1, false);
+        if (player_2_died)
+            model_ref['player_die'].updateJoints(deltaTime, 2, false);
 
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
@@ -519,7 +542,7 @@ function main() {
  * @param  {Camera} camera
  */
 function drawScene(gl, programInfo, objects, camera) {
-    gl.clearColor(0.68, 1.0, 0.18, 0.4);  // Clear to black, fully opaque
+    gl.clearColor(200.0, 200.0, 200.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
@@ -543,7 +566,6 @@ function drawScene(gl, programInfo, objects, camera) {
         modelViewMatrix);
     gl.uniform3fv(programInfo.uniformLocations.viewPosition, camera.Position);
 
-
     const to_render = {};
     Object.keys(objects).forEach(function (obj_name) {
         const obj = objects[obj_name];
@@ -552,11 +574,33 @@ function drawScene(gl, programInfo, objects, camera) {
         }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
+            to_render[obj.m][0] = [];
         }
+        to_render[obj.m][0].push(obj_name)
         to_render[obj.m].push(obj.t);
     });
     Object.keys(to_render).forEach(function (m) {
-        model_ref[m].render(gl, to_render[m]);
+        if (model_ref[m].constructor.name == "Animation") {
+            model_ref[m].render(gl, to_render[m], to_render[m][0]);
+            if (m == "player_die") {
+                to_render[m][0].forEach(element => {
+                    if (element == "Survivor 0" && !player_0_died) {
+                        model_ref[m].resetTime(0)
+                        player_0_died = true
+                    }
+                    if (element == "Survivor 1" && !player_1_died) {
+                        model_ref[m].resetTime(1)
+                        player_1_died = true
+                    }
+                    if (element == "Survivor 2" && !player_2_died) {
+                        model_ref[m].resetTime(2)
+                        player_2_died = true
+                    }
+                })
+            }
+        } else {
+            model_ref[m].render(gl, to_render[m]);
+        }
     });
 }
 

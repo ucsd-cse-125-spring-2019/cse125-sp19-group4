@@ -469,8 +469,8 @@ class Healer {
                             if (!buffedUnit[key]) {
                                 delete buffedUnit[key];
                                 game.toSend.push(key);
-                                game.objects[key].KEYS.push("status");
-                                game.objects[key].KEYS.push("tempBuff");
+                                self[key].KEYS.push("status");
+                                self[key].KEYS.push("tempBuff");
                             }
                         }
                     };
@@ -478,8 +478,8 @@ class Healer {
                         for (let key in buffedUnit) {
                             delete buffedUnit[key];
                             game.toSend.push(key);
-                            game.objects[key].KEYS.push("status");
-                            game.objects[key].KEYS.push("tempBuff");
+                            self[key].KEYS.push("status");
+                            self[key].KEYS.push("tempBuff");
                         }
                     }
                     game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false, endEffect);
