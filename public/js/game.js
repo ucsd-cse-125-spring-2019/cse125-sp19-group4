@@ -571,7 +571,7 @@ class GameInstance {
             }
             deadSlimes.push(name);
             gameInstance.toClean.push(name);
-            gameInstance.curProgress += slime.progressPoint;
+            // gameInstance.curProgress += slime.progressPoint;
         });
         deadSlimes.forEach(function (name) {
             gameInstance.generateItem(name);
@@ -581,8 +581,9 @@ class GameInstance {
 
 
     checkProgress() {
-        if (this.curProgress > this.winProgress) {
-            // dosomething
+        // if (this.curProgress > this.winProgress) {
+        if (this.tower.curHealth <= 0) {
+            server.endGame(true);
         }
     }
     // ==================================== After Step ===================================
