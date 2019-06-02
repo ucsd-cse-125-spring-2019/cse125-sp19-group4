@@ -245,6 +245,20 @@ class PhysicsEngine {
         });
     }
 
+    addTower(name, radius) {
+        const shape = new CANNON.Box(new CANNON.Vec3(1, 10, 1));
+        const body = new CANNON.Body({
+            mass: 0,
+            shape: shape,
+            collisionFilterGroup: ENVIRONMENT,
+            collisionFilterMask: SURVIVORS | ENEMY | BOUNDARY | BULLET | MELEE
+        })
+        this.world.add(body);
+        this.obj[name] = body;
+        body.role = "tower";
+        body.name = name;
+    }
+
     /**
      * This function would immunity of god
      */
@@ -356,7 +370,8 @@ class PhysicsEngine {
         attackBody.addEventListener("collide", function (e) {
             if (e.body.name != name && e.body.role != attackBody.fromRole) {
                 console.log("Melee hit:", name, "->", e.body.name);
-                if (e.body.role === 'enemy' || e.body.role === 'survivor') {
+                if (e.body.role === 'enemy' || e.body.role === 'survivor' 
+                    || (e.body.role === 'tower' && attackBody.fromRole === 'survivor')) {
                     attackBody.to = e.body.name; // TODO: Change to array?
                     engine.hits.push(meleeId);
                 }
@@ -422,6 +437,9 @@ class PhysicsEngine {
                     bulletBody.to = e.body.name; // TODO: Change to array?
                 } else if (e.body.role === 'survivor') {
                     // console.log("Collide with survivor");
+                    bulletBody.to = e.body.name;
+                }
+                else if (e.body.role === 'tower' && bulletBody.fromRole === 'survivor') {
                     bulletBody.to = e.body.name;
                 }
             }

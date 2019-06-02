@@ -129,4 +129,20 @@ class Tree {
     }
 }
 
-module.exports.Units = { Item, Slime, Tile, Bullet, Tree };
+class Tower {
+    constructor(maxHealth) {
+        this.name = 'Tower';
+        this.radius = 1;
+        this.position = [0, 0, 0];
+        this.direction = [0, 0, 1];
+        this.model = 'tower';
+        this.maxHealth = maxHealth;
+        this.curHealth = this.maxHealth;
+    }
+
+    onHit(game, damage) {
+        this.curHealth -= damage;
+    }
+}
+
+module.exports.Units = { Item, Slime, Tile, Bullet, Tree, Tower };
