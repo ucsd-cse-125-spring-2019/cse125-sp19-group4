@@ -63,6 +63,8 @@ const transform_ref = {
     // projectile
     'bullet': glMatrix.mat4.create(),
     'fireball': glMatrix.mat4.create(),
+    'ring': glMatrix.mat4.create(),
+
 };
 
 // ============================ Sound ================================
@@ -412,6 +414,7 @@ function main() {
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/flameBullet.obj", "/public/model/flameBullet.mtl", true, texture_counter, programInfo);
+    model_ref['ring'] = new OBJObject(gl, "ring", "/public/model/ring.obj", "/public/model/ring.mtl", true, texture_counter, programInfo);
         
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };

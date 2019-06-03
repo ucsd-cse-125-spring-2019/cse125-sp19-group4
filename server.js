@@ -194,7 +194,9 @@ function gameLoop() {
     // Step and update objects
     physicsEngine.world.step(deltaTime * 0.001);
     Object.keys(gameInstance.objects).forEach(function (name) {
-        gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
+        if (typeof physicsEngine.obj[name] !== 'undefined') {
+            gameInstance.objects[name].position = [+physicsEngine.obj[name].position.x.toFixed(3), +(physicsEngine.obj[name].position.y - gameInstance.objects[name].radius).toFixed(3), +physicsEngine.obj[name].position.z.toFixed(3)];
+        }
     });
     gameInstance.afterStep();
 

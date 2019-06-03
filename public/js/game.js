@@ -420,6 +420,11 @@ class GameInstance {
             skill.duration -= 1 / server.tick_rate;
             if (skill.duration < 0) {
                 delete gameInstance.onGoingSkills[key];
+                if (typeof invoker.skill_model !== 'undefined' && typeof gameInstance.objects[invoker.skill_model] !== 'undefined') {
+                    gameInstance.toClean.push(invoker.skill_model);
+                    delete gameInstance.objects[invoker.skill_model];
+                    invoker.skill_model = '';
+                }
             } else {
                 skill.effect(gameInstance, invoker);
             }

@@ -124,6 +124,17 @@ class Bullet {
     }
 }
 
+class Ring {
+    constructor(position, radius, ringId, model) {
+        this.name = "Ring " + ringId;
+        this.radius = radius;
+        this.size = radius; // todo
+        this.position = position;
+        this.direction = [0, 0, -1];
+        this.model = model;
+    }
+}
+
 class Tree {
     constructor(treeId, size) {
         this.name = 'Tree ' + treeId;
@@ -152,4 +163,4 @@ class Tower {
     }
 }
 
-module.exports.Units = { Item, Slime, Tile, Bullet, Tree, Tower };
+module.exports.Units = { Item, Slime, Tile, Bullet, Ring, Tree, Tower };

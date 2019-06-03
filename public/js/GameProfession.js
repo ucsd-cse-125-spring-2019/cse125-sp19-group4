@@ -1,4 +1,4 @@
-const { Item, Slime, Tile, Bullet, Tree } = require("./GameUnits.js").Units;
+const { Item, Slime, Tile, Bullet, Ring, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
 const items = require("./items.js");
 const buff = {
@@ -382,6 +382,7 @@ class Healer {
             'attackInterval': 60,
             'attackSpeed': 1,
         };
+        this.skill_model = '';
 
         this.skills = {
             0: {
@@ -417,19 +418,26 @@ class Healer {
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
                     const duration = 3;
+                    const radius = 10;
                     const effect = function (game, self) {
                         const position = self.position;
-                        const radius = 10;
+                        game.objects[self.skill_model].position = position;
                         const objsInRadius = game.getObjInRadius(position, radius);
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && !obj.dead) {
                                 obj.status.curHealth = Math.min(obj.status.curHealth + 10 / server.tick_rate, obj.status.maxHealth)
                                 obj.KEYS.push("status");
-                                game.toSend.push(obj.name)
+                                game.toSend.push(obj.name);
                             }
                         })
                     };
                     game.onGoingSkills[self.name + 0] = new onGoingSkill(duration, effect, self, false);
+
+                    // ring model
+                    const ring = new Ring(self.position, radius, self.name, 'ring');
+                    self.skill_model = ring.name;
+                    game.toSend.push(ring.name);
+                    game.objects[ring.name] = ring;
                 },
             },
 
