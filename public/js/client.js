@@ -41,7 +41,7 @@ const transform_ref = {
     '': glMatrix.mat4.create(),
     // environment
     'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
-    'tower': glMatrix.mat4.create(),
+    'tower': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 1.5, 2]),
     'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 
     // player
@@ -391,7 +391,7 @@ function main() {
     // environment
     // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
-    model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/obelisk.obj", "", false, texture_counter, programInfo, [10, 10, 10, 255]);
+    model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/tower.obj", "/public/model/environment/tower.mtl", true, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
     // player

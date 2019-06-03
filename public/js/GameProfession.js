@@ -318,9 +318,9 @@ class Archer {
             1: {
                 'name': 'Grenade',
                 'type': SKILL_TYPE.LOCATION,
-                'coolDown': 4,
+                'coolDown': 5,
                 'curCoolDown': 0,
-                'maxCharge': 5,
+                'maxCharge': 2,
                 'curCharge': 0,
                 'description': 'Throw a grenade and explode',
                 'iconPath': '/public/images/skills/SKILL_Grenade.png',
