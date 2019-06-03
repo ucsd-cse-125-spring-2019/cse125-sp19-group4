@@ -352,9 +352,9 @@ class PhysicsEngine {
         // let x = initiator.position.x + Math.sign(direction[0].toFixed(5)) * (initiator.shapes[0].radius + 0.5);
         // let y = initiator.position.y + direction[1] * initiator.shapes[0].radius;
         // let z = initiator.position.z + Math.sign(direction[2].toFixed(5)) * (initiator.shapes[0].radius + 0.5);
-        const x = initiator.position.x + direction[0].toFixed(5) * (initiator.shapes[0].radius + 0.5);
+        const x = initiator.position.x + direction[0].toFixed(5) * (1.414 * initiator.shapes[0].halfExtents.x + 0.5);
         const y = initiator.position.y;
-        const z = initiator.position.z + direction[2].toFixed(5) * (initiator.shapes[0].radius + 0.5);
+        const z = initiator.position.z + direction[2].toFixed(5) * (1.414 * initiator.shapes[0].halfExtents.x + 0.5);
         attackBody.position.set(x, y, z); 
         this.world.add(attackBody);
 
@@ -365,15 +365,19 @@ class PhysicsEngine {
         attackBody.from = name;
         attackBody.fromRole = initiator.role;
         attackBody.damage = damage;
+        attackBody.damageIncurred = false;
 
         const engine = this;
         attackBody.addEventListener("collide", function (e) {
-            if (e.body.name != name && e.body.role != attackBody.fromRole) {
-                console.log("Melee hit:", name, "->", e.body.name);
-                if (e.body.role === 'enemy' || e.body.role === 'survivor' 
-                    || (e.body.role === 'tower' && attackBody.fromRole === 'survivor')) {
-                    attackBody.to = e.body.name; // TODO: Change to array?
-                    engine.hits.push(meleeId);
+            if (!attackBody.damageIncurred) {
+                if (e.body.name != name && e.body.role != attackBody.fromRole) {
+                    console.log("Melee hit:", name, "->", e.body.name);
+                    if (e.body.role === 'enemy' || e.body.role === 'survivor' 
+                        || (e.body.role === 'tower' && attackBody.fromRole === 'survivor')) {
+                        attackBody.to = e.body.name; // TODO: Change to array?
+                        attackBody.damageIncurred = true;
+                        engine.hits.push(meleeId);
+                    }
                 }
             }
         })
