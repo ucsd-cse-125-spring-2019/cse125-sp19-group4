@@ -152,7 +152,7 @@ socket.on('wait for game begin', function (msg) {
 socket.on('Survivor Died', function (msg) {
     const data = JSON.parse(msg);
     const { name } = data;
-    
+
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)');
     } else {
@@ -309,10 +309,10 @@ socket.on('pong', (latency) => {
  */
 function main() {
 
-    
+
     bgm.play();
 
-    
+
     /** @type {HTMLCanvasElement} */
     const canvas = document.querySelector("#glCanvas");
     // set the canvas resolution
@@ -383,7 +383,7 @@ function main() {
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/cactus.obj", "/public/model/cactus.mtl", true, texture_counter, programInfo);
     // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
-    model_ref['tower'] = new OBJObject(gl, "tower", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);    
+    model_ref['tower'] = new OBJObject(gl, "tower", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/items/SimpleBoot.obj", "", false, texture_counter, programInfo);
     model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
@@ -405,8 +405,10 @@ function main() {
 
         then = now;
 
-
+        let start = Date.now();
         model_ref['player_running'].updateJoints(now);
+        let end = Date.now();
+        $('#animation').html(end - start);
 
         // Camera Rotation
         if (Key.isDown('ROTLEFT') && Key.isDown('ROTRIGHT')) {
@@ -502,7 +504,12 @@ function main() {
                 socket.emit('skill', JSON.stringify(skillsParams));
             }
         }
+        start = Date.now();
+        $('#event').html(start - end);
+
         drawScene(gl, programInfo, objects, camera);
+        end = Date.now();
+        $('#draw').html(end - start);
 
         requestAnimationFrame(render);
     }
@@ -545,19 +552,30 @@ function drawScene(gl, programInfo, objects, camera) {
 
 
     const to_render = {};
-    Object.keys(objects).forEach(function (obj_name) {
-        const obj = objects[obj_name];
+    const timer = {};
+    let objects_keys = Object.keys(objects);
+    for (let i = 0; i < objects_keys.length; i++) {
+        const obj = objects[objects_keys[i]];
+
         if (obj.m === '') {
-            return;
+            continue;
         }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
+            timer[obj.m] = 0;
         }
         to_render[obj.m].push(obj.t);
-    });
-    Object.keys(to_render).forEach(function (m) {
-        model_ref[m].render(gl, to_render[m]);
-    });
+    }
+
+    let to_render_keys = Object.keys(to_render);
+
+    for (let i = 0, len = to_render_keys.length; i < len; i++) {
+        const start = Date.now();
+        model_ref[to_render_keys[i]].render(gl, to_render[to_render_keys[i]]);
+        const end = Date.now();
+        timer[to_render_keys[i]] = end - start;
+    }
+    console.log(timer);
 }
 
 
@@ -683,9 +701,9 @@ const mouseMove = function (e) {
 const zoom = function (e) {
     e.preventDefault();
     if (e.deltaY > 0) {
-        camera.zoomIn();
-    } else if (e.deltaY < 0) {
         camera.zoomOut(isGod);
+    } else if (e.deltaY < 0) {
+        camera.zoomIn();
     }
 }
 

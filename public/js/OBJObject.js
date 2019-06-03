@@ -6,7 +6,7 @@ class OBJObject {
         const mesh_content = readTextFile(mesh_path);
         this.mesh = new OBJ.Mesh(mesh_content);
         console.log(this.mesh);
-        
+
         this.mesh.name = mesh_name;
         OBJ.initMeshBuffers(gl, this.mesh);
         this.material_names = this.mesh.materialNames;
@@ -61,40 +61,43 @@ class OBJObject {
         }
 
         if (this.has_mtl) {
-            Object.keys(this.materials).forEach((name) => {
+            const materials_keys = Object.keys(this.materials);
+            for (let i = 0; i < materials_keys.length; i++) {
+                const name = materials_keys[i];
                 const material = this.materials[name];
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[name]);
                 gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, material.ambient);
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, material.diffuse);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, material.specular);
                 // gl.uniform1f(this.programInfo.uniformLocations.shininess, material.specularExponent);
-                if (Object.keys(this.texture_files[name].map).length) {
-                    Object.keys(this.texture_files[name].map).forEach((e) => {
+                const map_keys = Object.keys(this.texture_files[name].map);
+                if (map_keys.length > 0) {
+                    for (let j = 0; j < map_keys.length; j++) {
                         gl.activeTexture(gl.TEXTURE0 + this.texture_files[name].index);
-                        gl.bindTexture(gl.TEXTURE_2D, this.texture_files[name].map[e]);
+                        gl.bindTexture(gl.TEXTURE_2D, this.texture_files[name].map[map_keys[j]]);
                         gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[name].index);
-                    });
+                    }
                 }
-                transformMatrix_array.forEach((t) => {
-                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                for (let j = 0; j < transformMatrix_array.length; j++) {
+                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[j]);
                     gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
-                });
-            });
+                }
+            }
         } else {
             gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, [1, 1, 1]);
             gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1, 1, 1]);
             gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1, 1, 1]);
             // gl.uniform1f(this.programInfo.uniformLocations.shininess, 2);
-            
+
             gl.activeTexture(gl.TEXTURE0 + this.texture_index);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[0]);
-            
-            transformMatrix_array.forEach((t) => {
-                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+
+            for (let i = 0; i < transformMatrix_array.length; i++) {
+                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[i]);
                 gl.drawElements(gl.TRIANGLES, this.mesh.indices.length, gl.UNSIGNED_SHORT, 0);
-            });
+            }
         }
     }
 }
