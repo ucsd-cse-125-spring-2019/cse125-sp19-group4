@@ -601,7 +601,7 @@ function drawScene(gl, programInfo, objects, camera) {
                         case "Survivor 2":
                             if (!player_2_died) {
                                 model_ref[m].resetTime(2)
-                                player_0_died = true
+                                player_2_died = true
                             }
                             break;
                     }

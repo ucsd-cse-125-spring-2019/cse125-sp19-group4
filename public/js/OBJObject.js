@@ -75,9 +75,11 @@ class OBJObject {
                         gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[name].index);
                     });
                 }
-                transformMatrix_array.forEach((t) => {
-                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
-                    gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
+                transformMatrix_array.forEach((t, index) => {
+                    if (index > 0) {
+                        gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                        gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
+                    }
                 });
             });
         } else {
@@ -85,15 +87,17 @@ class OBJObject {
             gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1, 1, 1]);
             gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1, 1, 1]);
             // gl.uniform1f(this.programInfo.uniformLocations.shininess, 2);
-            
+
             gl.activeTexture(gl.TEXTURE0 + this.texture_index);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
             gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[0]);
-            
-            transformMatrix_array.forEach((t) => {
-                gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
-                gl.drawElements(gl.TRIANGLES, this.mesh.indices.length, gl.UNSIGNED_SHORT, 0);
+
+            transformMatrix_array.forEach((t, index) => {
+                if (index > 0) {
+                    gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, t);
+                    gl.drawElements(gl.TRIANGLES, this.mesh.indices.length, gl.UNSIGNED_SHORT, 0);
+                }
             });
         }
     }
