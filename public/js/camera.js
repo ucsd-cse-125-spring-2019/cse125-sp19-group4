@@ -5,7 +5,7 @@ const SENSITIVITY = 120;
 const MIN_ZOOM = 10.0;
 const MAX_ZOOM = 50.0;
 const MAX_ZOOM_GOD = 100.0;
-const POSITION = [0, 20, 20];
+const POSITION = [0, 30, 30];
 class Camera {
     /**
      * Create a new camera instance

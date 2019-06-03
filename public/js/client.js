@@ -124,7 +124,6 @@ socket.on('enter game', function (msg) {
     // get the skill cursor
     for (let key in player.skills) {
         skillCursors[key] = player.skills[key].cursorPath
-        console.log(skillCursors)
     }
 
     UI.InitializeStatus(player.status);
@@ -294,10 +293,14 @@ socket.on('game_status', function (msg) {
     });
 
     status.toClean.forEach(function (name) {
-        if (objects[name].m == 'slime' || objects[name].m == 'cactus') {
-            moan.play();
+        if (typeof objects[name] === 'undefined') {
+            console.error(name, 'not in objects');
+        } else {
+            if (objects[name].m == 'slime' || objects[name].m == 'cactus' || objects[name].m == 'spike') {
+                moan.play();
+            }
+            delete objects[name];
         }
-        delete objects[name];
     });
     const end = Date.now();
     $('#processing').html(end - start);
@@ -414,7 +417,7 @@ function main() {
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[1] = { m: 'cactus', t: glMatrix.mat4.clone(transform_ref['cactus']) };
-    cast_models[2] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
+    cast_models[2] = { m: 'spike', t: glMatrix.mat4.clone(transform_ref['spike']) };
     cast_models[3] = { m: 'tree', t: glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [4, 4, 4]) };
     let then = 0;
     // Draw the scene repeatedly

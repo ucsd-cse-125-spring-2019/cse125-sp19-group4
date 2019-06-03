@@ -246,7 +246,7 @@ class PhysicsEngine {
     }
 
     addTower(name, radius) {
-        const shape = new CANNON.Box(new CANNON.Vec3(1, 10, 1));
+        const shape = new CANNON.Box(new CANNON.Vec3(5, 10, 5));
         const body = new CANNON.Body({
             mass: 0,
             shape: shape,
@@ -428,21 +428,24 @@ class PhysicsEngine {
         bulletBody.from = name; // shot 
         bulletBody.fromRole = initiator.role;
         bulletBody.damage = damage;
+        bulletBody.hit = false;
 
         const engine = this;
         bulletBody.addEventListener("collide", function(e) {
-            console.log("Bullet hit:", name, "->", e.body.name);
             if (e.body.name != name && e.body.role != bulletBody.fromRole) {
                 if (e.body.role === 'enemy') {
-                    bulletBody.to = e.body.name; // TODO: Change to array?
+                    bulletBody.to = e.body.name;
                 } else if (e.body.role === 'survivor') {
-                    // console.log("Collide with survivor");
                     bulletBody.to = e.body.name;
                 }
                 else if (e.body.role === 'tower' && bulletBody.fromRole === 'survivor') {
                     bulletBody.to = e.body.name;
                 }
             }
+            if (bulletBody.hit) {
+                return;
+            }
+            bulletBody.hit = true;
             engine.hits.push(bulletId);
         });
     }

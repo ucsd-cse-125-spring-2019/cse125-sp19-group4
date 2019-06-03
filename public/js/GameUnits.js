@@ -44,7 +44,7 @@ class Slime {
         } else if (attackMode === "melee") {
             this.model = 'spike';
             this.status.damage = 20;
-            this.minDistanceFromPlayer = 3; // This should be adjusted to the size of bounding box of slime
+            this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime
         }
 
         this.KEYS = ["model", "position", "direction", "status"];
@@ -111,10 +111,16 @@ class Bullet {
     constructor(position, direction, radius, bulletId) {
         this.name = "Bullet " + bulletId;
         this.radius = radius;
-        this.size = radius / 0.2;
         this.position = position;
         this.direction = direction;
-        this.model = "bullet";
+        if (radius >= 1) {
+            this.model = "fireball";
+            this.size = radius / 0.5;
+        } else {
+            this.model = "bullet";
+            this.size = radius / 0.2;
+        }
+
     }
 }
 
@@ -133,7 +139,7 @@ class Tree {
 class Tower {
     constructor(maxHealth) {
         this.name = 'Tower';
-        this.radius = 1;
+        this.radius = 5;
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1];
         this.model = 'tower';

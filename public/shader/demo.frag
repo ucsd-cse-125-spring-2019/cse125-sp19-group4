@@ -17,9 +17,9 @@ out vec4 finalColor;
 
 vec3 doLight(vec3 normal, vec3 viewDir, vec3 fragPos) {
     float att = 1.0;
-    vec3 LightDir = vec3(0, -1, 0);
+    vec3 LightDir = vec3(0, 1, 0);
     LightDir = normalize(LightDir);
-    float diff = max(dot(normal, -LightDir), 0.0);
+    float diff = max(dot(normal, LightDir), 0.0);
     vec3 reflectDir = reflect(LightDir, normal);
     float spec = pow(max(dot(reflectDir, viewDir), 0.0), 2.0); // uShininess
     vec3 diffuse = uDiffuseColor * diff;

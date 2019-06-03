@@ -478,7 +478,6 @@ class GameInstance {
 
             // the melee/bullet hit enemy
             if (typeof attackee !== 'undefined') {
-                console.log(hit.from);
                 attackee.onHit(gameInstance, hit.damage);
             }
             gameInstance.toClean.push(hit_name);
@@ -511,8 +510,6 @@ class GameInstance {
             }
         });
         this.physicsEngine.cleanup(this.toClean);
-        // this.toClean.length = 0; // moved to afterSend()
-        // this.meleeId = 0; // Each melee would only last 1 step
     }
 
     comparePosition() {
@@ -570,10 +567,11 @@ class GameInstance {
                 return;
             }
             deadSlimes.push(name);
-            gameInstance.toClean.push(name);
-            // gameInstance.curProgress += slime.progressPoint;
         });
         deadSlimes.forEach(function (name) {
+            console.log(name, 'died');
+            
+            gameInstance.toClean.push(name);
             gameInstance.generateItem(name);
             gameInstance.slimes.splice(gameInstance.slimes.indexOf(name), 1);
         });
@@ -635,7 +633,7 @@ class GameInstance {
             this.monsterSpawnTimer++;
             return;
         }
-        console.log(this.monsterSpawnProb);
+        // console.log(this.monsterSpawnProb);
         const monsterLottery = [0, 0, 1, 1, 2, 2];
         if (Math.random() < this.monsterSpawnProb) {
             // spawn monsters

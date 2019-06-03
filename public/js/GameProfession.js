@@ -88,7 +88,7 @@ class God {
         this.skills = {
             0: {
                 'name': 'Slime',
-                'coolDown': 1,
+                'coolDown': 3,
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
@@ -105,7 +105,7 @@ class God {
             },
             1: {
                 'name': 'Shooting Slime',
-                'coolDown': 1,
+                'coolDown': 5,
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
@@ -122,7 +122,7 @@ class God {
             },
             2: {
                 'name': 'Melee Slime',
-                'coolDown': 1,
+                'coolDown': 5,
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
@@ -139,7 +139,7 @@ class God {
             },
             3: {
                 'name': 'Tree',
-                'coolDown': 1,
+                'coolDown': 5,
                 'curCoolDown': 0,
                 'maxCharge': 3,
                 'curCharge': 0,
@@ -151,7 +151,7 @@ class God {
                     const tree = new Tree(game.treeId++, 4);
                     tree.position = position;
                     return game.putTreeOnTheMap(tree, false);
-                } 
+                }
             }
         };
         this.status = {
@@ -245,8 +245,8 @@ class Fighter {
                 'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
-                    const duration = 3;
-                    const effect = function(game, self) {
+                    const duration = 3;
+                    const effect = function (game, self) {
                         self.tempBuff.defense += 10;
                     };
                     game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true);
@@ -262,11 +262,11 @@ class Fighter {
                 'iconPath': '/public/images/skills/SKILL_CutTree.png',
                 'function': function (game, self, params) {
                     let duration = 5;
-                    let effect = function(game, self) {
+                    let effect = function (game, self) {
                         const position = self.position;
                         const radius = 40;
                         const objsInRadius = game.getObjInRadius(position, radius);
-                        objsInRadius.forEach(function(obj) {
+                        objsInRadius.forEach(function (obj) {
                             if (obj.type === "slime") {
                                 obj.chase(game, self.name);
                                 game.toSend.push(obj.name);
@@ -312,13 +312,13 @@ class Archer {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    game.shoot(name, 50, self.status.damage, 0.2);
+                    game.shoot(name, 100, self.status.damage, 0.5);
                 },
             },
             1: {
                 'name': 'Grenade',
                 'type': SKILL_TYPE.LOCATION,
-                'coolDown': 0.5,
+                'coolDown': 4,
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
@@ -332,7 +332,7 @@ class Archer {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    game.shoot(name, 20, 50, 1);
+                    game.shoot(name, 50, 50, 1);
                 },
             },
             2: {
