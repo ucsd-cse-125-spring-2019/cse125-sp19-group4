@@ -419,7 +419,9 @@ class GameInstance {
 
             skill.duration -= 1 / server.tick_rate;
             if (skill.duration < 0) {
-                skill.endEffect(gameInstance, invoker);
+                if (skill.endEffect !== null) {
+                    skill.endEffect(gameInstance, invoker);
+                }
                 delete gameInstance.onGoingSkills[key];
             } else {
                 skill.effect(gameInstance, invoker);
