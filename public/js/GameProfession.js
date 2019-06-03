@@ -383,6 +383,8 @@ class Healer {
             'attackSpeed': 1,
         };
         this.skill_model = '';
+        this.singing = false;
+        this.chanting = false;
 
         this.skills = {
             0: {
@@ -417,24 +419,37 @@ class Healer {
                 'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
-                    const duration = 3;
-                    const radius = 10;
+                    if (self.chanting) {
+                        return false;
+                    }
+                    self.singing = true;
+                    const duration = 10;
+                    const radius = 20;
                     const effect = function (game, self) {
                         const position = self.position;
                         game.objects[self.skill_model].position = position;
                         const objsInRadius = game.getObjInRadius(position, radius);
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && !obj.dead) {
-                                obj.status.curHealth = Math.min(obj.status.curHealth + 10 / server.tick_rate, obj.status.maxHealth)
+                                obj.status.curHealth = Math.min(obj.status.curHealth + 2 / server.tick_rate, obj.status.maxHealth)
                                 obj.KEYS.push("status");
                                 game.toSend.push(obj.name);
                             }
                         })
                     };
-                    game.onGoingSkills[self.name + 0] = new onGoingSkill(duration, effect, self, false);
+
+                    const endEffect = function (game, self) {
+                        self.singing = false;
+                        if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
+                            game.toClean.push(self.skill_model);
+                            delete game.objects[self.skill_model];
+                            self.skill_model = '';
+                        }
+                    }
+                    game.onGoingSkills[self.name + 0] = new onGoingSkill(duration, effect, self, false, endEffect);
 
                     // ring model
-                    const ring = new Ring(self.position, radius, self.name, 'ring');
+                    const ring = new Ring(self.position, radius, self.name, 'ring_green');
                     self.skill_model = ring.name;
                     game.toSend.push(ring.name);
                     game.objects[ring.name] = ring;
@@ -450,11 +465,16 @@ class Healer {
                 'type': SKILL_TYPE.ONGOING,
                 'iconPath': '/public/images/skills/SKILL_Medicine.png',
                 'function': function (game, self, params) {
-                    const duration = 3;
+                    if (self.singing) {
+                        return false;
+                    }
+                    self.chanting = true;
+                    const duration = 10;
+                    const radius = 20;
                     const buffedUnit = {};
                     const effect = function (game, self) {
                         const position = self.position;
-                        const radius = 10;
+                        game.objects[self.skill_model].position = position;
                         const objsInRadius = game.getObjInRadius(position, radius);
 
                         // use this to remember who has been buffed before
@@ -463,7 +483,7 @@ class Healer {
                         }
 
                         objsInRadius.forEach(function (obj) {
-                            if (obj.type === "player" && obj != self && !obj.dead) {
+                            if (obj.type === "player" && !obj.dead) {
                                 obj.tempBuff.damage += 10;
                                 obj.KEYS.push("status");
                                 obj.KEYS.push("tempBuff");
@@ -483,6 +503,12 @@ class Healer {
                         }
                     };
                     const endEffect = function (game, self) {
+                        self.chanting = false;
+                        if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
+                            game.toClean.push(self.skill_model);
+                            delete game.objects[self.skill_model];
+                            self.skill_model = '';
+                        }
                         for (let key in buffedUnit) {
                             delete buffedUnit[key];
                             game.toSend.push(key);
@@ -491,6 +517,12 @@ class Healer {
                         }
                     }
                     game.onGoingSkills[self.name + 1] = new onGoingSkill(duration, effect, self, false, endEffect);
+
+                    // ring model
+                    const ring = new Ring(self.position, radius, self.name, 'ring_red');
+                    self.skill_model = ring.name;
+                    game.toSend.push(ring.name);
+                    game.objects[ring.name] = ring;
                 },
             },
 
