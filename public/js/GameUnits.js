@@ -42,8 +42,9 @@ class Slime {
             this.minDistanceFromPlayer = 10;
             this.shootingSpeed = 20;
         } else if (attackMode === "melee") {
+            this.model = 'spike';
             this.status.damage = 20;
-            this.minDistanceFromPlayer = 5; // This should be adjusted to the size of bounding box of slime
+            this.minDistanceFromPlayer = 3; // This should be adjusted to the size of bounding box of slime
         }
 
         this.KEYS = ["model", "position", "direction", "status"];

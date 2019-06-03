@@ -242,7 +242,7 @@ class GameInstance {
     stay(name) {
         const obj = this.objects[name];
         if (obj instanceof Survivor) {
-            obj.model = 'player';
+            obj.model = 'player_standing';
             obj.KEYS.push('model');
         }
         this.physicsEngine.stopMovement(name);

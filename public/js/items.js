@@ -6,8 +6,8 @@ items = {
     'boots': {
         count: 0,
         prob: Number(config.item.boots.prob),
-        description: "each boot you have will increase your speed by 1",
-        model: 'boots',
+        description: "Increase move speed by 1",
+        // model: 'boots',
         enhance(buff, status) {
             buff.speed += 1;
             status.speed += 1;
@@ -16,7 +16,8 @@ items = {
     'swords': {
         count: 0,
         prob: Number(config.item.swords.prob),
-        description: "each sword you have will increase your attack by 1",
+        description: "Increase attack damage by 1",
+        // model: 'swords',
         enhance(buff, status) {
             buff.damage += 1;
             status.damage += 1;
@@ -25,7 +26,8 @@ items = {
     'shields': {
         count: 0,
         prob: Number(config.item.shields.prob),
-        description: "each shield you have will increase your defence by 1",
+        description: "Increase armor by 1",
+        // model: 'shields',
         enhance(buff, status) {
             buff.defense += 1;
             status.defense += 1;
@@ -34,10 +36,22 @@ items = {
     'hearts': {
         count: 0,
         prob: Number(config.item.hearts.prob),
-        description: "each heart you have will increase your health by 10",
+        description: "Increase max health by 10",
+        // model: 'hearts',
         enhance(buff, status) {
             status.maxHealth += 10;
             status.curHealth += 10;
+        },
+    },
+    'daggers': {
+        count: 0,
+        prob: Number(config.item.daggers.prob),
+        description: "Increase attack speed by 10%",
+        // model: 'daggers',
+        enhance(buff, status) {
+            buff.attackSpeed += 0.1;
+            status.attackSpeed += 0.1;
+            status.attackInterval = Math.ceil(60 / status.attackSpeed);;
         },
     },
 }

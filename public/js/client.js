@@ -21,25 +21,6 @@ let defaultCursor = "public/images/mouse/normal.cur"
 
 let player = {};
 
-const model_ref = {};
-
-const transform_ref = {
-    '': glMatrix.mat4.create(),
-    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
-    'bullet': glMatrix.mat4.create(),
-    'male': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [5, 0, 0]),
-    'player': glMatrix.mat4.create(),
-    'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
-    'slime': glMatrix.mat4.create(),
-    'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
-    // 'f16': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'tower': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 5, 1]),
-    'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
-    'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 10, 5]),
-    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 15, 5]),
-};
 
 const objects = {};
 const cast_models = [];
@@ -53,6 +34,36 @@ const cursor = glMatrix.vec3.create();
 const positions = {}
 const directions = {}
 const skillCursors = {}
+
+const model_ref = {};
+
+const transform_ref = {
+    '': glMatrix.mat4.create(),
+    // environment
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
+    'tower': glMatrix.mat4.create(),
+    'tree': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+
+    // player
+    'player_standing': glMatrix.mat4.create(),
+    'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
+
+    // monster
+    'slime': glMatrix.mat4.create(),
+    'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'spike': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
+
+    // item
+    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
+    'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 10, 5]),
+    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 15, 5]),
+    'daggers': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 15, 1]),
+
+    // projectile
+    'bullet': glMatrix.mat4.create(),
+    'fireball': glMatrix.mat4.create(),
+};
 
 // ============================ Sound ================================
 
@@ -372,24 +383,33 @@ function main() {
     // Tell WebGL to use our program when drawing
     gl.useProgram(shaderProgram);
 
-    // Here's where we call the routine that builds all the objects we'll be drawing.
-    // const buffers = initCubeBuffers(gl); 
-
+    // environment
     // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "/public/model/terrainPlane.mtl", true, texture_counter, programInfo);
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
-    model_ref['player'] = new OBJObject(gl, "player", "/public/model/player_texture.obj", "/public/model/player_texture.mtl", true, texture_counter, programInfo);
-    model_ref['player_running'] = new Animation(gl, "/public/model/player_running.json", programInfo, texture_counter);
-    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
-    model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/cactus.obj", "/public/model/cactus.mtl", true, texture_counter, programInfo);
-    // model_ref['f16'] = new OBJObject(gl, "f16", "/public/model/f16-model1.obj", "/public/model/f16-texture.bmp", false, texture_counter, programInfo);
-    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
-    model_ref['tower'] = new OBJObject(gl, "tower", "/public/model/treeGreen.obj", "/public/model/treeGreen.mtl", true, texture_counter, programInfo);
-    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/items/SimpleBoot.obj", "", false, texture_counter, programInfo);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
-    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
+    model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/obelisk.obj", "", false, texture_counter, programInfo, [10, 10, 10, 255]);
+    model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
+    // player
+    model_ref['player_standing'] = new OBJObject(gl, "player", "/public/model/player/player_standing.obj", "/public/model/player/player_standing.mtl", true, texture_counter, programInfo);
+    model_ref['player_running'] = new Animation(gl, "/public/model/player/player_running.json", programInfo, texture_counter);
+    model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter);
+
+    // monster
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
+    model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/monster/cactus.obj", "/public/model/monster/cactus.mtl", true, texture_counter, programInfo);
+    model_ref['spike'] = new OBJObject(gl, "cactus", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
+
+    // item
+    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255, 255]);
+    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [100, 100, 100, 255]);
+    model_ref['shields'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [255, 155, 56, 255]);
+    model_ref['hearts'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [255, 0, 0, 255]);
+    model_ref['daggers'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [238, 55, 255, 255]);
+    
+    // projectile
+    model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
+    model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/flameBullet.obj", "/public/model/flameBullet.mtl", true, texture_counter, programInfo);
+        
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
@@ -575,7 +595,7 @@ function drawScene(gl, programInfo, objects, camera) {
         const end = Date.now();
         timer[to_render_keys[i]] = end - start;
     }
-    console.log(timer);
+    // console.log(timer);
 }
 
 

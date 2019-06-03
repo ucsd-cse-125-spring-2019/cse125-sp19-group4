@@ -38,7 +38,7 @@ class Survivor {
         this.mass = 500;
         this.maxJump = 2;
         this.jumpSpeed = 8;
-        this.model = 'player';
+        this.model = 'player_standing';
         this.radius = 2;
         this.KEYS = [] // contain a list of property that we want to send to client
         this.profession = {};
