@@ -10,6 +10,7 @@ uniform sampler2D uSampler;
 uniform vec3 uAmbientColor;
 uniform vec3 uDiffuseColor;
 uniform vec3 uSpecularColor;
+uniform float uAlpha;
 uniform float uShininess;
 uniform vec3 ViewPosition;
 
@@ -31,5 +32,5 @@ vec3 doLight(vec3 normal, vec3 viewDir, vec3 fragPos) {
 void main() {
     vec3 ViewDir = normalize(ViewPosition - vVertexPosition);
     vec3 Color = doLight(vNormal, ViewDir, vVertexPosition);
-    finalColor = texture(uSampler, vTextureCoord) * vec4(Color / 3.0, 1.0);;
+    finalColor = vec4(texture(uSampler, vTextureCoord).rgb * vec3(Color / 3.0), uAlpha);
 }

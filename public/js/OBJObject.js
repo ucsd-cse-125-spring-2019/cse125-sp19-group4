@@ -1,6 +1,6 @@
 class OBJObject {
 
-    constructor(gl, mesh_name, mesh_path, texture_path, has_mtl, texture_counter, programInfo, defaultColor = [0, 0, 255, 255]) {
+    constructor(gl, mesh_name, mesh_path, texture_path, has_mtl, texture_counter, programInfo, defaultColor = [0, 0, 255], alpha = 1.0) {
         this.programInfo = programInfo;
         this.has_mtl = has_mtl;
         const mesh_content = readTextFile(mesh_path);
@@ -8,6 +8,7 @@ class OBJObject {
         // console.log(this.mesh);
 
         this.mesh.name = mesh_name;
+        this.alpha = alpha;
         OBJ.initMeshBuffers(gl, this.mesh);
         this.material_names = this.mesh.materialNames;
         this.indexBuffers = {};
@@ -27,6 +28,9 @@ class OBJObject {
                 }
                 if (material.mapSpecular.filename) {
                     mapping["specular"] = loadTexture(gl, material.mapSpecular.filename);
+                }
+                if (Object.keys(mapping).length == 0) {
+                    mapping["ambient"] = loadTexture(gl, "", [255, 255, 255, 255]);
                 }
                 this.texture_files[name] = { map: mapping, index: texture_counter.i };
                 this.indexBuffers[name] = gl.createBuffer();
@@ -70,6 +74,7 @@ class OBJObject {
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, material.diffuse);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, material.specular);
                 // gl.uniform1f(this.programInfo.uniformLocations.shininess, material.specularExponent);
+                gl.uniform1f(this.programInfo.uniformLocations.alpha, this.alpha);
                 const map_keys = Object.keys(this.texture_files[name].map);
                 if (map_keys.length > 0) {
                     for (let j = 0; j < map_keys.length; j++) {
@@ -88,6 +93,7 @@ class OBJObject {
             gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, [1, 1, 1]);
             gl.uniform3fv(this.programInfo.uniformLocations.specularColor, [1, 1, 1]);
             // gl.uniform1f(this.programInfo.uniformLocations.shininess, 2);
+            gl.uniform1f(this.programInfo.uniformLocations.alpha, this.alpha);
 
             gl.activeTexture(gl.TEXTURE0 + this.texture_index);
             gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -117,7 +123,7 @@ function readTextFile(file) {
     return allText;
 }
 
-function loadTexture(gl, url, color = [255, 255, 255, 255]) {
+function loadTexture(gl, url, color = [255, 255, 255]) {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -133,6 +139,7 @@ function loadTexture(gl, url, color = [255, 255, 255, 255]) {
     const border = 0;
     const srcFormat = gl.RGBA;
     const srcType = gl.UNSIGNED_BYTE;
+    color[3] = 255;
     const pixel = new Uint8Array(color);  // opaque blue
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
         width, height, border, srcFormat, srcType,
