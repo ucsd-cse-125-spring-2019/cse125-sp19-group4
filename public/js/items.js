@@ -7,7 +7,6 @@ items = {
         count: 0,
         prob: Number(config.item.boots.prob),
         description: "Increase move speed by 1",
-        // model: 'boots',
         enhance(buff, status) {
             buff.speed += 1;
             status.speed += 1;
@@ -17,7 +16,6 @@ items = {
         count: 0,
         prob: Number(config.item.swords.prob),
         description: "Increase attack damage by 1",
-        // model: 'swords',
         enhance(buff, status) {
             buff.damage += 1;
             status.damage += 1;
@@ -27,7 +25,6 @@ items = {
         count: 0,
         prob: Number(config.item.shields.prob),
         description: "Increase armor by 1",
-        // model: 'shields',
         enhance(buff, status) {
             buff.defense += 1;
             status.defense += 1;
@@ -37,7 +34,6 @@ items = {
         count: 0,
         prob: Number(config.item.hearts.prob),
         description: "Increase max health by 10",
-        // model: 'hearts',
         enhance(buff, status) {
             status.maxHealth += 10;
             status.curHealth += 10;
@@ -47,7 +43,6 @@ items = {
         count: 0,
         prob: Number(config.item.daggers.prob),
         description: "Increase attack speed by 10%",
-        // model: 'daggers',
         enhance(buff, status) {
             buff.attackSpeed += 0.1;
             status.attackSpeed += 0.1;

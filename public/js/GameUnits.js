@@ -115,10 +115,10 @@ class Bullet {
         this.direction = direction;
         if (radius >= 1) {
             this.model = "fireball";
-            this.size = radius / 0.5;
+            this.size = radius;
         } else {
             this.model = "bullet";
-            this.size = radius / 0.2;
+            this.size = radius;
         }
 
     }
@@ -128,7 +128,7 @@ class Ring {
     constructor(position, radius, ringId, model) {
         this.name = "Ring " + ringId;
         this.radius = radius;
-        this.size = radius; // todo
+        this.size = radius;
         this.position = position;
         this.direction = [0, 0, -1];
         this.model = model;
