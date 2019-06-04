@@ -49,7 +49,7 @@ const transform_ref = {
     'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
 
     // monster
-    'slime': glMatrix.mat4.create(),
+    'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
     'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
     'spike': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
 
@@ -402,7 +402,7 @@ function main() {
     model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter);
 
     // monster
-    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0]);
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "/public/model/monster/slime.mtl", true, texture_counter, programInfo);
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/monster/cactus.obj", "/public/model/monster/cactus.mtl", true, texture_counter, programInfo);
     model_ref['spike'] = new OBJObject(gl, "cactus", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
 
@@ -560,7 +560,7 @@ function drawScene(gl, programInfo, objects, camera) {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-    // gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+    gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
 
     // Clear the canvas before we start drawing on it.
 
