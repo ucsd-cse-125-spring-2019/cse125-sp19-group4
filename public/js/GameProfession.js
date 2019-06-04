@@ -242,12 +242,11 @@ class Fighter {
                 'curCoolDown': 0,
                 'description': 'Gains 10 defense for 3 seconds',
                 'iconPath': '/public/images/skills/SKILL_Heal.png',
-                'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
                     const duration = 3;
                     const effect = function (game, self) {
-                        self.tempBuff.defense += 10;
+                        self.tempBuff.defense += 100;
                     };
                     game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true);
                 },
@@ -424,10 +423,11 @@ class Healer {
                     }
                     self.singing = true;
                     const duration = 10;
-                    const radius = 20;
+                    const radius = 15;
                     const effect = function (game, self) {
                         const position = self.position;
                         game.objects[self.skill_model].position = position;
+                        game.objects[self.skill_model].position[1] += 0.5;
                         const objsInRadius = game.getObjInRadius(position, radius);
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && !obj.dead) {
@@ -470,11 +470,12 @@ class Healer {
                     }
                     self.chanting = true;
                     const duration = 10;
-                    const radius = 20;
+                    const radius = 15;
                     const buffedUnit = {};
                     const effect = function (game, self) {
                         const position = self.position;
                         game.objects[self.skill_model].position = position;
+                        game.objects[self.skill_model].position[1] += 0.5;
                         const objsInRadius = game.getObjInRadius(position, radius);
 
                         // use this to remember who has been buffed before

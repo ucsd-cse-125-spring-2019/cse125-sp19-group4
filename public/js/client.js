@@ -49,7 +49,7 @@ const transform_ref = {
     'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
 
     // monster
-    'slime': glMatrix.mat4.create(),
+    'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
     'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
     'spike': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
 
@@ -383,6 +383,7 @@ function main() {
             diffuseColor: gl.getUniformLocation(shaderProgram, "uDiffuseColor"),
             specularColor: gl.getUniformLocation(shaderProgram, "uSpecularColor"),
             shininess: gl.getUniformLocation(shaderProgram, "uShininess"),
+            alpha: gl.getUniformLocation(shaderProgram, "uAlpha"),
             viewPosition: gl.getUniformLocation(shaderProgram, "ViewPosition"),
         },
     };
@@ -390,8 +391,8 @@ function main() {
     gl.useProgram(shaderProgram);
 
     // environment
-    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
+    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
     model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/tower.obj", "/public/model/environment/tower.mtl", true, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
@@ -401,22 +402,22 @@ function main() {
     model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter);
 
     // monster
-    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "", false, texture_counter, programInfo, [0, 255, 0, 255]);
+    model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "/public/model/monster/slime.mtl", true, texture_counter, programInfo);
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/monster/cactus.obj", "/public/model/monster/cactus.mtl", true, texture_counter, programInfo);
     model_ref['spike'] = new OBJObject(gl, "cactus", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
 
     // item
-    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255, 255]);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [100, 100, 100, 255]);
-    model_ref['shields'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [255, 155, 56, 255]);
-    model_ref['hearts'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [255, 0, 0, 255]);
-    model_ref['daggers'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [238, 55, 255, 255]);
+    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
+    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
+    model_ref['shields'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
+    model_ref['hearts'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
+    model_ref['daggers'] = new OBJObject(gl, "swords", "/public/model/bullet.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
     
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/bullet.obj", "", false, texture_counter, programInfo);
     model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/flameBullet.obj", "/public/model/flameBullet.mtl", true, texture_counter, programInfo);
-    model_ref['ring_green'] = new OBJObject(gl, "ring", "/public/model/ring.obj", "/public/model/ring_green.mtl", true, texture_counter, programInfo);
-    model_ref['ring_red'] = new OBJObject(gl, "ring", "/public/model/ring.obj", "/public/model/ring_red.mtl", true, texture_counter, programInfo);
+    model_ref['ring_green'] = new OBJObject(gl, "ring", "/public/model/ring.obj", "", false, texture_counter, programInfo, [0, 255, 0], 0.2);
+    model_ref['ring_red'] = new OBJObject(gl, "ring", "/public/model/ring.obj", "", false, texture_counter, programInfo, [255, 0, 0], 0.2);
         
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
     // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
@@ -556,6 +557,8 @@ function main() {
 function drawScene(gl, programInfo, objects, camera) {
     gl.clearColor(0.68, 1.0, 0.18, 0.4);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.DEPTH_TEST);           // Enable depth testing
     gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
 
