@@ -551,33 +551,29 @@ class GameInstance {
     checkHealth() {
         const gameInstance = this;
 
-        const deadSurvivors = [];
         this.liveSurvivors.forEach(function (name) {
-            let survivor = gameInstance.objects[name];
+            const survivor = gameInstance.objects[name];
             if (survivor.status.curHealth > 0) {
                 return;
             }
-            deadSurvivors.push(name);
-        });
-        deadSurvivors.forEach(function (name) {
             gameInstance.survivorHasDied(name);
         });
 
-        const deadSlimes = [];
         this.slimes.forEach(function (name) {
-            let slime = gameInstance.objects[name]
+            const slime = gameInstance.objects[name]
             if (slime.status.curHealth > 0) {
                 return;
             }
-            deadSlimes.push(name);
-        });
-        deadSlimes.forEach(function (name) {
             console.log(name, 'died');
-            
+            if (typeof slime.skill_model !== 'undefined' && slime.skill_model !== '') {
+                gameInstance.toClean.push(slime.skill_model);
+            }
             gameInstance.toClean.push(name);
             gameInstance.generateItem(name);
             gameInstance.slimes.splice(gameInstance.slimes.indexOf(name), 1);
         });
+            
+            
     }
 
 

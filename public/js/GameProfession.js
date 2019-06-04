@@ -1,4 +1,4 @@
-const { Item, Slime, Tile, Bullet, Ring, Tree } = require("./GameUnits.js").Units;
+const { Item, Slime, Tile, Bullet, Ring, Taunted, Tree } = require("./GameUnits.js").Units;
 const glMatrix = require("gl-Matrix");
 const items = require("./items.js");
 const buff = {
@@ -180,7 +180,7 @@ class Fighter {
             'curHealth': 100,
             'damage': 10,
             'defense': 20,
-            'speed': 10,
+            'speed': 15,
             'attackInterval': 60,
             'attackSpeed': 1,
         };
@@ -238,9 +238,9 @@ class Fighter {
 
             2: {
                 'name': 'harder',
-                'coolDown': 10,
+                'coolDown': 15,
                 'curCoolDown': 0,
-                'description': 'Gains 10 defense for 3 seconds',
+                'description': 'Be invulnerable for 3 seconds',
                 'iconPath': '/public/images/skills/SKILL_Heal.png',
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
@@ -253,26 +253,77 @@ class Fighter {
             },
 
             3: {
-                'name': 'Attract slimes',
+                'name': 'Taunt',
                 'type': SKILL_TYPE.ONGOING,
-                'coolDown': 30,
+                'coolDown': 15,
                 'curCoolDown': 0,
                 'description': 'Attract nearby slimes',
                 'iconPath': '/public/images/skills/SKILL_CutTree.png',
                 'function': function (game, self, params) {
-                    let duration = 5;
-                    let effect = function (game, self) {
+                    const duration = 5;
+                    const radius = 30;
+                    const tauntedUnit = {};
+                        
+                    const effect = function (game, self) {
                         const position = self.position;
-                        const radius = 40;
+                        game.objects[self.skill_model].position = position;
+                        game.objects[self.skill_model].position[1] += 0.5;
                         const objsInRadius = game.getObjInRadius(position, radius);
+                        
+                        for (let key in tauntedUnit) {
+                            tauntedUnit[key] = false;
+                        }
+
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "slime") {
+                                if (typeof obj.skill_model !== 'undefined' && typeof game.objects[obj.skill_model] !== 'undefined') {
+                                    game.objects[obj.skill_model].position = obj.position;
+                                    game.objects[obj.skill_model].position[1] += 2;
+                                    game.objects[obj.skill_model].direction = obj.direction;
+                                } else {
+                                    const taunted = new Taunted(obj.position, obj.direction, obj.name);
+                                    obj.skill_model = taunted.name;
+                                    game.toSend.push(taunted.name);
+                                    game.objects[taunted.name] = taunted;
+                                }
                                 obj.chase(game, self.name);
                                 game.toSend.push(obj.name);
+                                tauntedUnit[obj.name] = true;
                             }
-                        })
+                        });
+                        // reset whose who has been taunted before but no longer being taunted
+                        for (let key in tauntedUnit) {
+                            if (!tauntedUnit[key]) {
+                                delete tauntedUnit[key];
+                                const obj = game.objects[key];
+                                if (typeof obj !== 'undefined' && typeof obj.skill_model !== 'undefined') {
+                                    game.toClean.push(obj.skill_model);
+                                    obj.skill_model = '';
+                                }
+                            }
+                        }
                     };
-                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self, false);
+                    const endEffect = function (game, self) {
+                        if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
+                            game.toClean.push(self.skill_model);
+                            self.skill_model = '';
+                        }
+                        for (let key in tauntedUnit) {
+                            const obj = game.objects[key];
+                            if (typeof obj !== 'undefined' && typeof obj.skill_model !== 'undefined') {
+                                game.toClean.push(obj.skill_model);
+                                obj.skill_model = '';
+                                delete tauntedUnit[key];
+                            }
+                        }
+                    }
+                    game.onGoingSkills[self.name + 3] = new onGoingSkill(duration, effect, self, false, endEffect);
+
+                    // ring model
+                    const ring = new Ring(self.position, radius, self.name, 'ring_yellow');
+                    self.skill_model = ring.name;
+                    game.toSend.push(ring.name);
+                    game.objects[ring.name] = ring;
                 },
             },
         };
@@ -423,7 +474,7 @@ class Healer {
                     }
                     self.singing = true;
                     const duration = 10;
-                    const radius = 15;
+                    const radius = 20;
                     const effect = function (game, self) {
                         const position = self.position;
                         game.objects[self.skill_model].position = position;
@@ -442,7 +493,6 @@ class Healer {
                         self.singing = false;
                         if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
                             game.toClean.push(self.skill_model);
-                            delete game.objects[self.skill_model];
                             self.skill_model = '';
                         }
                     }
@@ -470,7 +520,7 @@ class Healer {
                     }
                     self.chanting = true;
                     const duration = 10;
-                    const radius = 15;
+                    const radius = 20;
                     const buffedUnit = {};
                     const effect = function (game, self) {
                         const position = self.position;
@@ -507,7 +557,6 @@ class Healer {
                         self.chanting = false;
                         if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
                             game.toClean.push(self.skill_model);
-                            delete game.objects[self.skill_model];
                             self.skill_model = '';
                         }
                         for (let key in buffedUnit) {
@@ -541,7 +590,7 @@ class Healer {
                     if (Utils.calculateDistance(self.position, location) > 5) {
                         return false;
                     }
-                    const radius = 1;
+                    const radius = 5;
                     const objsInRadius = game.getObjInRadius(location, radius);
                     let revived = false;
 

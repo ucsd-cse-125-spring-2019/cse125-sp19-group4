@@ -65,8 +65,10 @@ const transform_ref = {
     'fireball': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
 
     // effect
+    'taunted': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [3, 3, 3]),
     'ring_green': glMatrix.mat4.create(),
     'ring_red': glMatrix.mat4.create(),
+    'ring_yellow': glMatrix.mat4.create(),
 
 };
 
@@ -406,22 +408,24 @@ function main() {
     // monster
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "/public/model/monster/slime.mtl", true, texture_counter, programInfo);
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/monster/cactus.obj", "/public/model/monster/cactus.mtl", true, texture_counter, programInfo);
-    model_ref['spike'] = new OBJObject(gl, "cactus", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
+    model_ref['spike'] = new OBJObject(gl, "spike", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
 
     // item
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
     model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
-    model_ref['shields'] = new OBJObject(gl, "swords", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
-    model_ref['hearts'] = new OBJObject(gl, "swords", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
-    model_ref['daggers'] = new OBJObject(gl, "swords", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
+    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
+    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
+    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
     
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo);
     model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/projectile/flameBullet.obj", "/public/model/projectile/flameBullet.mtl", true, texture_counter, programInfo);
 
     //effect
-    model_ref['ring_green'] = new OBJObject(gl, "ring", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [0, 255, 0], 0.2);
-    model_ref['ring_red'] = new OBJObject(gl, "ring", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [255, 0, 0], 0.2);
+    model_ref['taunted'] = new OBJObject(gl, "taunted", "/public/model/effect/taunted.obj", "/public/model/effect/taunted.mtl", true, texture_counter, programInfo);
+    model_ref['ring_green'] = new OBJObject(gl, "ring_green", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [0, 255, 0], 0.2);
+    model_ref['ring_red'] = new OBJObject(gl, "ring_red", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [255, 0, 0], 0.2);
+    model_ref['ring_yellow'] = new OBJObject(gl, "ring_yellow", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [244, 215, 66], 0.2);
 
 
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };

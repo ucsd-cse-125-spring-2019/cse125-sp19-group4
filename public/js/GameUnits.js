@@ -135,6 +135,15 @@ class Ring {
     }
 }
 
+class Taunted {
+    constructor(position, direction, tId) {
+        this.name = "Taunted " + tId;
+        this.position = position;
+        this.direction = direction;
+        this.model = 'taunted';
+    }
+}
+
 class Tree {
     constructor(treeId, size) {
         this.name = 'Tree ' + treeId;
@@ -163,4 +172,4 @@ class Tower {
     }
 }
 
-module.exports.Units = { Item, Slime, Tile, Bullet, Ring, Tree, Tower };
+module.exports.Units = { Item, Slime, Tile, Bullet, Ring, Taunted, Tree, Tower };
