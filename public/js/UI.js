@@ -106,12 +106,10 @@ function InitializeStatus(status) {
 
 
 function InitializeSkills(skills) {
-    let skillBarDiv = document.createElement('div');
-    skillBarDiv.id = "skillBarDiv";
+    let skillBarDiv = document.getElementById('skillBarDiv');
     let skillsBar = document.createElement('ul');
     skillsBar.id = "skillsBar";
     skillBarDiv.appendChild(skillsBar);
-    document.getElementById("statusBar").appendChild(skillBarDiv);
     for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
         let skill = document.createElement('div');
@@ -119,14 +117,25 @@ function InitializeSkills(skills) {
         img.src = skills[i].iconPath;
         img.style = "width: 100%; height: 100%; padding: 3px"
         img.title = skills[i].description;
-        let mask = document.createElement('div'); // cooldown mask
-        mask.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
+        
+        let mask1 = document.createElement('div'); // cooldown mask
+        mask1.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
                      "bottom: 0; opacity: 0.8";
+        mask1.id = i + 'Mask1';
+
+        let mask2 = document.createElement('div'); // cooldown of charge mask
+        mask2.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
+                     "bottom: 0; opacity: 0.2";
+        mask2.id = i + 'Mask2';
+
         let span = document.createElement('span');
         span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" + 
-                     "font-size: 10pt;";
+                     "font-size: 16pt;";
         span.id = i + 'Countdown';
-        mask.id = i + 'Mask';
+
+        let num = document.createElement('span');
+        num.innerHTML = i;
+        num.style = "position: absolute; left: 50%; transform: translateX(-50%); top: 110%; font-size: 24px"
 
         let border1 = document.createElement('div');
         border1.className += "castingAnimation";
@@ -134,26 +143,22 @@ function InitializeSkills(skills) {
 
         let border2 = document.createElement('div');
         border2.className += "castingAnimation";
-        border2.style["animation-delay"] = "-4s";
+        border2.style["animation-delay"] = "-2s";
         border2.id = i + "skillBorder2";
-
-        let border3 = document.createElement('div');
-        border3.className += "castingAnimation";
-        border3.style.animation = "none";
-        border3.style.display = "block";
-        border3.id = i + "skillBorder3"
 
         skill.className += "skill";
         skill.appendChild(img);
-        skill.appendChild(mask);
+        skill.appendChild(mask1);
+        skill.appendChild(mask2);
         skill.appendChild(span);
         skill.appendChild(border1);
         skill.appendChild(border2);
-        skill.appendChild(border3);
+        skill.appendChild(num);
+        // skill.appendChild(border3);
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
-            charge.style = "color: white; position: absolute; bottom: -3px; right: 0; font-size: 8pt;";
+            charge.style = "color: white; position: absolute; top: 0; left: 5px; font-size: 14pt;";
             charge.innerHTML = skills[i].curCharge;
             charge.id = i + "charge";
             skill.appendChild(charge);
@@ -270,12 +275,13 @@ function tempBuffUpdate(buff) {
 
 function coolDownUpdate(skills) {
     for (let skill in skills) {
-        let mask = document.getElementById(skill + "Mask");
+        let mask1 = document.getElementById(skill + "Mask1");
+        let mask2 = document.getElementById(skill + "Mask2");
         let span = document.getElementById(skill + "Countdown");
 
         if (!('maxCharge' in skills[skill]) || skills[skill].curCharge == 0) {
             let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
-            mask.style.height = coolDownPercent + "%";
+            mask1.style.height = coolDownPercent + "%";
 
             if (skills[skill].curCoolDown <= 0) {
                 span.innerHTML = "";
@@ -283,6 +289,15 @@ function coolDownUpdate(skills) {
                 span.innerHTML = Math.round(skills[skill].curCoolDown) + "s";
             } else {
                 span.innerHTML = Math.round(skills[skill].curCoolDown * 10) / 10 + "s";
+            }
+        }
+
+        if ('maxCharge' in skills[skill] && skills[skill].curCharge != 0) {
+            if (skills[skill].curCharge == skills[skill]. maxCharge) {
+                mask2.style.height = 0 + "%";
+            } else {
+                let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
+                mask2.style.height = coolDownPercent + "%";  
             }
         }
 
@@ -297,12 +312,10 @@ function switchCasting(skillNum, hideAll) {
     for (let i = 0; i < 4; i++) {
         document.getElementById(i + "skillBorder1").style.display = "none"; 
         document.getElementById(i + "skillBorder2").style.display = "none";
-        document.getElementById(i + "skillBorder3").style.display = "block"; 
     }
     if (!hideAll) {
         document.getElementById(skillNum + "skillBorder1").style.display = "block";
         document.getElementById(skillNum + "skillBorder2").style.display = "block";
-        document.getElementById(skillNum + "skillBorder3").style.display = "none";
     }
 }
 

@@ -4,7 +4,6 @@
     <title>Game</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
       canvas { position: absolute; width: 100%; height: 100%; z-index: -1; }
 
       /* --------------------------------------Chat Box--------------------------------------- */
@@ -20,10 +19,10 @@
 
 
       /* ----------------------------------------Skill Bar-------------------------------------- */
-      #skillBarDiv {width: 100%; height: 30px; margin-top: 5px}
+      #skillBarDiv {position: absolute; bottom: 7%; left: 50%; transform: translateX(-50%); width: 320px; height: 70px; }
       #skillsBar {position: absolute; }
-      .skill { display: inline-block; height: 30px; width: 30px; box-shadow: 0 0 3px;
-               position: relative; margin: 0 5px 0 0; background: #131F1C;}
+      .skill { display: inline-block; height: 60px; width: 60px; box-shadow: 0 0 3px;
+               position: relative; margin: 0 20px 0 0; background: #131F1C; border-radius: 2px}
       /* ----------------------------------------SKill Bar-------------------------------------- */
 
 
@@ -56,23 +55,25 @@
         top: 0;
         width: 100%;
         height: 100%;
-        animation: clipMe 8s linear infinite;
-        border: 1px solid green;
+        animation: clipMe 4s linear infinite;
+        /* border: 1px solid green; */
+        box-shadow: 0 0 2px 2px #0ff;
         display: none;
+        border-radius: 2px;
       }
 
       @keyframes clipMe {
         0%, 100% {
-          clip-path: polygon(0 0, 100% 0, 100% 2px, 0 2px)
+          clip-path: polygon(-06% -06%, 106% -06%, 106% 0, -06% 0)
         }
         25% {
-          clip-path: polygon(90% 0, 100% 0, 100% 100%, 90% 100%);
+          clip-path: polygon(100% -06%, 106% -06%, 106% 106%, 100% 106%);
         }
         50% {
-          clip-path: polygon(0 90%, 100% 90%, 100% 100%, 0 100%);
+          clip-path: polygon(-06% 100%, 106% 100%, 106% 106%, -06% 106%);
         }
         75% {
-          clip-path: polygon(0 0, 2px 0, 2px 100%, 0 100%);
+          clip-path: polygon(-06% -06%, 0 -06%, 0 106%, -06% 106%);
         }
       }
       /* ------------------------------------------Lobby----------------------------------------- */
@@ -107,8 +108,9 @@
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Josefin+Sans&display=swap" rel="stylesheet">
   </head>
-  <body style="width:100vw; height:100vh;">
+  <body style="width:100vw; height:100vh; font-family: 'Josefin Sans', sans-serif;">
     <div class="game-area" style="height: 100%; width: 100%;"></div>
     <script id="intro-screen-template" type="text/template">
       <section>
@@ -150,7 +152,7 @@
     </script>
     <script id="ingame-template" type="text/template">
       <canvas id="glCanvas"></canvas>
-      <div id="Debugger">
+      <div id="Debugger" style="display: none">
         <span style="color:#B4AE6C;">Debugger</span>
         <div style="color:#B4AE6C; display: block;">x: <span id="x" style="color: white;">--</span> y: <span id="y" style="color: white;">--</span> z: <span id="z" style="color: white;">--</span></div>
         <div style="color:#B4AE6C; display: block;">Ping: <span id="ping" style="color: white;">--</span> ms</div>
@@ -168,6 +170,8 @@
       </div>
       <div id="statusBar" class="statusBar" onLoad="loadStatusList();">
         <div id="timer" style="color:#B4AE6C; display: inline-block;" >0:00:00</div>
+      </div>
+      <div id="skillBarDiv">
       </div>
       <div id="teammatesDiv">
         <ul id="teammatesBar"></ul>
