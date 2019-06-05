@@ -482,7 +482,7 @@ class Healer {
                         const objsInRadius = game.getObjInRadius(position, radius);
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && !obj.dead) {
-                                obj.status.curHealth = Math.min(obj.status.curHealth + 2 / server.tick_rate, obj.status.maxHealth)
+                                obj.status.curHealth = Math.min(obj.status.curHealth + 10 / server.tick_rate, obj.status.maxHealth)
                                 obj.KEYS.push("status");
                                 game.toSend.push(obj.name);
                             }

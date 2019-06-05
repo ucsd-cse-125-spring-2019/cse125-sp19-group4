@@ -21,6 +21,8 @@ let defaultCursor = "public/images/mouse/normal.cur"
 
 let player = {};
 
+const player_alive = {};
+const player_die_index = {};
 
 const objects = {};
 const cast_models = [];
@@ -47,6 +49,7 @@ const transform_ref = {
     // player
     'player_standing': glMatrix.mat4.create(),
     'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'player_die': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
 
     // monster
     'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
@@ -55,10 +58,10 @@ const transform_ref = {
 
     // item
     'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
-    'swords': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
-    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 10, 5]),
-    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 15, 5]),
-    'daggers': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 15, 1]),
+    'swords': glMatrix.mat4.create(),
+    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 2, 1]),
+    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 1, 1]),
+    'daggers': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 5, 1]),
 
     // projectile
     'bullet': glMatrix.mat4.create(),
@@ -118,15 +121,17 @@ socket.on('enter game', function (msg) {
 
     setCursor(defaultCursor);
     UIInitialize();
-    main();
-
     const data = JSON.parse(msg);
     const players = data.players;
     const objs = data.objects;
 
     uid = players[socket.id].name;
+    for (let key in players) {
+        player_alive[players[key].name] = true;
+    }
     player = players[socket.id];
     console.log("my name is", uid);
+
 
     // get the skill cursor
     for (let key in player.skills) {
@@ -151,6 +156,8 @@ socket.on('enter game', function (msg) {
         directions[name] = obj.direction;
         positions[name] = obj.position;
     });
+
+    main();
 });
 
 socket.on('wait for game begin', function (msg) {
@@ -169,7 +176,6 @@ socket.on('wait for game begin', function (msg) {
 socket.on('Survivor Died', function (msg) {
     const data = JSON.parse(msg);
     const { name } = data;
-
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)');
     } else {
@@ -180,6 +186,8 @@ socket.on('Survivor Died', function (msg) {
 socket.on('Survivor Revived', function (msg) {
     const data = JSON.parse(msg);
     const { name } = data;
+
+    player_alive[name] = true;
 
     if (name === uid) {
         $('.game-area').css('filter', 'none')
@@ -268,8 +276,14 @@ socket.on('game_status', function (msg) {
         }
 
         if ('model' in obj) {
+            console.log(name, 'change model to', obj['model']);
+            
             objects[name].m = obj['model'];
             transform = true;
+        }
+
+        if ('size' in obj) {
+            objects[name].size = obj.size;
         }
 
         if (transform) {
@@ -292,8 +306,8 @@ socket.on('game_status', function (msg) {
             const transformation = glMatrix.mat4.create();
             glMatrix.mat4.multiply(transformation, translation, rotation);
             let t = glMatrix.mat4.clone(transform_ref[objects[name].m]);
-            if (typeof obj.size !== 'undefined') {
-                glMatrix.mat4.scale(t, t, [obj.size, obj.size, obj.size]);
+            if (typeof objects[name].size !== 'undefined') {
+                glMatrix.mat4.scale(t, t, [objects[name].size, objects[name].size, objects[name].size]);
             }
             glMatrix.mat4.multiply(objects[name].t, transformation, t);
         }
@@ -403,7 +417,13 @@ function main() {
     // player
     model_ref['player_standing'] = new OBJObject(gl, "player", "/public/model/player/player_standing.obj", "/public/model/player/player_standing.mtl", true, texture_counter, programInfo);
     model_ref['player_running'] = new Animation(gl, "/public/model/player/player_running.json", programInfo, texture_counter);
+    model_ref['player_running'].addInstance(gl);
     model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter);
+    let i = 0;
+    for (let key in player_alive) {
+        model_ref['player_die'].addInstance(gl);
+        player_die_index[key] = i++;
+    }
 
     // monster
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "/public/model/monster/slime.mtl", true, texture_counter, programInfo);
@@ -412,10 +432,10 @@ function main() {
 
     // item
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
-    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
-    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
-    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/sphere.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
+    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
+    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
+    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
+    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
     
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo);
@@ -423,13 +443,13 @@ function main() {
 
     //effect
     model_ref['taunted'] = new OBJObject(gl, "taunted", "/public/model/effect/taunted.obj", "/public/model/effect/taunted.mtl", true, texture_counter, programInfo);
-    model_ref['ring_green'] = new OBJObject(gl, "ring_green", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [0, 255, 0], 0.2);
-    model_ref['ring_red'] = new OBJObject(gl, "ring_red", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [255, 0, 0], 0.2);
-    model_ref['ring_yellow'] = new OBJObject(gl, "ring_yellow", "/public/model/effect/ring.obj", "", false, texture_counter, programInfo, [244, 215, 66], 0.2);
+    model_ref['ring_green'] = new OBJObject(gl, "ring_green", "/public/model/effect/ringWithFilling.obj", "", false, texture_counter, programInfo, [0, 255, 0], 0.2);
+    model_ref['ring_red'] = new OBJObject(gl, "ring_red", "/public/model/effect/ringWithFilling.obj", "", false, texture_counter, programInfo, [255, 0, 0], 0.2);
+    model_ref['ring_yellow'] = new OBJObject(gl, "ring_yellow", "/public/model/effect/ringWithFilling.obj", "", false, texture_counter, programInfo, [244, 215, 66], 0.2);
 
 
     objects['terrain'] = { m: 'terrain', t: glMatrix.mat4.clone(transform_ref['terrain']) };
-    // objects['f16'] = { m: 'f16', t: glMatrix.mat4.clone(transform_ref['f16']) };
+    
     cast_models[0] = { m: 'slime', t: glMatrix.mat4.clone(transform_ref['slime']) };
     cast_models[1] = { m: 'cactus', t: glMatrix.mat4.clone(transform_ref['cactus']) };
     cast_models[2] = { m: 'spike', t: glMatrix.mat4.clone(transform_ref['spike']) };
@@ -444,7 +464,17 @@ function main() {
         then = now;
 
         let start = Date.now();
-        model_ref['player_running'].updateJoints(now);
+        model_ref['player_running'].updateJoints(deltaTime, 0, true);
+
+        for (let name in player_alive) {
+            if (!player_alive[name]) {
+                model_ref['player_die'].updateJoints(deltaTime, player_die_index[name], false);
+            } else if (objects[name].m === 'player_die') {
+                model_ref['player_die'].resetTime(player_die_index[name]);
+                player_alive[name] = false;
+            }
+        }
+
         let end = Date.now();
         $('#animation').html(end - start);
 
@@ -602,16 +632,23 @@ function drawScene(gl, programInfo, objects, camera) {
         }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
+            to_render[obj.m].push([]);
             timer[obj.m] = 0;
         }
+        to_render[obj.m][0].push(objects_keys[i]);
         to_render[obj.m].push(obj.t);
     }
 
     let to_render_keys = Object.keys(to_render);
 
     for (let i = 0, len = to_render_keys.length; i < len; i++) {
+        const m = to_render_keys[i];
         const start = Date.now();
-        model_ref[to_render_keys[i]].render(gl, to_render[to_render_keys[i]]);
+        if (model_ref[m].constructor.name == "Animation") {
+            model_ref[m].render(gl, to_render[m], to_render[m][0]);
+        } else {
+            model_ref[m].render(gl, to_render[m]);
+        }
         const end = Date.now();
         timer[to_render_keys[i]] = end - start;
     }

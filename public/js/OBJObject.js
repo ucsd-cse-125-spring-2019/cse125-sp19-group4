@@ -83,7 +83,7 @@ class OBJObject {
                         gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[name].index);
                     }
                 }
-                for (let j = 0; j < transformMatrix_array.length; j++) {
+                for (let j = 1; j < transformMatrix_array.length; j++) {
                     gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[j]);
                     gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
                 }
@@ -100,7 +100,7 @@ class OBJObject {
             gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_index);
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[0]);
 
-            for (let i = 0; i < transformMatrix_array.length; i++) {
+            for (let i = 1; i < transformMatrix_array.length; i++) {
                 gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[i]);
                 gl.drawElements(gl.TRIANGLES, this.mesh.indices.length, gl.UNSIGNED_SHORT, 0);
             }

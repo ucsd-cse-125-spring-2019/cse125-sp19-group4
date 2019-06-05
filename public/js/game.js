@@ -1,7 +1,7 @@
 const glMatrix = require('gl-Matrix');
 const Utils = require('./utils.js')
 const { initializeProfession, God, Survivor, SKILL_TYPE } = require('./GameProfession.js');
-const { Item, Slime, Tile, Bullet, Tree, Tower } = require('./GameUnits.js').Units;
+const { Item, Slime, Bullet, Tree, Tower } = require('./GameUnits.js').Units;
 const items = require('./items.js');
 const server = require('../../server.js');
 
@@ -29,7 +29,6 @@ class GameInstance {
         this.onGoingSkills = {};
         this.toSend = [];
         this.slimes = [];
-        this.initializeMap();                 // build this.map
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
         this.meleeId = 0;
@@ -88,28 +87,7 @@ class GameInstance {
             throw obj.name + " already in objects";
         }
         this.objects[obj.name] = obj; // store reference
-        this.map[Math.floor(obj.position[2]) + this.worldHalfHeight][Math.floor(obj.position[0]) + this.worldHalfWidth].content.push(obj);
     };
-
-    initializeMap() {
-        this.map = new Array(2 * this.worldHalfHeight);
-        for (let i = 0; i < this.map.length; i++) {
-            this.map[i] = new Array(2 * this.worldHalfWidth);
-            for (let j = 0; j < this.map[i].length; j++) {
-                this.map[i][j] = new Tile();
-            }
-        }
-        // store object info on the map
-        Object.keys(this.objects).forEach(function (key) {
-            const obj = this.objects[key];
-            if (typeof obj.position === 'undefined') {
-                console.log("Position not initialized: " + key);
-            }
-            else {
-                this.map[obj.position[2]][obj.position[0]].content.push(obj);
-            }
-        });
-    }
 
     decrementCoolDown(amount) {
         for (let name in this.skillables) {
@@ -224,8 +202,10 @@ class GameInstance {
     move(name, direction, updateDirectionOnly = false) {
         const obj = this.objects[name];
         if (obj instanceof Survivor) {
-            obj.model = 'player_running';
-            obj.KEYS.push('model');
+            if (!obj.dead && obj.model != 'player_running') {
+                obj.model = 'player_running';
+                obj.KEYS.push('model');
+            }
         }
         const speed = obj.status.speed;
         if (updateDirectionOnly)
@@ -242,8 +222,10 @@ class GameInstance {
     stay(name) {
         const obj = this.objects[name];
         if (obj instanceof Survivor) {
-            obj.model = 'player_standing';
-            obj.KEYS.push('model');
+            if (!obj.dead && obj.model != 'player_standing') {
+                obj.model = 'player_standing';
+                obj.KEYS.push('model');
+            }
         }
         this.physicsEngine.stopMovement(name);
     }
@@ -716,7 +698,12 @@ class GameInstance {
     }
 
     survivorHasDied(name) {
-        this.objects[name].dead = true;
+        const obj = this.objects[name];
+        obj.model = 'player_die';
+        obj.KEYS.push('model');
+        obj.position[1] += 2;
+        obj.KEYS.push('position');
+        obj.dead = true;
         this.deadSurvivors.push(name);
         this.liveSurvivors.splice(this.liveSurvivors.indexOf(name), 1);
         if (this.deadSurvivors.length == this.max_survivors) {

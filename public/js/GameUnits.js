@@ -8,6 +8,8 @@ class Item {
         this.model = kind;
         this.position = [0, 0, 0];
         this.direction = [0, 0, 1];
+        this.KEYS = ["kind", "model", "position", "direction"];
+        Utils.recursiveSetPropertiesFilter(this);
     }
 }
 
@@ -100,13 +102,6 @@ class Slime {
     }
 }
 
-class Tile {
-    constructor() {
-        this.type = "";
-        this.content = [];
-    }
-}
-
 class Bullet {
     constructor(position, direction, radius, bulletId) {
         this.name = "Bullet " + bulletId;
@@ -120,7 +115,8 @@ class Bullet {
             this.model = "bullet";
             this.size = radius;
         }
-
+        this.KEYS = ["model", "position", "direction", "size"];
+        Utils.recursiveSetPropertiesFilter(this);
     }
 }
 
@@ -132,6 +128,8 @@ class Ring {
         this.position = position;
         this.direction = [0, 0, -1];
         this.model = model;
+        this.KEYS = ["model", "position", "direction", "size"];
+        Utils.recursiveSetPropertiesFilter(this);
     }
 }
 
@@ -141,6 +139,8 @@ class Taunted {
         this.position = position;
         this.direction = direction;
         this.model = 'taunted';
+        this.KEYS = ["model", "position", "direction", "size"];
+        Utils.recursiveSetPropertiesFilter(this);
     }
 }
 
@@ -152,7 +152,7 @@ class Tree {
         this.direction = [0, 0, -1];
         this.model = 'tree';
         this.size = size;
-        this.type = "tree"
+        this.type = "tree";
     }
 }
 
@@ -165,11 +165,14 @@ class Tower {
         this.model = 'tower';
         this.maxHealth = maxHealth;
         this.curHealth = this.maxHealth;
+        this.KEYS = ["model", "position", "direction", "maxHealth", "curHealth"];
+        Utils.recursiveSetPropertiesFilter(this);
     }
 
     onHit(game, damage) {
         this.curHealth -= damage;
+        this.KEYS.push("curHealth");
     }
 }
 
-module.exports.Units = { Item, Slime, Tile, Bullet, Ring, Taunted, Tree, Tower };
+module.exports.Units = { Item, Slime, Bullet, Ring, Taunted, Tree, Tower };
