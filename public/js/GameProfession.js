@@ -14,7 +14,8 @@ const SKILL_TYPE = {
     SELF: "SELF",
     OTHERS: "OTHERS",
     LOCATION: "LOCATION",
-    ONGOING: "ONGOING"
+    SHOOT: "SHOOT",
+    ONGOING: "ONGOING",
 }
 
 class onGoingSkill {
@@ -187,7 +188,7 @@ class Fighter {
         this.skills = {
             0: {
                 'name': 'Attack',
-                'type': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.SHOOT,
                 'coolDown': 0,
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',
@@ -346,7 +347,7 @@ class Archer {
         this.skills = {
             0: {
                 'name': 'Shoot',
-                'type': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.SHOOT,
                 'coolDown': 0,
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',
@@ -367,7 +368,7 @@ class Archer {
             },
             1: {
                 'name': 'Grenade',
-                'type': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.SHOOT,
                 'coolDown': 5,
                 'curCoolDown': 0,
                 'maxCharge': 2,
@@ -439,7 +440,7 @@ class Healer {
         this.skills = {
             0: {
                 'name': 'Shoot',
-                'type': SKILL_TYPE.LOCATION,
+                'type': SKILL_TYPE.SHOOT,
                 'coolDown': 0,
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',

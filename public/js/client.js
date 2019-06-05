@@ -57,15 +57,15 @@ const transform_ref = {
     'spike': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
 
     // item
-    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.005, 0.005, 0.005]),
-    'swords': glMatrix.mat4.create(),
-    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 2, 1]),
-    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 1, 1]),
-    'daggers': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1, 5, 1]),
+    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
+    'swords': glMatrix.mat4.fromZRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.08, 0.08, 0.08]),
+    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
+    'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
 
     // projectile
     'bullet': glMatrix.mat4.create(),
-    'fireball': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [5, 5, 5]),
+    'fireball': glMatrix.mat4.create(),
 
     // effect
     'taunted': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [3, 3, 3]),
@@ -430,10 +430,10 @@ function main() {
 
     // item
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
-    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
-    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
-    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
+    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/item/SwordCartoonLowPoly.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
+    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/item/Shield_obj.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
+    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/item/heart.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
+    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/item/Dagger.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
     
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo);
@@ -908,7 +908,15 @@ function handleSkill(uid, skillNum) {
             }
             UI.switchCasting(casting, false);
             break;
+        case "SHOOT":
+            casting = skillNum;
+            if (skillCursors[skillNum] != undefined) {
+                setCursor(skillCursors[skillNum])
+            }
+            UI.switchCasting(casting, false);
+            break;
         case "SELF":
+            break;
         case "ONGOING":
             const skillsParams = { skillNum };
             socket.emit("skill", JSON.stringify(skillsParams));

@@ -255,9 +255,12 @@ class GameInstance {
 
             case SKILL_TYPE.LOCATION:
                 if (this.outOfWorld(position)) {
-                    console.log("skill out of world");
                     return;
                 }
+                skillSucceeed = skill.function(this, obj, skillParams)
+                break;
+            
+            case SKILL_TYPE.SHOOT:
                 skillSucceeed = skill.function(this, obj, skillParams)
                 break;
 
