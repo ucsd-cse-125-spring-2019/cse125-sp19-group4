@@ -172,6 +172,7 @@ class Tower {
     onHit(game, damage) {
         this.curHealth -= damage;
         this.KEYS.push("curHealth");
+        // game.sound.push('shatter');
     }
 }
 

@@ -28,6 +28,7 @@ class GameInstance {
         this.directions = {};
         this.onGoingSkills = {};
         this.toSend = [];
+        this.sound = [];
         this.slimes = [];
         this.physicsEngine = physicsEngine;
         this.bulletId = 0;
@@ -273,6 +274,9 @@ class GameInstance {
         }
 
         if (skillSucceeed || skillSucceeed == undefined) {
+            if (typeof skill.sound !== 'undefined') {
+                this.sound.push(skill.sound);
+            }
             if ('maxCharge' in skill) {
                 skill.curCharge -= 1;
             } else {
@@ -442,6 +446,7 @@ class GameInstance {
     afterSend() {
         this.toClean.length = 0;
         this.toSend.length = 0;
+        this.sound.length = 0;
     }
 
     useItems() {

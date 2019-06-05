@@ -187,7 +187,8 @@ class Fighter {
         };
         this.skills = {
             0: {
-                'name': 'Attack',
+                'name': 'Shoot',
+                'sound': 'shoot',
                 'type': SKILL_TYPE.SHOOT,
                 'coolDown': 0,
                 'curCoolDown': 0,
@@ -195,7 +196,7 @@ class Fighter {
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
                     if (self.attackTimer > 0) {
-                        return;
+                        return false;
                     }
                     const name = self.name;
                     const cursor = params.position;
@@ -210,6 +211,7 @@ class Fighter {
 
             1: {
                 'name': 'Cut tree',
+                'sound': 'cut',
                 'type': SKILL_TYPE.LOCATION,
                 'coolDown': 5,
                 'curCoolDown': 0,
@@ -238,7 +240,8 @@ class Fighter {
             },
 
             2: {
-                'name': 'harder',
+                'name': 'Shield Wall',
+                'sound': 'shield',
                 'coolDown': 15,
                 'curCoolDown': 0,
                 'description': 'Be invulnerable for 3 seconds',
@@ -255,6 +258,7 @@ class Fighter {
 
             3: {
                 'name': 'Taunt',
+                'sound': 'taunt',
                 'type': SKILL_TYPE.ONGOING,
                 'coolDown': 15,
                 'curCoolDown': 0,
@@ -347,6 +351,7 @@ class Archer {
         this.skills = {
             0: {
                 'name': 'Shoot',
+                'sound': 'shoot',
                 'type': SKILL_TYPE.SHOOT,
                 'coolDown': 0,
                 'curCoolDown': 0,
@@ -354,7 +359,7 @@ class Archer {
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
                     if (self.attackTimer > 0) {
-                        return;
+                        return false;
                     }
                     const name = self.name;
                     const cursor = params.position;
@@ -367,9 +372,10 @@ class Archer {
                 },
             },
             1: {
-                'name': 'Grenade',
+                'name': 'Fireball',
+                'sound': 'fireball',
                 'type': SKILL_TYPE.SHOOT,
-                'coolDown': 5,
+                'coolDown': 6,
                 'curCoolDown': 0,
                 'maxCharge': 2,
                 'curCharge': 0,
@@ -383,18 +389,19 @@ class Archer {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    game.shoot(name, 50, 50, 1);
+                    game.shoot(name, 50, 40, 1);
                 },
             },
             2: {
-                'name': 'Run',
+                'name': 'Sprint',
+                'sound': 'sprint',
                 'type': SKILL_TYPE.ONGOING,
                 'coolDown': 10,
                 'curCoolDown': 0,
                 'description': 'Run! Increase speed by 100% for 1 sec',
                 'iconPath': '/public/images/skills/SKILL_Run.png',
                 'function': function (game, self, params) {
-                    let duration = 1;
+                    let duration = 2;
                     let effect = function (game, self) {
                         self.tempBuff.speed += self.baseStatus.speed + self.buff.speed;
                     };
@@ -403,6 +410,7 @@ class Archer {
             },
             3: {
                 'name': 'Boost',
+                'sound': 'boost',
                 'type': SKILL_TYPE.ONGOING,
                 'coolDown': 10,
                 'curCoolDown': 0,
@@ -440,6 +448,7 @@ class Healer {
         this.skills = {
             0: {
                 'name': 'Shoot',
+                'sound': 'shoot',
                 'type': SKILL_TYPE.SHOOT,
                 'coolDown': 0,
                 'curCoolDown': 0,
@@ -447,7 +456,7 @@ class Healer {
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
                 'function': function (game, self, params) {
                     if (self.attackTimer > 0) {
-                        return;
+                        return false;
                     }
                     const name = self.name;
                     const cursor = params.position;
@@ -462,6 +471,7 @@ class Healer {
 
             1: {
                 'name': 'Sing',
+                'sound': 'heal',
                 'coolDown': 10,
                 'curCoolDown': 0,
                 'description': 'The wizard starts singing. Because his voice is too beatiful,' +
@@ -474,6 +484,7 @@ class Healer {
                         return false;
                     }
                     self.singing = true;
+                    self.skills[2].curCoolDown = self.skills[2].coolDown;
                     const duration = 10;
                     const radius = 20;
                     const effect = function (game, self) {
@@ -509,6 +520,7 @@ class Healer {
 
             2: {
                 'name': 'Chant',
+                'sound': 'buff',
                 'coolDown': 10,
                 'curCoolDown': 0,
                 'description': 'The wizard starts chanting. The chanting strenghthens whoever hears it',
@@ -520,6 +532,7 @@ class Healer {
                         return false;
                     }
                     self.chanting = true;
+                    self.skills[1].curCoolDown = self.skills[2].coolDown;
                     const duration = 10;
                     const radius = 20;
                     const buffedUnit = {};
@@ -578,10 +591,11 @@ class Healer {
             },
 
             3: {
-                'name': 'Revive',
+                'name': 'Resurrect',
+                'sound': 'resurrect',
                 'coolDown': 30,
                 'curCoolDown': 0,
-                'description': 'Revive a dead player',
+                'description': 'Resurrect a dead player',
                 'iconPath': '/public/images/skills/SKILL_Surgery.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {

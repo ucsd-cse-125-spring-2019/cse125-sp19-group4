@@ -39,6 +39,11 @@ const skillCursors = {}
 
 const model_ref = {};
 
+const x_neg_90 = glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2);
+const y_pos_90 = glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), Math.PI / 2);
+const y_neg_90 = glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2);
+const z_neg_90 = glMatrix.mat4.fromZRotation(glMatrix.mat4.create(), -Math.PI / 2);
+
 const transform_ref = {
     '': glMatrix.mat4.create(),
     // environment
@@ -48,17 +53,17 @@ const transform_ref = {
 
     // player
     'player_standing': glMatrix.mat4.create(),
-    'player_running': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
-    'player_die': glMatrix.mat4.fromXRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'player_running': glMatrix.mat4.clone(x_neg_90),
+    'player_die': glMatrix.mat4.clone(x_neg_90),
 
     // monster
     'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
-    'cactus': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
-    'spike': glMatrix.mat4.fromYRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'cactus': glMatrix.mat4.clone(y_neg_90),
+    'spike': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_pos_90, x_neg_90),
 
     // item
     'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
-    'swords': glMatrix.mat4.fromZRotation(glMatrix.mat4.create(), -Math.PI / 2),
+    'swords': glMatrix.mat4.clone(z_neg_90),
     'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.08, 0.08, 0.08]),
     'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
     'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
@@ -89,8 +94,21 @@ else {
     }, false);
 }
 
-const punch = new Audio('/public/audio/punch.mp3');
-const moan = new Audio('/public/audio/moan.mp3');
+const sounds = {
+    'sprint': '/public/audio/sprint.mp3',
+    'moan': '/public/audio/moan.mp3',
+    'punch': '/public/audio/punch.mp3',
+    'shatter': '/public/audio/shatter.mp3',
+    'shoot': '/public/audio/shoot.mp3',
+    'taunt': '/public/audio/taunt.mp3',
+    'shield': '/public/audio/shield.mp3',
+    'fireball': '/public/audio/fireball.mp3',
+    'boost': '/public/audio/boost.mp3',
+    'buff': '/public/audio/buff.mp3',
+    'heal': '/public/audio/heal.mp3',
+    'resurrect': '/public/audio/resurrect.mp3',
+    'cut': '/public/audio/cut.mp3',
+}
 
 // ============================ Network IO ================================
 
@@ -222,6 +240,15 @@ socket.on('game_status', function (msg) {
     const status = JSON.parse(msg);
 
     const data = status.data;
+    const sound = status.sound;
+    if (typeof sound !== 'undefined') {
+        sound.forEach(s => {
+            if (typeof sounds[s] !== 'undefined') {
+                new Audio(sounds[s]).play();
+            }
+        });
+    }
+    
     const player = data[uid];
     if (typeof player !== 'undefined') {
         if (typeof player.position !== 'undefined') {
@@ -316,7 +343,7 @@ socket.on('game_status', function (msg) {
             console.error(name, 'not in objects');
         } else {
             if (objects[name].m == 'slime' || objects[name].m == 'cactus' || objects[name].m == 'spike') {
-                moan.play();
+                new Audio('/public/audio/moan.mp3').play();
             }
             delete objects[name];
         }
@@ -426,7 +453,9 @@ function main() {
     // monster
     model_ref['slime'] = new OBJObject(gl, "slime", "/public/model/monster/slime.obj", "/public/model/monster/slime.mtl", true, texture_counter, programInfo);
     model_ref['cactus'] = new OBJObject(gl, "cactus", "/public/model/monster/cactus.obj", "/public/model/monster/cactus.mtl", true, texture_counter, programInfo);
-    model_ref['spike'] = new OBJObject(gl, "spike", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
+    // model_ref['spike'] = new OBJObject(gl, "spike", "/public/model/monster/spike.obj", "/public/model/monster/spike.mtl", true, texture_counter, programInfo);
+    model_ref['spike'] = new Animation(gl, "/public/model/monster/spike.json", programInfo, texture_counter);
+    model_ref['spike'].addInstance(gl);
 
     // item
     model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
@@ -463,6 +492,7 @@ function main() {
 
         let start = Date.now();
         model_ref['player_running'].updateJoints(deltaTime, 0, true);
+        model_ref['spike'].updateJoints(deltaTime, 0, true);
 
         for (let name in player_alive) {
             if (!player_alive[name]) {

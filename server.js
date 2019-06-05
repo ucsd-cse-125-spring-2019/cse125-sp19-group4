@@ -210,6 +210,7 @@ function gameLoop() {
 
     const broadcast_status = {
         data: toSend,
+        sound: gameInstance.sound,
         time: duration,
         toClean: gameInstance.toClean,
         debug: {looptime: elapse},
