@@ -578,7 +578,7 @@ class Healer {
 
             3: {
                 'name': 'Revive',
-                'coolDown': 10,
+                'coolDown': 30,
                 'curCoolDown': 0,
                 'description': 'Revive a dead player',
                 'iconPath': '/public/images/skills/SKILL_Surgery.png',
@@ -596,7 +596,7 @@ class Healer {
 
                     objsInRadius.forEach(function (obj) {
                         if (obj.type === "player" && obj.status.curHealth <= 0) {
-                            obj.status.curHealth = 10;
+                            obj.status.curHealth = obj.status.maxHealth;
                             obj.KEYS.push("status");
                             game.toSend.push(obj.name);
                             game.survivorHasRevived(obj.name);

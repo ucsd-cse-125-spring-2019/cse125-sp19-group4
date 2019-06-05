@@ -634,7 +634,7 @@ function drawScene(gl, programInfo, objects, camera) {
             to_render[obj.m].push([]);
             timer[obj.m] = 0;
         }
-        to_render[obj.m][0].push(objects_keys[i]);
+        to_render[obj.m][0].push(player_die_index[objects_keys[i]]);
         to_render[obj.m].push(obj.t);
     }
 

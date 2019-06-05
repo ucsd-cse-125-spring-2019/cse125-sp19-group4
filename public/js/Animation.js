@@ -107,17 +107,10 @@ class Animation {
         this.normalBuffers.splice(index, 1);
         this.scaled_now.splice(index, 1);
     }
-    render(gl, transformMatrix_array, instance_ids) {
+    render(gl, transformMatrix_array, instance_idxs) {
         let array_index = 1;
         if (this.vertices.length > 1) {
-            instance_ids.forEach(element => {
-                let index = 0;
-                if (element == "Survivor 1") {
-                    index = 1
-                }
-                if (element == "Survivor 2") {
-                    index = 2
-                }
+            instance_idxs.forEach(index => {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers[index]);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices[index]), gl.STATIC_DRAW);
                 gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
