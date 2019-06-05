@@ -276,8 +276,6 @@ socket.on('game_status', function (msg) {
         }
 
         if ('model' in obj) {
-            console.log(name, 'change model to', obj['model']);
-            
             objects[name].m = obj['model'];
             transform = true;
         }
@@ -471,6 +469,7 @@ function main() {
                 model_ref['player_die'].updateJoints(deltaTime, player_die_index[name], false);
             } else if (objects[name].m === 'player_die') {
                 model_ref['player_die'].resetTime(player_die_index[name]);
+                console.log(name, 'reset');
                 player_alive[name] = false;
             }
         }
