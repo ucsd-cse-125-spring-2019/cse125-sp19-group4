@@ -115,17 +115,17 @@ function InitializeSkills(skills) {
         let skill = document.createElement('div');
         let img = document.createElement('img');
         img.src = skills[i].iconPath;
-        img.style = "width: 100%; height: 100%; padding: 3px"
+        img.style = "width: 100%; height: 100%; padding: 8px;"
         img.title = skills[i].description;
         
         let mask1 = document.createElement('div'); // cooldown mask
         mask1.style = "background-color: #1b4f72 ; height: 0; position: absolute; width: 100%;" +
-                     "bottom: 0; opacity: 0.8; border-radius: 2px";
+                     "bottom: 0; opacity: 0.8; border-radius: 10px";
         mask1.id = i + 'Mask1';
 
         let mask2 = document.createElement('div'); // cooldown of charge mask
         mask2.style = "background-color: #1b4f72 ; height: 0; position: absolute; width: 100%;" +
-                     "bottom: 0; opacity: 0.2; border-radius: 2px";
+                     "bottom: 0; opacity: 0.2; border-radius: 10px";
         mask2.id = i + 'Mask2';
 
         let span = document.createElement('span');
@@ -158,7 +158,7 @@ function InitializeSkills(skills) {
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
-            charge.style = "color: white; position: absolute; top: 0; left: 5px; font-size: 14pt; opacity = 0.9";
+            charge.style = "color: white; position: absolute; top: 1px; left: 5px; font-size: 14pt; opacity = 0.9";
             charge.innerHTML = skills[i].curCharge;
             charge.id = i + "charge";
             skill.appendChild(charge);
@@ -184,7 +184,7 @@ function InitializeTeammates(Survivors) {
         let img = document.createElement('img');
         img.src = survivor.iconPath;
         img.id = survivor.name + "Icon";
-        img.style = "width: 100%; height: 100%; box-shadow: 0 0 3px; border: 2px solid saddlebrown;"
+        img.style = "width: 100%; height: 100%; padding: 5px; " // + "background: #00000080; border-radius: 10px"
 
         let name = document.createElement('span');
         name.style = "color: white; font-size: 12pt; white-space: nowrap; left: 50%; transformation: translateX(-50%)";
@@ -222,7 +222,7 @@ function InitializeVault(items) {
 
         let img = document.createElement('img');
         img.src = 'public/images/items/ITEM_' + key + ".png";
-        img.style = "width:100%; height:100%; position: absolute; padding: 3px"
+        img.style = "width:100%; height:100%; position: absolute; padding: 6px"
         div.appendChild(img);
 
         let count = document.createElement('span');
