@@ -536,9 +536,9 @@ function main() {
         } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('RIGHT')) {
             direction = camera.Right;
         } else if (Key.isDown('UP') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            glMatrix.vec3.negate(direction, camera.Foward);
-        } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             direction = camera.Foward;
+        } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+            glMatrix.vec3.negate(direction, camera.Foward);
         } else if (Key.isDown('UP') && Key.isDown('DOWN') || Key.isDown('LEFT') && Key.isDown('RIGHT')) {
             // direction = 'stay';
         } else if (Key.isDown('UP') && Key.isDown('RIGHT')) {
