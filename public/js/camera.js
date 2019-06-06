@@ -1,6 +1,6 @@
 const YAW = -90.0;
 const PITCH = -45.0;
-const SPEED = 5;        // Unit
+const SPEED = 20;        // Unit
 const SENSITIVITY = 120;
 const MIN_ZOOM = 10.0;
 const MAX_ZOOM = 50.0;
@@ -59,7 +59,13 @@ class Camera {
         return ray;
     }
 
-    setPosition(playerPosition) {
+    setPosition(playerPosition, reset = false) {
+        if (reset) {
+            glMatrix.vec3.normalize(this.RelativePosition, this.RelativePosition);
+            const scale = glMatrix.mat4.create();
+            glMatrix.mat4.fromScaling(scale, [30, 30, 30]);
+            glMatrix.vec3.transformMat4(this.RelativePosition, this.RelativePosition, scale);
+        }
         glMatrix.vec3.add(this.Position, playerPosition, this.RelativePosition);
     }
 
@@ -161,33 +167,33 @@ class Camera {
         this.updateCameraVectors();
     }
 
-    // moveFoward(deltaTime) {
-    //     const velocity = this.MovementSpeed * deltaTime;
-    //     let temp = glMatrix.vec3.create();
-    //     glMatrix.vec3.scale(temp, this.Foward, velocity);
-    //     glMatrix.vec3.add(this.Position, this.Position, temp);
-    // }
+    moveFoward(deltaTime) {
+        const velocity = this.MovementSpeed * deltaTime;
+        let temp = glMatrix.vec3.create();
+        glMatrix.vec3.scale(temp, this.Foward, velocity);
+        glMatrix.vec3.add(this.Position, this.Position, temp);
+    }
 
-    // moveBackward(deltaTime) {
-    //     const velocity = this.MovementSpeed * deltaTime;
-    //     let temp = glMatrix.vec3.create();
-    //     glMatrix.vec3.scale(temp, this.Foward, -velocity);
-    //     glMatrix.vec3.add(this.Position, this.Position, temp);
-    // }
+    moveBackward(deltaTime) {
+        const velocity = this.MovementSpeed * deltaTime;
+        let temp = glMatrix.vec3.create();
+        glMatrix.vec3.scale(temp, this.Foward, -velocity);
+        glMatrix.vec3.add(this.Position, this.Position, temp);
+    }
 
-    // moveLeft(deltaTime) {
-    //     const velocity = this.MovementSpeed * deltaTime;
-    //     let temp = glMatrix.vec3.create();
-    //     glMatrix.vec3.scale(temp, this.Right, -velocity);
-    //     glMatrix.vec3.add(this.Position, this.Position, temp);
-    // }
+    moveLeft(deltaTime) {
+        const velocity = this.MovementSpeed * deltaTime;
+        let temp = glMatrix.vec3.create();
+        glMatrix.vec3.scale(temp, this.Right, -velocity);
+        glMatrix.vec3.add(this.Position, this.Position, temp);
+    }
 
-    // moveRight(deltaTime) {
-    //     const velocity = this.MovementSpeed * deltaTime;
-    //     let temp = glMatrix.vec3.create();
-    //     glMatrix.vec3.scale(temp, this.Right, velocity);
-    //     glMatrix.vec3.add(this.Position, this.Position, temp);
-    // }
+    moveRight(deltaTime) {
+        const velocity = this.MovementSpeed * deltaTime;
+        let temp = glMatrix.vec3.create();
+        glMatrix.vec3.scale(temp, this.Right, velocity);
+        glMatrix.vec3.add(this.Position, this.Position, temp);
+    }
 
     updateCameraVectors() {
         let front = glMatrix.vec3.create();
