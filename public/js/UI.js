@@ -113,10 +113,10 @@ function InitializeSkills(skills) {
     for (let i in skills) {
         let skillsBar = document.getElementById("skillsBar");
         let skill = document.createElement('div');
+        skill.id = i + "skill"
         let img = document.createElement('img');
         img.src = skills[i].iconPath;
         img.style = "width: 100%; height: 100%; padding: 8px;"
-        img.title = skills[i].description;
         
         let mask1 = document.createElement('div'); // cooldown mask
         mask1.style = "background-color: #1b4f72 ; height: 0; position: absolute; width: 100%;" +
@@ -146,6 +146,19 @@ function InitializeSkills(skills) {
         border2.style["animation-delay"] = "-2s";
         border2.id = i + "skillBorder2";
 
+        let description = document.createElement('div');
+        description.className += "skillDescription"
+        description.id = skill.id + "description";
+
+        let descriptionString = "";
+        descriptionString += skills[i].name + "<br>";
+        descriptionString += "cd: " + skills[i].coolDown + "s <br>";
+        if ('maxCharge' in skills[i]) {
+            descriptionString += "max charges: " +skills[i].maxCharge + "<br>";
+        }
+        descriptionString += skills[i].description;
+        description.innerHTML = "<span>" + descriptionString + "</span>" ;
+
         skill.className += "skill";
         skill.appendChild(img);
         skill.appendChild(mask1);
@@ -154,7 +167,9 @@ function InitializeSkills(skills) {
         skill.appendChild(border1);
         skill.appendChild(border2);
         skill.appendChild(num);
-        // skill.appendChild(border3);
+        skill.appendChild(description);
+        skill.addEventListener("mouseenter", skillMouseEnter);
+        skill.addEventListener("mouseleave", skillMouseLeave);
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
@@ -261,7 +276,11 @@ function healthUpdate(status) {
 function statusUpdate(status) {
     for (let i in status) {
         if (isStatusValid(i)) {
-            document.getElementById(i).innerHTML = status[i];
+            if (i === "defense" && status[i] >= 100) {
+                document.getElementById(i).innerHTML = '∞';
+            } else {
+                document.getElementById(i).innerHTML = status[i];
+            }
         }
     }
 }
@@ -278,7 +297,7 @@ function buffUpdate(buff) {
 function tempBuffUpdate(buff) {
     for (let i in buff) {
         if (isStatusValid(i)) {
-            if (buff[i] == 0) {
+            if (buff[i] == 0 || buff[i] >= 100) {
                 document.getElementById("tempbuff" + i).innerHTML = "";
             } else {
                 document.getElementById("tempbuff" + i).innerHTML = "+" + buff[i];
@@ -386,6 +405,18 @@ function updateProgressBar(progress) {
     document.getElementById('progressBar').style.width =  curProgress / winProgress * 100 + "%"
 }
 /* --------------------------all update functions--------------------------- */
+
+function skillMouseEnter(e) {
+    let id = e.target.id + 'description';
+    let description = document.getElementById(e.target.id + 'description');
+    description.style.opacity = 1;
+}
+
+
+function skillMouseLeave(e) {
+    let description = document.getElementById(e.target.id + 'description');
+    description.style.opacity = 0;
+}
 
 
 

@@ -23,6 +23,8 @@
       #skillsBar {position: absolute; }
       .skill { display: inline-block; height: 60px; width: 60px; box-shadow: 0 0 3px; 
                position: relative; margin: 0 20px 0 0; background: #000000d0; border-radius: 10px}
+      .skillDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 200px; background: #000000a0;
+                        transition: 0.5s; padding: 15px 10px; border-radius: 10px; color: white; opacity: 0;}
       /* ----------------------------------------SKill Bar-------------------------------------- */
 
 
@@ -63,17 +65,18 @@
 
       @keyframes clipMe {
         0%, 100% {
-          clip-path: polygon(-06% -06%, 106% -06%, 106% 0, -06% 0)
+          clip-path: polygon(50% 50%, -06% -06%, 50% -150%, 106% -06%)
         }
         25% {
-          clip-path: polygon(100% -06%, 106% -06%, 106% 106%, 100% 106%);
+          clip-path: polygon(50% 50%, 106% -06%, 250% 50%, 106% 106%);
         }
         50% {
-          clip-path: polygon(-06% 100%, 106% 100%, 106% 106%, -06% 106%);
+          clip-path: polygon(50% 50%, 106% 106%,  50% 250%, -6% 106%);
         }
         75% {
-          clip-path: polygon(-06% -06%, 0 -06%, 0 106%, -06% 106%);
+          clip-path: polygon(50% 50%, -06% 106%, -150% 50%, -06% -6%);
         }
+
       }
       /* ------------------------------------------Lobby----------------------------------------- */
 
