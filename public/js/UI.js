@@ -31,8 +31,8 @@ function createStatusItem(statusName, initialValue) {
 
     let img = document.createElement("img");
     img.src = imgSrc;
-    img.height = 20;
-    img.weight = 20;
+    img.height = 30;
+    img.weight = 30;
     img.style = "vertical-align: middle; margin: 2px";
     img.title = statusName;
 
@@ -40,17 +40,17 @@ function createStatusItem(statusName, initialValue) {
     let text = document.createElement("span");
     text.id = statusName;
     text.innerHTML = initialValue;
-    text.style = "display: inline-block; vertical-align: middle; margin: 0 0 0 5px; color:#B4AE6C;";
+    text.style = "display: inline-block; vertical-align: middle; margin: 0 0 0 5px; color:#B4AE6C; font-size: 14pt;";
 
     let buff = document.createElement("span");
     buff.id = "buff" + statusName;
     buff.innerHTML = "+0"
-    buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 9pt";
+    buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 11pt";
 
     let tempbuff = document.createElement("span");
     tempbuff.id = "tempbuff" + statusName;
     tempbuff.innerHTML = ""
-    tempbuff.style = "display: inline-block; margin: 0 0 0 5px; color:red; font-size: 9pt";
+    tempbuff.style = "display: inline-block; margin: 0 0 0 5px; color:red; font-size: 11pt";
 
     div.appendChild(img);
     div.appendChild(text);
@@ -64,13 +64,13 @@ function InitializeStatus(status) {
     let div = document.createElement("div");
     let img = document.createElement("img");
     img.src = "/public/images/status/maxHealth.png";
-    img.height = 20;
-    img.weight = 20;
+    img.height = 25;
+    img.weight = 25;
     img.style = "vertical-align: middle; margin: 2px";
 
     let health = document.createElement("div");
     health.className += "progress"
-    health.style = "display: inline-block; vertical-align: middle; width: 100px; background-color: IndianRed; margin: 0px 5px;"
+    health.style = "display: inline-block; vertical-align: middle; width: 100px; background-color: IndianRed; margin: 0px 5px; height: 18px"
     health.background = "black";
 
     let healthBar = document.createElement("div");
@@ -130,7 +130,7 @@ function InitializeSkills(skills) {
 
         let span = document.createElement('span');
         span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" + 
-                     "font-size: 16pt; ";
+                     "font-size: 16pt;";
         span.id = i + 'Countdown';
 
         let num = document.createElement('span');
@@ -158,7 +158,7 @@ function InitializeSkills(skills) {
 
         if ('maxCharge' in skills[i]) {
             let charge = document.createElement('span');
-            charge.style = "color: white; position: absolute; top: 0; left: 5px; font-size: 14pt;";
+            charge.style = "color: white; position: absolute; top: 0; left: 5px; font-size: 14pt; opacity = 0.9";
             charge.innerHTML = skills[i].curCharge;
             charge.id = i + "charge";
             skill.appendChild(charge);
@@ -213,11 +213,25 @@ function InitializeTeammates(Survivors) {
     }
 }
 
-function InitializeVault() {
+function InitializeVault(items) {
     let ul = document.getElementById('vaultUl');
-    for (let i = 0; i < 15; i++) {
+    for (let key in items) {
+        let item = items[key];
         let div = document.createElement('div');
         div.className += "item";
+
+        let img = document.createElement('img');
+        img.src = 'public/images/items/ITEM_' + key + ".png";
+        img.style = "width:100%; height:100%; position: absolute; padding: 3px"
+        div.appendChild(img);
+
+        let count = document.createElement('span');
+        count.style = "color: white; position: absolute; left: 50%; transform: translateX(-50%); top: 110%; font-size: 10pt;" + 
+                      "font-size: 10pt;";
+        count.innerHTML = item.count;
+        count.id = key + "item";
+        div.appendChild(count);
+
         ul.appendChild(div);
     }
 }
@@ -337,36 +351,13 @@ function teammatesUpdate(data) {
 }
 
 function updateItems(items) {
-    let keys = Object.keys(items);
     let ul = document.getElementById('vaultUl');
-    while (ul.firstChild) {
-        ul.removeChild(ul.firstChild);
-    }
 
-    for (let i = 0; i < keys.length; i++) {
-        let item = items[keys[i]];
-        let div = document.createElement('div');
-        div.className += "item";
+    for (let key in items) {
+        let item = items[key];
 
-        let img = document.createElement('img');
-        img.src = 'public/images/items/ITEM_' + keys[i] + ".png";
-        img.style = "width:100%; height:100%; position: absolute; padding: 3px"
-        div.appendChild(img);
-
-        let count = document.createElement('span');
-        count.style = "color: white; position: absolute; right: 5px; bottom: 0; font-size: 10pt;" + 
-                      "font-size: 10pt;";
+        let count = document.getElementById(key + "item")
         count.innerHTML = item.count;
-        div.appendChild(count);
-
-        ul.appendChild(div);
-    }
-
-    // empty slots
-    for (let i = keys.length; i < 15; i++) {
-        let div = document.createElement('div');
-        div.className += "item";
-        ul.appendChild(div);
     }
 }
 
