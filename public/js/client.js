@@ -181,6 +181,8 @@ socket.on('enter game', function (msg) {
 socket.on('wait for game begin', function (msg) {
     $('#loadingBox').css('display', 'block');
     $('#menu').css('opacity', '0.1');
+    $('#gameName').css('opacity', '0');
+    $('#lobbyUl').css('opacity', '0');
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
