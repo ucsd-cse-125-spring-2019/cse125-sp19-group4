@@ -6,6 +6,8 @@ import * as UI from '/public/js/UI.js'
 const UIdebug = true;
 
 const camera = new Camera();
+let spectator_mode = false;
+
 let uid = '';
 let left_cursor_down = false;
 let isGod = false;
@@ -47,7 +49,7 @@ const z_neg_90 = glMatrix.mat4.fromZRotation(glMatrix.mat4.create(), -Math.PI / 
 const transform_ref = {
     '': glMatrix.mat4.create(),
     // environment
-    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [10, 10, 10]),
     'tower': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 1.5, 2]),
     'tree': glMatrix.mat4.create(),
 
@@ -62,11 +64,16 @@ const transform_ref = {
     'spike': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_pos_90, x_neg_90),
 
     // item
-    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
-    'swords': glMatrix.mat4.clone(z_neg_90),
+    // 'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
+    // 'swords': glMatrix.mat4.clone(z_neg_90),
     'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.08, 0.08, 0.08]),
-    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
-    'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
+    // 'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
+    // 'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
+    'boots': glMatrix.mat4.clone(x_neg_90),
+    'swords': glMatrix.mat4.clone(x_neg_90),
+    // 'shields': glMatrix.mat4.create(),
+    'hearts': glMatrix.mat4.clone(x_neg_90),
+    'daggers': glMatrix.mat4.clone(x_neg_90),
 
     // projectile
     'bullet': glMatrix.mat4.create(),
@@ -218,8 +225,13 @@ socket.on('Survivor Died', function (msg) {
     const { name } = data;
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)');
+        spectator_mode = true;
+        casting = -1;
+        delete objects['casting'];
+        setCursor(defaultCursor);
+        UI.switchCasting(casting, true);
     } else {
-        let img = document.getElementById(name + "Icon").style.filter = "grayscale(70%)";
+        document.getElementById(name + "Icon").style.filter = "grayscale(70%)";
     }
 });
 
@@ -231,8 +243,10 @@ socket.on('Survivor Revived', function (msg) {
 
     if (name === uid) {
         $('.game-area').css('filter', 'none')
+        spectator_mode = false;
+        camera.setPosition(positions[name], true);
     } else {
-        let img = document.getElementById(name + "Icon").style.filter = "none";
+        document.getElementById(name + "Icon").style.filter = "none";
     }
 });
 
@@ -276,7 +290,7 @@ socket.on('game_status', function (msg) {
     }
     
     const player = data[uid];
-    if (typeof player !== 'undefined') {
+    if (!spectator_mode && typeof player !== 'undefined') {
         if (typeof player.position !== 'undefined') {
             // debugger
             $('#x').html(player.position[0]);
@@ -481,12 +495,21 @@ function main() {
     model_ref['spike'].addInstance(gl);
 
     // item
-    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/item/SwordCartoonLowPoly.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
+    // model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
+    // model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/item/SwordCartoonLowPoly.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
     model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/item/Shield_obj.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
-    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/item/heart.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
-    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/item/Dagger.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
-    
+    // model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/item/heart.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
+    // model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/item/Dagger.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
+
+    model_ref['boots'] = new Animation(gl, "/public/model/item/boot.json", programInfo, texture_counter);
+    model_ref['boots'].addInstance(gl);
+    model_ref['swords'] = new Animation(gl, "/public/model/item/sword.json", programInfo, texture_counter);
+    model_ref['swords'].addInstance(gl);
+    model_ref['hearts'] = new Animation(gl, "/public/model/item/heart.json", programInfo, texture_counter);
+    model_ref['hearts'].addInstance(gl);
+    model_ref['daggers'] = new Animation(gl, "/public/model/item/dagger.json", programInfo, texture_counter);
+    model_ref['daggers'].addInstance(gl);
+
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo);
     model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/projectile/flameBullet.obj", "/public/model/projectile/flameBullet.mtl", true, texture_counter, programInfo);
@@ -519,6 +542,10 @@ function main() {
         model_ref['player_running'].updateJoints(deltaTime, 0, true);
         model_ref['spike'].updateJoints(deltaTime, 0, true);
         model_ref['shieldWall'].updateJoints(deltaTime, 0, true);
+        model_ref['boots'].updateJoints(deltaTime, 0, true);
+        model_ref['swords'].updateJoints(deltaTime, 0, true);
+        model_ref['hearts'].updateJoints(deltaTime, 0, true);
+        model_ref['daggers'].updateJoints(deltaTime, 0, true);
 
         for (let name in player_alive) {
             if (!player_alive[name]) {
@@ -542,91 +569,107 @@ function main() {
             camera.rotateRight(deltaTime);
         }
 
-        // Jump, god's jump disabled
-        if (Key.isDown('JUMP') && !isGod) {
-            delete Key._pressed['JUMP'];
-            Key.jumped = true;
-            socket.emit('jump');
-        }
-
-        // Movement
-        let direction = glMatrix.vec3.create();
-
-        if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            // direction = 'stay';
-        } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
-            glMatrix.vec3.negate(direction, camera.Right);
-        } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('RIGHT')) {
-            direction = camera.Right;
-        } else if (Key.isDown('UP') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            direction = camera.Foward;
-        } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            glMatrix.vec3.negate(direction, camera.Foward);
-        } else if (Key.isDown('UP') && Key.isDown('DOWN') || Key.isDown('LEFT') && Key.isDown('RIGHT')) {
-            // direction = 'stay';
-        } else if (Key.isDown('UP') && Key.isDown('RIGHT')) {
-            glMatrix.vec3.add(direction, camera.Foward, camera.Right);
-            glMatrix.vec3.normalize(direction, direction);
-        } else if (Key.isDown('DOWN') && Key.isDown('RIGHT')) {
-            glMatrix.vec3.subtract(direction, camera.Right, camera.Foward);
-            glMatrix.vec3.normalize(direction, direction);
-        } else if (Key.isDown('DOWN') && Key.isDown('LEFT')) {
-            glMatrix.vec3.add(direction, camera.Foward, camera.Right);
-            glMatrix.vec3.negate(direction, direction);
-            glMatrix.vec3.normalize(direction, direction);
-        } else if (Key.isDown('UP') && Key.isDown('LEFT')) {
-            glMatrix.vec3.subtract(direction, camera.Foward, camera.Right);
-            glMatrix.vec3.normalize(direction, direction);
-        } else if (Key.isDown('UP')) {
-            direction = camera.Foward;
-        } else if (Key.isDown('DOWN')) {
-            glMatrix.vec3.negate(direction, camera.Foward);
-        } else if (Key.isDown('LEFT')) {
-            glMatrix.vec3.negate(direction, camera.Right);
-        } else if (Key.isDown('RIGHT')) {
-            direction = camera.Right;
+        if (spectator_mode) {
+            if (Key.isDown('UP')) {
+                camera.moveFoward(deltaTime);
+            }
+            if (Key.isDown('DOWN')) {
+                camera.moveBackward(deltaTime);
+            }
+            if (Key.isDown('LEFT')) {
+                camera.moveLeft(deltaTime);
+            }
+            if (Key.isDown('RIGHT')) {
+                camera.moveRight(deltaTime);
+            }
         } else {
-            // direction = 'stay';
-        }
+            // Jump, god's jump disabled
+            if (Key.isDown('JUMP') && !isGod) {
+                delete Key._pressed['JUMP'];
+                Key.jumped = true;
+                socket.emit('jump');
+            }
 
-        if (!glMatrix.vec3.equals(prev_direction, direction)) {
-            if (glMatrix.vec3.equals(direction, glMatrix.vec3.create())) {
-                socket.emit('movement', JSON.stringify('stay'));
+            // Movement
+            let direction = glMatrix.vec3.create();
+
+            if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+                // direction = 'stay';
+            } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('LEFT')) {
+                glMatrix.vec3.negate(direction, camera.Right);
+            } else if (Key.isDown('UP') && Key.isDown('DOWN') && Key.isDown('RIGHT')) {
+                direction = camera.Right;
+            } else if (Key.isDown('UP') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+                direction = camera.Foward;
+            } else if (Key.isDown('DOWN') && Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+                glMatrix.vec3.negate(direction, camera.Foward);
+            } else if (Key.isDown('UP') && Key.isDown('DOWN') || Key.isDown('LEFT') && Key.isDown('RIGHT')) {
+                // direction = 'stay';
+            } else if (Key.isDown('UP') && Key.isDown('RIGHT')) {
+                glMatrix.vec3.add(direction, camera.Foward, camera.Right);
+                glMatrix.vec3.normalize(direction, direction);
+            } else if (Key.isDown('DOWN') && Key.isDown('RIGHT')) {
+                glMatrix.vec3.subtract(direction, camera.Right, camera.Foward);
+                glMatrix.vec3.normalize(direction, direction);
+            } else if (Key.isDown('DOWN') && Key.isDown('LEFT')) {
+                glMatrix.vec3.add(direction, camera.Foward, camera.Right);
+                glMatrix.vec3.negate(direction, direction);
+                glMatrix.vec3.normalize(direction, direction);
+            } else if (Key.isDown('UP') && Key.isDown('LEFT')) {
+                glMatrix.vec3.subtract(direction, camera.Foward, camera.Right);
+                glMatrix.vec3.normalize(direction, direction);
+            } else if (Key.isDown('UP')) {
+                direction = camera.Foward;
+            } else if (Key.isDown('DOWN')) {
+                glMatrix.vec3.negate(direction, camera.Foward);
+            } else if (Key.isDown('LEFT')) {
+                glMatrix.vec3.negate(direction, camera.Right);
+            } else if (Key.isDown('RIGHT')) {
+                direction = camera.Right;
             } else {
-                socket.emit('movement', JSON.stringify(direction));
-            }
-            prev_direction = glMatrix.vec3.clone(direction);
-        }
-
-        // Skill
-        if (casting >= 0) {
-
-            const normal = [0.0, 1.0, 0.0];
-            const center = [0.0, 0.0, 0.0];
-
-            const ray = camera.getRay(mouse_pos.x, mouse_pos.y);
-            const denominator = glMatrix.vec3.dot(normal, ray.dir);
-            if (Math.abs(denominator) > 0.00001) {
-                const difference = glMatrix.vec3.create();
-                glMatrix.vec3.subtract(difference, center, ray.pos);
-                const t = glMatrix.vec3.dot(difference, normal) / denominator;
-                glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
+                // direction = 'stay';
             }
 
-
-            if (isGod) {
-                if (typeof objects['casting'] === 'undefined' || objects['casting'].m != cast_models[casting].m) {
-                    objects['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
+            if (!glMatrix.vec3.equals(prev_direction, direction)) {
+                if (glMatrix.vec3.equals(direction, glMatrix.vec3.create())) {
+                    socket.emit('movement', JSON.stringify('stay'));
+                } else {
+                    socket.emit('movement', JSON.stringify(direction));
                 }
-                const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
-                if (typeof objects['casting'] !== 'undefined') {
-                    glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
+                prev_direction = glMatrix.vec3.clone(direction);
+            }
+
+            // Skill
+            if (casting >= 0) {
+
+                const normal = [0.0, 1.0, 0.0];
+                const center = [0.0, 0.0, 0.0];
+
+                const ray = camera.getRay(mouse_pos.x, mouse_pos.y);
+                const denominator = glMatrix.vec3.dot(normal, ray.dir);
+                if (Math.abs(denominator) > 0.00001) {
+                    const difference = glMatrix.vec3.create();
+                    glMatrix.vec3.subtract(difference, center, ray.pos);
+                    const t = glMatrix.vec3.dot(difference, normal) / denominator;
+                    glMatrix.vec3.scaleAndAdd(cursor, ray.pos, ray.dir, t);
                 }
-            } else if (casting == 0 && left_cursor_down) {
-                const skillsParams = { skillNum: casting, position: cursor };
-                socket.emit('skill', JSON.stringify(skillsParams));
+
+
+                if (isGod) {
+                    if (typeof objects['casting'] === 'undefined' || objects['casting'].m != cast_models[casting].m) {
+                        objects['casting'] = { m: cast_models[casting].m, t: glMatrix.mat4.clone(cast_models[casting].t) };
+                    }
+                    const translation = glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), cursor);
+                    if (typeof objects['casting'] !== 'undefined') {
+                        glMatrix.mat4.multiply(objects['casting'].t, translation, cast_models[casting].t);
+                    }
+                } else if (casting == 0 && left_cursor_down) {
+                    const skillsParams = { skillNum: casting, position: cursor };
+                    socket.emit('skill', JSON.stringify(skillsParams));
+                }
             }
         }
+        
         start = Date.now();
         $('#event').html(start - end);
 
@@ -767,30 +810,6 @@ function loadShader(gl, type, source) {
 }
 
 /*================= Mouse events ======================*/
-
-// let drag = false;
-// let old_x, old_y;
-
-
-// const mouseDown = function (e) {
-//     drag = true;
-//     old_x = e.pageX, old_y = e.pageY;
-//     e.preventDefault();
-//     return false;
-// };
-
-// const mouseUp = function (e) {
-//     drag = false;
-// };
-
-// const mouseMove = function (e) {
-//     if (!drag) return false;
-//     camera.ProcessMouseMovement(e.pageX - old_x, e.pageY - old_y);
-//     camera.updateCameraVectors();
-//     old_x = e.pageX, old_y = e.pageY;
-//     e.preventDefault();
-// };
-
 const contextmenu = function (e) {
     e.preventDefault();
 }
@@ -834,7 +853,7 @@ const mouseMove = function (e) {
 const zoom = function (e) {
     e.preventDefault();
     if (e.deltaY > 0) {
-        camera.zoomOut(isGod);
+        camera.zoomOut(isGod || spectator_mode);
     } else if (e.deltaY < 0) {
         camera.zoomIn();
     }
@@ -894,9 +913,9 @@ const Key = {
             $('#messageForm').css("display", "block");
             $('#messageInput').prop("disabled", false);
             $('#messageInput').focus();
-        } else if (event.keyCode == 32 && this.jumped) {
+        } else if (!spectator_mode && event.keyCode == 32 && this.jumped) {
             // do nothing
-        } else if (event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
+        } else if (!spectator_mode && event.keyCode >= 49 && event.keyCode <= 57) { //key 1 - 9, skills
             handleSkill(uid, event.keyCode - 49);
         } else if (event.keyCode in this.cmd) {
             this._pressed[this.cmd[event.keyCode]] = true;

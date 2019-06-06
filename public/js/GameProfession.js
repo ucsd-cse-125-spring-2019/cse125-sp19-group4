@@ -28,24 +28,6 @@ class onGoingSkill {
     }
 }
 
-
-class Spectator {
-    constructor(socketid, position = null, direction = null) {
-        this.name = 'Spectator ' + socketid;
-        this.socketid = socketid;
-        if (position !== null) {
-            this.position = position;
-        } else {
-            this.position = [0, 0, 0];
-        }
-        if (direction !== null) {
-            this.direction = direction;
-        } else {
-            this.direction = [0, 0, -1];
-        }
-    }
-}
-
 class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;

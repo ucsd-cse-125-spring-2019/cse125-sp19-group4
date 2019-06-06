@@ -81,7 +81,7 @@ class GameInstance {
             this.putTreeOnTheMap(tree, true);
         }
 
-        for (let i = -this.worldHalfHeight; i < this.worldHalfHeight; i += 5) {
+        for (let i = -this.worldHalfHeight; i <= this.worldHalfHeight; i += 5) {
             const tree1 = new Tree(this.treeId++, 2, false);
             tree1.position = [-this.worldHalfWidth, 0, i];
             this.putTreeOnTheMap(tree1, false);
@@ -89,7 +89,7 @@ class GameInstance {
             tree2.position = [this.worldHalfWidth, 0, i];
             this.putTreeOnTheMap(tree2, false);
         }
-        for (let i = -this.worldHalfWidth; i < this.worldHalfWidth; i += 5) {
+        for (let i = -this.worldHalfWidth; i <= this.worldHalfWidth; i += 5) {
             const tree1 = new Tree(this.treeId++, 2, false);
             tree1.position = [i, 0, -this.worldHalfHeight];
             this.putTreeOnTheMap(tree1, false);
