@@ -131,7 +131,9 @@ socket.on('notification', function (msg) {
 $('.game-area').html($('#intro-screen-template').html());
 
 socket.on('role already taken', function (msg) {
-    alert(msg);
+    // alert(msg);
+    $('.talktext').html(msg);
+    $('#reminder').css('opacity', '1');
 });
 
 socket.on('enter game', function (msg) {
