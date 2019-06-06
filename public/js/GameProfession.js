@@ -253,7 +253,7 @@ class Fighter {
                     const duration = 5;
                     const effect = function (game, self) {
                         self.tempBuff.defense += 100;
-                        game.objects[self.skill_animation].position = self.position;
+                        game.objects[self.skill_animation].position = glMatrix.vec3.clone(self.position);
                         game.objects[self.skill_animation].position[1] += 2;
                     };
                     const endEffect = function (game, self) {
@@ -286,8 +286,8 @@ class Fighter {
                         
                     const effect = function (game, self) {
                         const position = self.position;
-                        game.objects[self.skill_model].position = position;
-                        game.objects[self.skill_model].position[1] += 0.5;
+                        game.objects[self.skill_model].position = glMatrix.vec3.clone(position);
+                        game.objects[self.skill_model].position[1] += 0.1;
                         const objsInRadius = game.getObjInRadius(position, radius);
                         
                         for (let key in tauntedUnit) {
@@ -297,7 +297,7 @@ class Fighter {
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "slime") {
                                 if (typeof obj.skill_model !== 'undefined' && typeof game.objects[obj.skill_model] !== 'undefined') {
-                                    game.objects[obj.skill_model].position = obj.position;
+                                    game.objects[obj.skill_model].position = glMatrix.vec3.clone(obj.position);
                                     game.objects[obj.skill_model].position[1] += 2;
                                     game.objects[obj.skill_model].direction = obj.direction;
                                 } else {
@@ -498,8 +498,8 @@ class Healer {
                     const radius = 20;
                     const effect = function (game, self) {
                         const position = self.position;
-                        game.objects[self.skill_model].position = position;
-                        game.objects[self.skill_model].position[1] += 0.5;
+                        game.objects[self.skill_model].position = glMatrix.vec3.clone(position);
+                        game.objects[self.skill_model].position[1] += 0.1;
                         const objsInRadius = game.getObjInRadius(position, radius);
                         objsInRadius.forEach(function (obj) {
                             if (obj.type === "player" && !obj.dead) {
@@ -542,8 +542,8 @@ class Healer {
                     const buffedUnit = {};
                     const effect = function (game, self) {
                         const position = self.position;
-                        game.objects[self.skill_model].position = position;
-                        game.objects[self.skill_model].position[1] += 0.5;
+                        game.objects[self.skill_model].position = glMatrix.vec3.clone(position);
+                        game.objects[self.skill_model].position[1] += 0.1;
                         const objsInRadius = game.getObjInRadius(position, radius);
 
                         // use this to remember who has been buffed before

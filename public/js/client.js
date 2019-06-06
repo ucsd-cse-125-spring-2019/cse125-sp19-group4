@@ -434,7 +434,8 @@ function main() {
     gl.useProgram(shaderProgram);
 
     // environment
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [255, 229, 165]);
+    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/tower.obj", "/public/model/environment/tower.mtl", true, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
@@ -625,7 +626,8 @@ function main() {
  * @param  {Camera} camera
  */
 function drawScene(gl, programInfo, objects, camera) {
-    gl.clearColor(0.68, 1.0, 0.18, 0.4);  // Clear to black, fully opaque
+    gl.clearColor(0.0, 0.3, 0.3, 1.0);  // Clear to black, fully opaque
+    // gl.clearColor(0.68, 1.0, 0.18, 0.4);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

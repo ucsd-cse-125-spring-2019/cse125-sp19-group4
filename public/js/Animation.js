@@ -109,6 +109,7 @@ class Animation {
     }
     render(gl, transformMatrix_array, instance_idxs) {
         let array_index = 1;
+        gl.uniform1f(this.programInfo.uniformLocations.alpha, 1.0);
         if (this.vertices.length > 1) {
             instance_idxs.forEach(index => {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers[index]);
