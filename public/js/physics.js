@@ -197,7 +197,7 @@ class PhysicsEngine {
                 position.x = Math.floor(Math.random() * (this.mapWidth - Math.ceil(radius)) + Math.ceil(radius)) - this.mapWidth/2;
                 position.y = 0;
                 position.z = Math.floor(Math.random() * (this.mapHeight - Math.ceil(radius)) + Math.ceil(radius)) - this.mapHeight/2;
-            } while (Math.abs(position.x) < 10 || Math.abs(position.z) < 10); // TODO: Change 10 to better match with center obelisk
+            } while (Math.hypot(position.x, position.z) < 10); // TODO: Change 10 to better match with center obelisk
         }
         // tree should be static 
         const treeShape = new CANNON.Box(new CANNON.Vec3(radius, size * 4 * radius, radius));
