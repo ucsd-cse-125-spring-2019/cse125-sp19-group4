@@ -398,7 +398,7 @@ class Archer {
                 'curCharge': 0,
                 'description': 'Throw a grenade and explode',
                 'iconPath': '/public/images/skills/SKILL_Fireball.svg',
-                'cursorPath': '/public/images/mouse/aim.png',
+                'cursorPath': '/public/images/mouse/fireball.png',
                 'function': function (game, self, params) {
                     const name = self.name;
                     const cursor = params.position;

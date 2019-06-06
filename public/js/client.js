@@ -923,9 +923,11 @@ function chatBoxFade() {
 
 function setCursor(url) {
     if (url == "/public/images/mouse/aim.png") {
-        $('.game-area').css('cursor', 'url(' + url + ') 24 24, auto')
+        $('.game-area').css('cursor', 'url(' + url + ') 25 25, auto');
+    } else if (url == "/public/images/mouse/fireball.png") {
+        $('.game-area').css('cursor', 'url(' + url + ') 24 24, auto');
     } else {
-        $('.game-area').css('cursor', 'url(' + url + '), auto')
+        $('.game-area').css('cursor', 'url(' + url + '), auto');
     }
 }
 /*================================End of UI===================================*/
