@@ -199,6 +199,16 @@
               <li style = "margin: 25px 0 0 0"><button class="button" id='ArcherButton' style="margin: auto">I am Archer</button></li>
               <li style = "margin: 25px 0 0 0"><button class="button" id='HealerButton' style="margin: auto">I am Healer</button></li>
             </ul> -->
+
+
+        </div>
+
+        <div style="width: 100vw; height:100vh; background: #ffffffc0; position:absolute; top: 0%">
+          <div style="position:absolute; left: 50%; top: 50%; transform: translate(-50%, -50%)">
+            <textarea id="nameInput" placeholder="Please enter your name" style="border: 1px solid black; border-width: 0 0 2px 0;
+                       background-color: transparent; resize: none; outline: none; width: 320px; font-size: 21pt; height: 40px;"
+                       spellCheck="false" maxLength="15"></textarea>
+          </div>
         </div>
 
         <div class="loading" id="loadingBox">
@@ -217,6 +227,18 @@
         </div>
 
       </section>
+      <script>
+        $("#nameInput").keydown(function(e){
+          let textinput = document.getElementById('nameInput');
+          if (e.keyCode == 13) {
+              e.preventDefault();
+              return false;
+          }; 
+          if (textinput.value.length == textinput.maxLength) {
+          } 
+          });
+      </script>
+
     </script>
     <script id="ingame-template" type="text/template">
       <canvas id="glCanvas"></canvas>
