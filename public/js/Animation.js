@@ -208,7 +208,7 @@ class Animation {
                 this.scaled_now[index] -= (end - start)
             }
         } else if (this.scaled_now[index] > end) {
-            this.scaled_now[index] = end;
+            return;
         }
 
         this.bones.forEach((element, i, array) => {
