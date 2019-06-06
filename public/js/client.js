@@ -17,7 +17,7 @@ const FACE = [0.0, 0.0, -1.0];
 const NEG_FACE = glMatrix.vec3.create();
 glMatrix.vec3.negate(NEG_FACE, FACE);
 
-let defaultCursor = "public/images/mouse/normal.cur"
+const defaultCursor = "public/images/mouse/normal.cur"
 
 let player = {};
 
@@ -368,10 +368,7 @@ socket.on('pong', (latency) => {
  * Start here
  */
 function main() {
-
-
     bgm.play();
-
 
     /** @type {HTMLCanvasElement} */
     const canvas = document.querySelector("#glCanvas");
@@ -925,7 +922,11 @@ function chatBoxFade() {
 }
 
 function setCursor(url) {
-    $('.game-area').css('cursor', 'url(' + url + '), auto')
+    if (url == "/public/images/mouse/aim.png") {
+        $('.game-area').css('cursor', 'url(' + url + ') 24 24, auto')
+    } else {
+        $('.game-area').css('cursor', 'url(' + url + '), auto')
+    }
 }
 /*================================End of UI===================================*/
 
@@ -938,7 +939,9 @@ function handleSkill(uid, skillNum) {
         case "LOCATION":
             casting = skillNum;
             if (skillCursors[skillNum] != undefined) {
-                setCursor(skillCursors[skillNum])
+                setCursor(skillCursors[skillNum]);
+            } else {
+                setCursor(defaultCursor);
             }
             UI.switchCasting(casting, false);
             break;

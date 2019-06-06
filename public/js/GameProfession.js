@@ -94,7 +94,7 @@ class God {
                 'maxCharge': 5,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Slime.png',
-                'cursorPath': '/public/images/mouse/empty.cur',
+                'cursorPath': '/public/images/mouse/empty.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -111,7 +111,7 @@ class God {
                 'maxCharge': 5,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Cactus.png',
-                'cursorPath': '/public/images/mouse/empty.cur',
+                'cursorPath': '/public/images/mouse/empty.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -128,7 +128,7 @@ class God {
                 'maxCharge': 5,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Spike.png',
-                'cursorPath': '/public/images/mouse/empty.cur',
+                'cursorPath': '/public/images/mouse/empty.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -145,7 +145,7 @@ class God {
                 'maxCharge': 3,
                 'curCharge': 0,
                 'iconPath': '/public/images/skills/SKILL_Tree.png',
-                'cursorPath': '/public/images/mouse/empty.cur',
+                'cursorPath': '/public/images/mouse/empty.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const position = params.position;
@@ -196,6 +196,7 @@ class Fighter {
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'cursorPath': '/public/images/mouse/aim.png',
                 'function': function (game, self, params) {
                     if (self.attackTimer > 0) {
                         return false;
@@ -372,6 +373,7 @@ class Archer {
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'cursorPath': '/public/images/mouse/aim.png',
                 'function': function (game, self, params) {
                     if (self.attackTimer > 0) {
                         return false;
@@ -396,6 +398,7 @@ class Archer {
                 'curCharge': 0,
                 'description': 'Throw a grenade and explode',
                 'iconPath': '/public/images/skills/SKILL_Fireball.svg',
+                'cursorPath': '/public/images/mouse/aim.png',
                 'function': function (game, self, params) {
                     const name = self.name;
                     const cursor = params.position;
@@ -467,6 +470,7 @@ class Healer {
                 'curCoolDown': 0,
                 'description': 'Shoot an arrow',
                 'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'cursorPath': '/public/images/mouse/aim.png',
                 'function': function (game, self, params) {
                     if (self.attackTimer > 0) {
                         return false;
