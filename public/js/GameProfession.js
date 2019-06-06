@@ -175,7 +175,7 @@ class God {
 class Fighter {
     constructor() {
         this.profession = "Fighter";
-        this.iconPath = 'public/images/professions/PROFESSION_Fighter.jpg'
+        this.iconPath = 'public/images/professions/PROFESSION_Fighter.png'
         this.status = {
             'maxHealth': 100,
             'curHealth': 100,
@@ -347,7 +347,7 @@ class Archer {
             'attackInterval': 60,
             'attackSpeed': 1,
         };
-        this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg';
+        this.iconPath = 'public/images/professions/PROFESSION_Archer.png';
         this.skills = {
             0: {
                 'name': 'Shoot',
@@ -431,7 +431,7 @@ class Archer {
 class Healer {
     constructor() {
         this.profession = "Healer";
-        this.iconPath = 'public/images/professions/PROFESSION_Healer.jpg'
+        this.iconPath = 'public/images/professions/PROFESSION_Healer.png'
         this.status = {
             'maxHealth': 100,
             'curHealth': 100,
