@@ -73,11 +73,11 @@ const transform_ref = {
     'fireball': glMatrix.mat4.create(),
 
     // effect
+    'shieldWall': glMatrix.mat4.clone(x_neg_90),
     'taunted': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [3, 3, 3]),
     'ring_green': glMatrix.mat4.create(),
     'ring_red': glMatrix.mat4.create(),
     'ring_yellow': glMatrix.mat4.create(),
-
 };
 
 // ============================ Sound ================================
@@ -435,7 +435,6 @@ function main() {
 
     // environment
     model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
-    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [181, 169, 143, 255]);
     model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/tower.obj", "/public/model/environment/tower.mtl", true, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
@@ -469,6 +468,8 @@ function main() {
     model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/projectile/flameBullet.obj", "/public/model/projectile/flameBullet.mtl", true, texture_counter, programInfo);
 
     //effect
+    model_ref['shieldWall'] = new Animation(gl, "/public/model/effect/shield.json", programInfo, texture_counter);
+    model_ref['shieldWall'].addInstance(gl);
     model_ref['taunted'] = new OBJObject(gl, "taunted", "/public/model/effect/taunted.obj", "/public/model/effect/taunted.mtl", true, texture_counter, programInfo);
     model_ref['ring_green'] = new OBJObject(gl, "ring_green", "/public/model/effect/ringWithFilling.obj", "", false, texture_counter, programInfo, [0, 255, 0], 0.2);
     model_ref['ring_red'] = new OBJObject(gl, "ring_red", "/public/model/effect/ringWithFilling.obj", "", false, texture_counter, programInfo, [255, 0, 0], 0.2);
@@ -493,6 +494,7 @@ function main() {
         let start = Date.now();
         model_ref['player_running'].updateJoints(deltaTime, 0, true);
         model_ref['spike'].updateJoints(deltaTime, 0, true);
+        model_ref['shieldWall'].updateJoints(deltaTime, 0, true);
 
         for (let name in player_alive) {
             if (!player_alive[name]) {

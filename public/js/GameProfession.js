@@ -185,6 +185,8 @@ class Fighter {
             'attackInterval': 60,
             'attackSpeed': 1,
         };
+        this.skill_model = '';
+        this.skill_animation = '';
         this.skills = {
             0: {
                 'name': 'Shoot',
@@ -248,11 +250,24 @@ class Fighter {
                 'iconPath': '/public/images/skills/SKILL_Shield.png',
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
-                    const duration = 3;
+                    const duration = 5;
                     const effect = function (game, self) {
                         self.tempBuff.defense += 100;
+                        game.objects[self.skill_animation].position = self.position;
+                        game.objects[self.skill_animation].position[1] += 2;
                     };
-                    game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true);
+                    const endEffect = function (game, self) {
+                        if (typeof self.skill_animation !== 'undefined' && typeof game.objects[self.skill_animation] !== 'undefined') {
+                            game.toClean.push(self.skill_animation);
+                            self.skill_animation = '';
+                        }
+                    }
+                    game.onGoingSkills[self.name + 2] = new onGoingSkill(duration, effect, self, true, endEffect);
+                    // shield model
+                    const shield = new Ring(self.position, 1, self.name + " shield", 'shieldWall');
+                    self.skill_animation = shield.name;
+                    game.toSend.push(shield.name);
+                    game.objects[shield.name] = shield;
                 },
             },
 
@@ -265,7 +280,7 @@ class Fighter {
                 'description': 'Attract nearby slimes',
                 'iconPath': '/public/images/skills/SKILL_Taunt.png',
                 'function': function (game, self, params) {
-                    const duration = 5;
+                    const duration = 8;
                     const radius = 30;
                     const tauntedUnit = {};
                         
