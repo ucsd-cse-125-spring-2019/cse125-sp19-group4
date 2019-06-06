@@ -160,7 +160,7 @@ socket.on('enter game', function (msg) {
     UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
     if (uid !== "God") {
-        UI.InitializeVault();
+        UI.InitializeVault(player.items);
         UI.updateItems(player.items);
     } else {
         isGod = true;
