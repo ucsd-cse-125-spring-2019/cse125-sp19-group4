@@ -28,24 +28,6 @@ class onGoingSkill {
     }
 }
 
-
-// class Spectator {
-//     constructor(name, position = null, direction = null) {
-//         this.name = 'Spectator ' + name;
-//         this.sid = name;
-//         if (position !== null) {
-//             this.position = position;
-//         } else {
-//             this.position = [0, 0, 0];
-//         }
-//         if (direction !== null) {
-//             this.direction = direction;
-//         } else {
-//             this.direction = [0, 0, -1];
-//         }
-//     }
-// }
-
 class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;
@@ -681,4 +663,3 @@ module.exports.initializeProfession = initializeProfession;
 module.exports.SKILL_TYPE = SKILL_TYPE;
 module.exports.Survivor = Survivor;
 module.exports.God = God;
-// module.exports.Spectator = Spectator;

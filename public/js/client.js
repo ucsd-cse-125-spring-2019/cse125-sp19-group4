@@ -64,11 +64,16 @@ const transform_ref = {
     'spike': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_pos_90, x_neg_90),
 
     // item
-    'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
-    'swords': glMatrix.mat4.clone(z_neg_90),
+    // 'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
+    // 'swords': glMatrix.mat4.clone(z_neg_90),
     'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.08, 0.08, 0.08]),
-    'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
-    'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
+    // 'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
+    // 'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
+    'boots': glMatrix.mat4.clone(x_neg_90),
+    'swords': glMatrix.mat4.clone(x_neg_90),
+    // 'shields': glMatrix.mat4.create(),
+    'hearts': glMatrix.mat4.clone(x_neg_90),
+    'daggers': glMatrix.mat4.clone(x_neg_90),
 
     // projectile
     'bullet': glMatrix.mat4.create(),
@@ -471,12 +476,21 @@ function main() {
     model_ref['spike'].addInstance(gl);
 
     // item
-    model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
-    model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/item/SwordCartoonLowPoly.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
+    // model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
+    // model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/item/SwordCartoonLowPoly.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
     model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/item/Shield_obj.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
-    model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/item/heart.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
-    model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/item/Dagger.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
-    
+    // model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/item/heart.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
+    // model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/item/Dagger.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
+
+    model_ref['boots'] = new Animation(gl, "/public/model/item/boot.json", programInfo, texture_counter);
+    model_ref['boots'].addInstance(gl);
+    model_ref['swords'] = new Animation(gl, "/public/model/item/sword.json", programInfo, texture_counter);
+    model_ref['swords'].addInstance(gl);
+    model_ref['hearts'] = new Animation(gl, "/public/model/item/heart.json", programInfo, texture_counter);
+    model_ref['hearts'].addInstance(gl);
+    model_ref['daggers'] = new Animation(gl, "/public/model/item/dagger.json", programInfo, texture_counter);
+    model_ref['daggers'].addInstance(gl);
+
     // projectile
     model_ref['bullet'] = new OBJObject(gl, "bullet", "/public/model/projectile/sphere.obj", "", false, texture_counter, programInfo);
     model_ref['fireball'] = new OBJObject(gl, "bullet", "/public/model/projectile/flameBullet.obj", "/public/model/projectile/flameBullet.mtl", true, texture_counter, programInfo);
@@ -509,6 +523,10 @@ function main() {
         model_ref['player_running'].updateJoints(deltaTime, 0, true);
         model_ref['spike'].updateJoints(deltaTime, 0, true);
         model_ref['shieldWall'].updateJoints(deltaTime, 0, true);
+        model_ref['boots'].updateJoints(deltaTime, 0, true);
+        model_ref['swords'].updateJoints(deltaTime, 0, true);
+        model_ref['hearts'].updateJoints(deltaTime, 0, true);
+        model_ref['daggers'].updateJoints(deltaTime, 0, true);
 
         for (let name in player_alive) {
             if (!player_alive[name]) {
