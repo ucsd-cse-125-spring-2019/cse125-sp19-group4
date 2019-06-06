@@ -691,6 +691,8 @@ class GameInstance {
     putTreeOnTheMap(tree, randomLocation) {
         if (!randomLocation && this.checkIfTooCloseToSurvivor(tree.position, this.minDistanceSurvivorTree)) 
             return false;
+        if (!randomLocation && Math.hypot(tree.position[0], tree.position[2]) < 5)
+            return false;
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
