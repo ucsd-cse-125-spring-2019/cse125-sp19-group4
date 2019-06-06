@@ -131,7 +131,9 @@ socket.on('notification', function (msg) {
 $('.game-area').html($('#intro-screen-template').html());
 
 socket.on('role already taken', function (msg) {
-    alert(msg);
+    // alert(msg);
+    $('.talktext').html(msg);
+    $('#reminder').css('opacity', '1');
 });
 
 socket.on('enter game', function (msg) {
@@ -181,6 +183,8 @@ socket.on('enter game', function (msg) {
 socket.on('wait for game begin', function (msg) {
     $('#loadingBox').css('display', 'block');
     $('#menu').css('opacity', '0.1');
+    $('#gameName').css('opacity', '0');
+    $('#lobbyUl').css('opacity', '0');
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
