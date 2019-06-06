@@ -27,19 +27,18 @@
 
 
       /* ----------------------------------------Teammates Bar-------------------------------------- */
-      #teammatesDiv {position: absolute; top: 10px; width: 50%; height: 60px; left: 10px; background-size: cover;}
+      #teammatesDiv {position: absolute; top: 10px; width: 80px; height: 80px; left: 10px; background-size: cover; border-radius: 2px}
       #teammatesBar {position: absolute; }
-      .teammate { display: inline-block; height: 60px; width: 60px; text-align: center;
-                position: relative; margin: 0 10px 0 0; background: #131F1C; font-size: 0}
+      .teammate {  height: 100%; width: 100%; text-align: center;
+                position: relative; margin: 0 10px 0 0; font-size: 0}
       /* ----------------------------------------Teammates Bar-------------------------------------- */
 
 
       /* ----------------------------------------Items Bar-------------------------------------- */
-      #vault {position: absolute; width: 176px; height: 106px; bottom: 20px; right: 20px; background-color:#131F1C;
-              box-shadow: 0 0 3px;}
-      #vaultUl {position: absolute; font-size: 0pt; border: solid #495057; border-width: 0 0 1px 1px; }
-      .item { display: inline-block; height: 35px; width: 35px;  border: solid #495057;
-               position: relative; margin: 0; background: #131F1C; border-width: 1px 1px 0 0}
+      #vault {position: absolute; bottom: 20px; right: 20px; height: 60px; width: 270px;}
+      #vaultUl {position: absolute; font-size: 0pt;}
+      .item { display: inline-block; height: 45px; width: 45px; margin: 0 5px 0 0; border-radius: 10px;
+               position: relative; background: #131F1Ca0;}
       /* ----------------------------------------Items Bar-------------------------------------- */
 
 
@@ -57,7 +56,7 @@
         height: 100%;
         animation: clipMe 4s linear infinite;
         /* border: 1px solid green; */
-        box-shadow: 0 0 2px 2px #0ff;
+        box-shadow: 0 0 2px 2px  #76d7c4 ;
         display: none;
         border-radius: 2px;
       }
@@ -168,7 +167,7 @@
         <ul id="notificationList"></ul>
       </div>
       <div id="statusBar" class="statusBar" onLoad="loadStatusList();">
-        <div id="timer" style="color:#B4AE6C; display: inline-block;" >0:00:00</div>
+        <div id="timer" style="color:#B4AE6C; display: inline-block; font-size: 14pt" >0:00:00</div>
       </div>
       <div id="skillBarDiv">
       </div>
