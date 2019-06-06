@@ -119,23 +119,23 @@ function InitializeSkills(skills) {
         img.title = skills[i].description;
         
         let mask1 = document.createElement('div'); // cooldown mask
-        mask1.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
-                     "bottom: 0; opacity: 0.8";
+        mask1.style = "background-color: #1b4f72 ; height: 0; position: absolute; width: 100%;" +
+                     "bottom: 0; opacity: 0.8; border-radius: 2px";
         mask1.id = i + 'Mask1';
 
         let mask2 = document.createElement('div'); // cooldown of charge mask
-        mask2.style = "background-color: cornflowerblue; height: 0; position: absolute; width: 100%;" +
-                     "bottom: 0; opacity: 0.2";
+        mask2.style = "background-color: #1b4f72 ; height: 0; position: absolute; width: 100%;" +
+                     "bottom: 0; opacity: 0.2; border-radius: 2px";
         mask2.id = i + 'Mask2';
 
         let span = document.createElement('span');
         span.style = "color: white; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);" + 
-                     "font-size: 16pt;";
+                     "font-size: 16pt; ";
         span.id = i + 'Countdown';
 
         let num = document.createElement('span');
-        num.innerHTML = i;
-        num.style = "position: absolute; left: 50%; transform: translateX(-50%); top: 110%; font-size: 24px"
+        num.innerHTML = parseInt(i) + 1;
+        num.style = "position: absolute; left: 50%; transform: translateX(-50%); top: 110%; font-size: 24px; color: white"
 
         let border1 = document.createElement('div');
         border1.className += "castingAnimation";
@@ -187,7 +187,7 @@ function InitializeTeammates(Survivors) {
         img.style = "width: 100%; height: 100%; box-shadow: 0 0 3px; border: 2px solid saddlebrown;"
 
         let name = document.createElement('span');
-        name.style = "color: white; font-size: 8pt; white-space: nowrap; left: 50%; transformation: translateX(-50%)";
+        name.style = "color: white; font-size: 12pt; white-space: nowrap; left: 50%; transformation: translateX(-50%)";
         name.innerHTML = survivor.name;
 
         let healthBar = document.createElement("div");
@@ -201,8 +201,8 @@ function InitializeTeammates(Survivors) {
 
         let health = document.createElement("div");
         health.className += "progress"
-        health.style = "display: inline-block; vertical-align: middle; width: 100%; height: 10px; border-radius: 2px;" +
-                       "background-color: IndianRed; margin: 3px 0 2px 0;"
+        health.style = "display: inline-block; vertical-align: middle; width: 100%; height: 10px; border-radius: 4px;" +
+                       "background-color: IndianRed; margin: 7px 0 2px 0;"
         health.background = "black";
         health.appendChild(healthBar);
 
@@ -282,6 +282,7 @@ function coolDownUpdate(skills) {
         if (!('maxCharge' in skills[skill]) || skills[skill].curCharge == 0) {
             let coolDownPercent = skills[skill].curCoolDown / skills[skill].coolDown * 100;
             mask1.style.height = coolDownPercent + "%";
+            mask2.style.height = 0 + "%";
 
             if (skills[skill].curCoolDown <= 0) {
                 span.innerHTML = "";
