@@ -28,6 +28,24 @@ class onGoingSkill {
     }
 }
 
+
+class Spectator {
+    constructor(socketid, position = null, direction = null) {
+        this.name = 'Spectator ' + socketid;
+        this.socketid = socketid;
+        if (position !== null) {
+            this.position = position;
+        } else {
+            this.position = [0, 0, 0];
+        }
+        if (direction !== null) {
+            this.direction = direction;
+        } else {
+            this.direction = [0, 0, -1];
+        }
+    }
+}
+
 class Survivor {
     constructor(socketid, sid) {
         this.name = 'Survivor ' + sid;
@@ -233,7 +251,7 @@ class Fighter {
                     const objsInRadius = game.getObjInRadius(location, radius);
                     let cut = false;
                     objsInRadius.forEach(function (obj) {
-                        if (obj.type === "tree") {
+                        if (obj.type === "tree" && obj.physics) {
                             game.toClean.push(obj.name)
                             cut = true;
                         }

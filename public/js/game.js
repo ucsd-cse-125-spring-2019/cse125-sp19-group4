@@ -80,6 +80,23 @@ class GameInstance {
             const tree = new Tree(this.treeId++, size);
             this.putTreeOnTheMap(tree, true);
         }
+
+        for (let i = -this.worldHalfHeight; i < this.worldHalfHeight; i += 5) {
+            const tree1 = new Tree(this.treeId++, 2, false);
+            tree1.position = [-this.worldHalfWidth, 0, i];
+            this.putTreeOnTheMap(tree1, false);
+            const tree2 = new Tree(this.treeId++, 2, false);
+            tree2.position = [this.worldHalfWidth, 0, i];
+            this.putTreeOnTheMap(tree2, false);
+        }
+        for (let i = -this.worldHalfWidth; i < this.worldHalfWidth; i += 5) {
+            const tree1 = new Tree(this.treeId++, 2, false);
+            tree1.position = [i, 0, -this.worldHalfHeight];
+            this.putTreeOnTheMap(tree1, false);
+            const tree2 = new Tree(this.treeId++, 2, false);
+            tree2.position = [i, 0, this.worldHalfHeight];
+            this.putTreeOnTheMap(tree2, false);
+        }
     }
 
     insertObjListAndMap(obj) {
@@ -695,8 +712,10 @@ class GameInstance {
         const position = tree.position;
         this.toSend.push(tree.name);
         this.objects[tree.name] = tree;
-        this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5,
-            { x: position[0], y: position[1], z: position[2] });
+        if (tree.physics) {
+            this.physicsEngine.addTree(tree.name, randomLocation, tree.size, 0.5,
+                { x: position[0], y: position[1], z: position[2] });
+        }
         return true;
     }
 

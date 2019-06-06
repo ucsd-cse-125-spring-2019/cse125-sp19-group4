@@ -134,6 +134,9 @@ socket.on('role already taken', function (msg) {
     // alert(msg);
     $('.talktext').html(msg);
     $('#reminder').css('opacity', '1');
+    setTimeout(function () {
+        $('#reminder').css('opacity', '0');
+    }, 2000);
 });
 
 socket.on('enter game', function (msg) {

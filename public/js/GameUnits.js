@@ -145,7 +145,7 @@ class Taunted {
 }
 
 class Tree {
-    constructor(treeId, size) {
+    constructor(treeId, size, physics = true) {
         this.name = 'Tree ' + treeId;
         this.radius = 0;    // only to suppress error when assigning position from physics engine
         this.position = [20, 0, -20];
@@ -153,6 +153,7 @@ class Tree {
         this.model = 'tree';
         this.size = size;
         this.type = "tree";
+        this.physics = physics;
     }
 }
 
