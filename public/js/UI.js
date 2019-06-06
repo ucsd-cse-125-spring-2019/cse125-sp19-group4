@@ -276,7 +276,11 @@ function healthUpdate(status) {
 function statusUpdate(status) {
     for (let i in status) {
         if (isStatusValid(i)) {
-            document.getElementById(i).innerHTML = status[i];
+            if (i === "defense" && status[i] >= 100) {
+                document.getElementById(i).innerHTML = '∞';
+            } else {
+                document.getElementById(i).innerHTML = status[i];
+            }
         }
     }
 }
@@ -293,7 +297,7 @@ function buffUpdate(buff) {
 function tempBuffUpdate(buff) {
     for (let i in buff) {
         if (isStatusValid(i)) {
-            if (buff[i] == 0) {
+            if (buff[i] == 0 || buff[i] >= 100) {
                 document.getElementById("tempbuff" + i).innerHTML = "";
             } else {
                 document.getElementById("tempbuff" + i).innerHTML = "+" + buff[i];
