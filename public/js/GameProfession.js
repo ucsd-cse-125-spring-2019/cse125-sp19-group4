@@ -519,7 +519,7 @@ class Healer {
                 'description': 'The wizard starts chanting. The chanting strenghthens whoever hears it',
                 'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
-                'iconPath': '/public/images/skills/SKILL_Medicine.png',
+                'iconPath': '/public/images/skills/SKILL_Buff.png',
                 'function': function (game, self, params) {
                     self.skills[1].curCoolDown = self.skills[2].coolDown;
                     const duration = 10;
