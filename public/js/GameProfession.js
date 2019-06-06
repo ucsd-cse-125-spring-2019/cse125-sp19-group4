@@ -110,7 +110,7 @@ class God {
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
-                'iconPath': '/public/images/skills/SKILL_Slime.png',
+                'iconPath': '/public/images/skills/SKILL_Cactus.png',
                 'cursorPath': '/public/images/mouse/empty.cur',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
@@ -127,7 +127,7 @@ class God {
                 'curCoolDown': 0,
                 'maxCharge': 5,
                 'curCharge': 0,
-                'iconPath': '/public/images/skills/SKILL_Slime.png',
+                'iconPath': '/public/images/skills/SKILL_Spike.png',
                 'cursorPath': '/public/images/mouse/empty.cur',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
@@ -175,7 +175,7 @@ class God {
 class Fighter {
     constructor() {
         this.profession = "Fighter";
-        this.iconPath = 'public/images/professions/PROFESSION_Fighter.jpg'
+        this.iconPath = 'public/images/professions/PROFESSION_Fighter.png'
         this.status = {
             'maxHealth': 100,
             'curHealth': 100,
@@ -245,7 +245,7 @@ class Fighter {
                 'coolDown': 15,
                 'curCoolDown': 0,
                 'description': 'Be invulnerable for 3 seconds',
-                'iconPath': '/public/images/skills/SKILL_Heal.png',
+                'iconPath': '/public/images/skills/SKILL_Shield.png',
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
                     const duration = 3;
@@ -263,7 +263,7 @@ class Fighter {
                 'coolDown': 15,
                 'curCoolDown': 0,
                 'description': 'Attract nearby slimes',
-                'iconPath': '/public/images/skills/SKILL_CutTree.png',
+                'iconPath': '/public/images/skills/SKILL_Taunt.png',
                 'function': function (game, self, params) {
                     const duration = 5;
                     const radius = 30;
@@ -347,7 +347,7 @@ class Archer {
             'attackInterval': 60,
             'attackSpeed': 1,
         };
-        this.iconPath = 'public/images/professions/PROFESSION_Archer.jpg';
+        this.iconPath = 'public/images/professions/PROFESSION_Archer.png';
         this.skills = {
             0: {
                 'name': 'Shoot',
@@ -380,7 +380,7 @@ class Archer {
                 'maxCharge': 2,
                 'curCharge': 0,
                 'description': 'Throw a grenade and explode',
-                'iconPath': '/public/images/skills/SKILL_Grenade.png',
+                'iconPath': '/public/images/skills/SKILL_Fireball.svg',
                 'function': function (game, self, params) {
                     const name = self.name;
                     const cursor = params.position;
@@ -415,7 +415,7 @@ class Archer {
                 'coolDown': 10,
                 'curCoolDown': 0,
                 'description': 'Increase attack speed by 200% for 3 seconds',
-                'iconPath': '/public/images/skills/SKILL_Shoot.png',
+                'iconPath': '/public/images/skills/SKILL_Boost.png',
                 'function': function (game, self, params) {
                     let duration = 3;
                     let effect = function (game, self) {
@@ -431,7 +431,7 @@ class Archer {
 class Healer {
     constructor() {
         this.profession = "Healer";
-        this.iconPath = 'public/images/professions/PROFESSION_Healer.jpg'
+        this.iconPath = 'public/images/professions/PROFESSION_Healer.png'
         this.status = {
             'maxHealth': 100,
             'curHealth': 100,
@@ -442,8 +442,6 @@ class Healer {
             'attackSpeed': 1,
         };
         this.skill_model = '';
-        this.singing = false;
-        this.chanting = false;
 
         this.skills = {
             0: {
@@ -480,10 +478,6 @@ class Healer {
                 'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
                 'function': function (game, self, params) {
-                    if (self.chanting) {
-                        return false;
-                    }
-                    self.singing = true;
                     self.skills[2].curCoolDown = self.skills[2].coolDown;
                     const duration = 10;
                     const radius = 20;
@@ -502,7 +496,6 @@ class Healer {
                     };
 
                     const endEffect = function (game, self) {
-                        self.singing = false;
                         if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
                             game.toClean.push(self.skill_model);
                             self.skill_model = '';
@@ -526,12 +519,8 @@ class Healer {
                 'description': 'The wizard starts chanting. The chanting strenghthens whoever hears it',
                 'strength': 10,
                 'type': SKILL_TYPE.ONGOING,
-                'iconPath': '/public/images/skills/SKILL_Medicine.png',
+                'iconPath': '/public/images/skills/SKILL_Buff.png',
                 'function': function (game, self, params) {
-                    if (self.singing) {
-                        return false;
-                    }
-                    self.chanting = true;
                     self.skills[1].curCoolDown = self.skills[2].coolDown;
                     const duration = 10;
                     const radius = 20;
@@ -568,7 +557,6 @@ class Healer {
                         }
                     };
                     const endEffect = function (game, self) {
-                        self.chanting = false;
                         if (typeof self.skill_model !== 'undefined' && typeof game.objects[self.skill_model] !== 'undefined') {
                             game.toClean.push(self.skill_model);
                             self.skill_model = '';
@@ -596,7 +584,7 @@ class Healer {
                 'coolDown': 30,
                 'curCoolDown': 0,
                 'description': 'Resurrect a dead player',
-                'iconPath': '/public/images/skills/SKILL_Surgery.png',
+                'iconPath': '/public/images/skills/SKILL_Resurrect.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const name = self.name;

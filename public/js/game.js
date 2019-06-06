@@ -42,7 +42,6 @@ class GameInstance {
             'FighterCount': 0,
             'ArcherCount': 0,
             'HealerCount': 0,
-            'BuilderCount': 0
         }
         this.loadConfig(config);
         this.generateEnvironment();
