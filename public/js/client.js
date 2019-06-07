@@ -161,6 +161,25 @@ socket.on('enter lobby', function() {
     nameScreen.style.display = "none";
 });
 
+const professions = ['Archer', 'Fighter', 'Healer', 'God'];
+socket.on('profession picked', function(msg) {
+    for (let i in professions) {
+        let profession = professions[i]
+        let ul = document.getElementById(profession + "Pick");
+        while( ul.firstChild ){
+            ul.removeChild( ul.firstChild );
+        }
+    }
+
+    let picks = JSON.parse(msg);
+    for (let name in picks) {
+        let ul = document.getElementById(picks[name] + "Pick");
+        let nameDiv = document.createElement('div');
+        nameDiv.innerHTML = name;
+        ul.appendChild(nameDiv);
+    }
+});
+
 socket.on('enter game', function (msg) {
     console.log('enter game');
 
