@@ -164,7 +164,7 @@ socket.on('enter lobby', function() {
 const professions = ['Archer', 'Fighter', 'Healer', 'God'];
 socket.on('profession picked', function(msg) {
     for (let i in professions) {
-        let profession = professions[i]
+        let profession = professions[i];
         let ul = document.getElementById(profession + "Pick");
         while( ul.firstChild ){
             ul.removeChild( ul.firstChild );
@@ -173,12 +173,28 @@ socket.on('profession picked', function(msg) {
 
     let picks = JSON.parse(msg);
     for (let name in picks) {
-        let ul = document.getElementById(picks[name] + "Pick");
+        let { profession, ready } = picks[name];
+        let ul = document.getElementById(profession + "Pick");
         let nameDiv = document.createElement('div');
-        nameDiv.innerHTML = name;
+        let string = name;
+        if (ready) {
+            string += '<span style="color: green"> ✓'
+        }
+        nameDiv.innerHTML = string;
         ul.appendChild(nameDiv);
     }
 });
+
+let ready = false;
+socket.on('ready', function() {
+    ready = true;
+    $('#readyButton').html('unready');
+})
+
+socket.on('unready', function() {
+    ready = false;
+    $('#readyButton').html('ready');
+})
 
 socket.on('enter game', function (msg) {
     console.log('enter game');
@@ -292,6 +308,15 @@ $('#ArcherButton').click(function () {
 
 $('#nameButton').click(function () {
     socket.emit("name submitted", document.getElementById('nameInput').value);
+});
+
+$('#readyButton').click(function () {
+    if (ready) {
+        socket.emit("unready");
+    }
+    else {
+        socket.emit("ready");
+    }
 });
 
 socket.on('game_status', function (msg) {
