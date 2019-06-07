@@ -216,6 +216,13 @@ io.on('connection', function (socket) {
         io.emit('chat message', gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
     });
 
+    socket.on('request enter game', function () {
+        const data = { players: gameInstance.socketidToPlayer, objects: gameInstance.objects };
+        // Utils.recursiveSetDumbFilter(data);
+        io.to(socket.id).emit('enter game', JSON.stringify(data));
+        // Utils.recursiveSetPropertiesFilter(data);
+    });
+
     socket.on('disconnect', function (reason) {
         console.log(socket.id, 'disconnected. Reason:', reason);
     });
@@ -231,10 +238,8 @@ http.listen(8080, function () {
 function enterGame() {
     // Game begins, notify all participants to enter
     game_start();
-    gameInstance.clientSockets.forEach(function (socket) {
-        data = { players: gameInstance.socketidToPlayer, objects: gameInstance.objects }
-        io.to(socket).emit('enter game', JSON.stringify(data));
-    });
+    const data = { players: gameInstance.socketidToPlayer, objects: gameInstance.objects }
+    io.emit('enter game', JSON.stringify(data));
     gameInstance.initializeFilterFunctions();
 }
 
