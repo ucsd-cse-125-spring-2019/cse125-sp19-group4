@@ -485,13 +485,14 @@ socket.on('game_status', function (msg) {
         if (typeof player.skills !== 'undefined') {
             UI.coolDownUpdate(player.skills);
         }
-        if (typeof status.progess !== 'undefine') {
-            UI.updateProgressBar(status.progress)
-        }
 
         if ('items' in player) {
             UI.updateItems(player.items)
         }
+    }
+
+    if (typeof status.progess !== 'undefine') {
+        UI.updateProgressBar(status.progress)
     }
     UI.teammatesUpdate(data);
 
