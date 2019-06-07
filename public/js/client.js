@@ -137,13 +137,28 @@ socket.on('notification', function (msg) {
 
 $('.game-area').html($('#intro-screen-template').html());
 
+let roleTimeout;
 socket.on('role already taken', function (msg) {
-    // alert(msg);
+    clearTimeout(roleTimeout);
     $('.talktext').html(msg);
     $('#reminder').css('opacity', '1');
-    setTimeout(function () {
+    roleTimeout = setTimeout(function () {
         $('#reminder').css('opacity', '0');
     }, 2000);
+});
+
+let nameTimeout;
+socket.on('name already taken', function (msg) {
+    clearTimeout(nameTimeout);
+    $('#nameTaken').css('opacity', '1');
+    nameTimeout = setTimeout(function () {
+        $('#nameTaken').css('opacity', '0');
+    }, 2000);
+});
+
+socket.on('enter lobby', function() {
+    let nameScreen = document.getElementById("nameScreen");
+    nameScreen.style.display = "none";
 });
 
 socket.on('enter game', function (msg) {
@@ -254,6 +269,10 @@ $('#HealerButton').click(function () {
 
 $('#ArcherButton').click(function () {
     socket.emit("play as survivor", JSON.stringify("Archer"));
+});
+
+$('#nameButton').click(function () {
+    socket.emit("name submitted", document.getElementById('nameInput').value);
 });
 
 socket.on('game_status', function (msg) {

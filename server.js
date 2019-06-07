@@ -38,9 +38,22 @@ const movementEvents = {};
 const jumpEvents = {};
 const skillEvents = {};
 
+const names = {};
+
 
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
+
+    socket.on('name submitted', function(name) {
+        for (let key in names) {
+            if (names[key] === name) {
+                io.to(socket.id).emit('name already taken');
+                return;
+            }
+        }
+        names[socket.id] = name;
+        io.to(socket.id).emit('enter lobby');
+    });
 
     socket.on('play as survivor', function (msg) {
         if (!gameInstance.joinAsSurvivor(socket.id, JSON.parse(msg))) {
