@@ -12,8 +12,8 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
-    pingInterval: 2000,
-    pingTimeout: 3000,
+    pingInterval: 6000,
+    pingTimeout: 5000,
 });
 const path = require('path');
 const fs = require('fs');
@@ -249,10 +249,14 @@ let then = null;
 let gameLoopInterval = null;
 
 function game_start() {
-    gameStartTime = Date.now();
-    then = Date.now();
-
-    gameLoopInterval = setInterval(gameLoop, 1000 / tick_rate);
+    setTimeout(function () {
+        gameInstance.clientSockets.forEach(function (socket) {
+            io.to(socket).emit('enter game');
+        });
+        gameStartTime = Date.now();
+        then = Date.now();
+        gameLoopInterval = setInterval(gameLoop, 1000 / tick_rate);
+    }, 6000);
 }
 
 function gameLoop() {

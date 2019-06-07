@@ -57,6 +57,8 @@
       .professionPick {
         position: absolute; top: 100%; left: 50%; transform: translateX(-50%)
       }
+      .professionDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 400px; background: #000000a0;
+                              transition: 0.5s; padding: 15px 10px; border-radius: 10px; color: white; opacity: 0;}
 
       /* animation for casting */
       .castingAnimation {
@@ -165,7 +167,7 @@
           transform: rotate(1turn)
         }
       }
-      .loading__anim { width: 40px; height: 40px; display: inline-block; border: 5px solid rgba(189,189,189 ,0.25);
+      .loading__anim { width: 80px; height: 80px; display: inline-block; border: 10px solid rgba(189,189,189 ,0.25);
         border-left-color: rgba(3,155,229 ,1); border-top-color: rgba(3,155,229 ,1); border-radius: 50%; animation: rotate 600ms infinite linear;}
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -182,7 +184,7 @@
             <h1 style="margin: auto; font-size: 200px; color: #ed9b17; transform: scaleX(1.0);">Kneel Before the Obelisk</h1>
           </div>
           <button id="readyButton" class="button" style="left: 50%; transform: translateX(-50%); position: relative; width: 100px;
-                      font-size: 30pt; padding: 0 2px"> ready</button>
+                      font-size: 30pt; padding: 0 2px; background-color: #00000030; opacity: 0"> ready</button>
 
           <div style="height:40%; width: 100%; display: flex;"> 
             <ul id="lobbyUl" style="margin: auto; font-size: 30px; font-weight: bold; text-align: center;">
@@ -194,6 +196,8 @@
                       <div id='reminder' class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 0'><div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold"></div></div>
                   </div>
                   <ul id="GodPick" class="professionPick"></ul>
+                  <div id="GodButtonDescription" class="professionDescription">Spawn monsters and place trees strategically to kill all survivors</div>
+
                 </div>
               </li>
 
@@ -203,6 +207,7 @@
                 <div id='FighterButton'>
                   <img class='menuButton' src='public/images/professions/PROFESSION_Fighter.png'><br>
                   <ul id="FighterPick" class="professionPick"></ul>
+                  <div id="FighterButtonDescription" class="professionDescription">Protect your teammates and cut down trees to clear ways</div>
                 </div>
               </li>
 
@@ -210,6 +215,7 @@
                 <div id='ArcherButton'>
                   <img class='menuButton' src='public/images/professions/PROFESSION_Archer.png'><br>
                   <ul id="ArcherPick" class="professionPick"></ul>
+                  <div id="ArcherButtonDescription" class="professionDescription">Unleash your power on your enemies and destroy the obelisk</div>
                 </div>
               </li>
 
@@ -217,6 +223,7 @@
                 <div id='HealerButton'>
                   <img class='menuButton' src='public/images/professions/PROFESSION_Healer.png'><br>
                   <ul id="HealerPick" class="professionPick"></ul>
+                  <div id="HealerButtonDescription" class="professionDescription">Support your teammates with healing and damage boosting</div>
                 </div>
               </li>
 
@@ -253,6 +260,13 @@
 
             <button id="nameButton" style="width: 200px; opacity: 0; font-size: 16pt; height: 2em; transition: 0.2s; letter-spacing: 2px;
                         margin-top:10px;" class="button"></button>
+            
+            <br>
+            <div style="margin-top: 100px">
+            <span style="font-size: 16pt; ">or</span>
+            <br>
+            <button id="watchButton" style="width: 200px; opacity: 1; font-size: 16pt; height: 2em; transition: 0.2s; letter-spacing: 2px;
+                        margin-left:-9px; margin-top: 10px" class="button">Just Watch</button>
           </ul>
         </div>
 
@@ -276,6 +290,11 @@
 
     </script>
     <script id="ingame-template" type="text/template">
+      <div id="guide-screen" style="width: 100%; height:100%; position:absolute; text-align: center; pointer-events:auto ">
+        <img id='guide-img' src='public/images/background/guidePage.png' style="max-width: 100%; height: auto; bottom: 0; left:0; position: absolute">
+        <span class="loading__anim" style="bottom: 5%; right: 5%; position: absolute"></span>
+      </div> 
+      <div id="game-canvas">
       <canvas id="glCanvas"></canvas>
       <div id="Debugger">
         <span style="color:#B4AE6C;">Debugger</span>
@@ -313,6 +332,7 @@
       <div class="progress" id="progressDiv">
           <div class="progress-bar" id="progressBar" role="progressbar" style="width: 100%"></div>
       </div>
+    </div>
     </script>
     <script id="endgame-template" type="text/template">
       <h1 id="endgame-message"><h1/>

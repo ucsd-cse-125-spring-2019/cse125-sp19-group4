@@ -170,9 +170,13 @@ socket.on('name already taken', function (msg) {
 
 socket.on('enter lobby', function() {
     let nameScreen = document.getElementById("nameScreen");
-    nameScreen.style.display = "none";
     let menu = document.getElementById('menu');
     menu.style["pointer-events"] = "auto";
+    $('#nameScreen').animate({opacity: 0}, 2000);
+    $('#readyButton').animate({opacity: 1}, 2000);
+    setTimeout(function() {
+        $('#nameScreen').css('display', 'none')
+    }, 2000);
 });
 
 const professions = ['Archer', 'Fighter', 'Healer', 'God'];
@@ -211,8 +215,8 @@ socket.on('unready', function() {
     $('#readyButton').html('ready');
 })
 
-socket.on('enter game', function (msg) {
-    console.log('enter game');
+socket.on('loading', function (msg) {
+    console.log('loading');
 
     setCursor(defaultCursor);
     UIInitialize();
@@ -265,14 +269,26 @@ socket.on('enter game', function (msg) {
         positions[name] = obj.position;
     });
 
+    $('#game-canvas').css('opacity', '0');
+    $('#guide-screen').css('display', 'block');
+    // const loadPage = document.querySelector("#guide-image");
+    // if (window) {
+    //     loadPage.width = window.width;
+    //     loadPage.height = window.height;
+    // }
     main();
 });
+
+socket.on('enter game', function () {
+    $('#guide-screen').css('opacity', '0');
+    $('#game-canvas').css('opacity', '1');
+}); 
 
 socket.on('wait for game begin', function (msg) {
     $('#loadingBox').css('display', 'block');
     $('#menu').css('opacity', '0.1');
     $('#gameName').css('opacity', '0');
-    $('#lobbyUl').css('opacity', '0');
+    $('#lobbyUl').animate('opacity', '0');
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
@@ -364,7 +380,19 @@ $('#ArcherButton').click(function () {
 });
 
 $('#nameButton').click(function () {
-    socket.emit("name submitted", document.getElementById('nameInput').value);
+    if (document.getElementById('nameInput').value.length > 0) {
+        socket.emit("name submitted", document.getElementById('nameInput').value);
+    }
+});
+
+$('#watchButton').click(function () {
+    spectator_mode = true;
+    let nameScreen = document.getElementById("nameScreen");
+    let menu = document.getElementById('menu');
+    $('#nameScreen').animate({opacity: 0}, 2000);
+    setTimeout(function() {
+        $('#nameScreen').css('display', 'none')
+    }, 2000);
 });
 
 $('#readyButton').click(function () {
