@@ -38,6 +38,10 @@ class Animation {
                 mapping["specular"] = loadTexture(gl, element.mapSpecular);
                 this.hasTexture = true;
             }
+            if (Object.keys(mapping).length == 0) {
+                mapping["ambient"] = loadTexture(gl, "", [255, 255, 255, 255]);
+                this.hasTexture = true;
+            }
             this.texture_files[index] = { map: mapping, index: texture_counter.i };
             this.textureBuffers[index] = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[index]);

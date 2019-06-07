@@ -320,7 +320,7 @@ socket.on('game_status', function (msg) {
         }
 
         if (typeof objects[name] === 'undefined') { //TODO move this to other event
-            objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+            objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
 
         if ('model' in obj) {
@@ -452,8 +452,8 @@ function main() {
     gl.useProgram(shaderProgram);
 
     // environment
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [255, 229, 165]);
-    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
+    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [255, 229, 165]);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/tower.obj", "/public/model/environment/tower.mtl", true, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
