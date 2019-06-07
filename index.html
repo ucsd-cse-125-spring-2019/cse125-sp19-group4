@@ -55,7 +55,7 @@
       #lobbyUl li {display: inline-block; margin: 0 10px 0 10px; position: relative;}
       #lobbyUl img {height: 150px; width: 150px; object-fit: cover; vertical-align: unset;}
       .professionPick {
-        position: absolute; top: 100%; left: 50%; transform: translateX(-50%)
+        position: absolute; top: 100%; left: 50%; transform: translateX(-50%); overflow: auto; max-height: 5em;
       }
       .professionDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 400px; background: #000000c0;
                               padding: 15px 10px; border-radius: 10px; color: white; display: none}
@@ -97,6 +97,9 @@
       #Debugger {float: left; left: 10px; bottom: 10px; padding: 7px; position: absolute; border-style: solid; width: 300px;
                  border-width: 1px; border-color:SaddleBrown; border-radius:2px; background-color:#131F1C;}
       
+      #spectator_mode {left: 50%; top: 10%; padding: 7px; position: absolute; border-style: solid;
+                 border-width: 2px; border-color:SaddleBrown; border-radius:2px; background-color:#131F1C;
+                 transform: translateX(-50%); display: none}
       /* ----------------------------------------Debugger-------------------------------------- */
 
 
@@ -159,8 +162,8 @@
         margin: 20px 0 0 0;
         opacity: 0;
       }
-      #notification {position: absolute; top: 10%; left: 50%; transform: translateX(-50%); font-size: 20pt; }
-      #progressDiv {position: absolute; top: 5%; left: 50%; transform: translateX(-50%); width: 400px; height: 20px; opacity: 0.5;
+      #notification {position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 20pt; }
+      #progressDiv {position: absolute; top: 5%; left: 50%; transform: translateX(-50%); width: 50%; height: 30px; opacity: 0.8;
                     background-image: -webkit-gradient(linear, left top, right top, from(rgba(230,230,230,0.3)),to(rgba(230,230,230,0.8)), color-stop(.2,#fff) );}
       @keyframes rotate {
         to {
@@ -175,6 +178,7 @@
     <link href="https://fonts.googleapis.com/css?family=Josefin+Sans&display=swap" rel="stylesheet">
   </head>
   <body style="width:100vw; height:100vh; font-family: 'Josefin Sans', sans-serif;">
+    <img src='public/images/background/guidePage.png' style="display: none;">
     <div class="game-area" id="game-area" style="height: 100%; width: 100%; "></div>
     <script id="intro-screen-template" type="text/template">
       <section>
@@ -196,7 +200,7 @@
                       <div id='reminder' class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 0'><div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold"></div></div>
                   </div>
                   <ul id="GodPick" class="professionPick"></ul>
-                  <div id="GodButtoniDescription" class="professionDescription"><span style="color: #f44b42;">Spawn</span> monsters and place trees strategically to kill all survivors</div>
+                  <div id="GodButtoniDescription" class="professionDescription"><span style="color: #f44b42;">Spawn</span> monsters and place trees strategically to <span style="color: #f44b42;">kill</span> all survivors</div>
 
                 </div>
               </li>
@@ -207,7 +211,7 @@
                 <div id='FighterButton'>
                   <img class='menuButton' id='FighterButtoni' src='public/images/professions/PROFESSION_Fighter.png'><br>
                   <ul id="FighterPick" class="professionPick"></ul>
-                  <div id="FighterButtoniDescription" class="professionDescription">Protect your teammates and cut down trees to clear ways</div>
+                  <div id="FighterButtoniDescription" class="professionDescription"><span style="color:#ffc61e;">Protect</span> your teammates and <span style="color:#ffc61e;">cut down</span> trees to clear ways</div>
                 </div>
               </li>
 
@@ -215,7 +219,7 @@
                 <div id='ArcherButton'>
                   <img class='menuButton' id='ArcherButtoni' src='public/images/professions/PROFESSION_Archer.png'><br>
                   <ul id="ArcherPick" class="professionPick"></ul>
-                  <div id="ArcherButtoniDescription" class="professionDescription">Unleash your power on your enemies and destroy the obelisk</div>
+                  <div id="ArcherButtoniDescription" class="professionDescription"><span style="color:#1ebbff;">Unleash</span> your power on your enemies and <span style="color:#1ebbff;">destroy</span> the obelisk</div>
                 </div>
               </li>
 
@@ -309,6 +313,9 @@
         <div style="color:#B4AE6C; display: block;">Processing cycle: <span id="processing" style="color: white;">--</span> ms</div>
         <div style="color:#B4AE6C; display: block;">Server cycle: <span id="server" style="color: white;">--</span> ms</div>
       </div>
+      <div id="spectator_mode">
+        <span style="color:#B4AE6C;">Spectator Mode</span>
+      </div>
       <div id="notification">
         <ul id="notificationList"></ul>
       </div>
@@ -331,6 +338,7 @@
       </div>
       <div class="progress" id="progressDiv">
           <div class="progress-bar" id="progressBar" role="progressbar" style="width: 100%"></div>
+          <div style="font-size:1.5rem; letter-spacing: 5px; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%)"><span id="tower_curHealth">-</span>/<span id="tower_maxHealth">-</span></div>
       </div>
     </div>
     </script>

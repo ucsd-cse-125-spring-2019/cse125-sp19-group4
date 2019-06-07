@@ -72,7 +72,7 @@ const transform_ref = {
 
     // monster
     'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
-    'cactus': glMatrix.mat4.clone(y_neg_90),
+    'cactus': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_neg_90, glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2])),
     'spike': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_pos_90, x_neg_90),
 
     // item
@@ -207,8 +207,8 @@ socket.on('profession picked', function(msg) {
     for (let name in picks) {
         let { profession, ready } = picks[name];
         let ul = document.getElementById(profession + "Pick");
-        let nameDiv = document.createElement('div');
-        nameDiv.style = "color: black; white-space: nowrap; font-size: 30px; font-size: 3.5vw;";
+        let nameDiv = document.createElement('li');
+        nameDiv.style = "color: black; white-space: nowrap; font-size: 2.5vw; display: inline-block; list-style: none;";
         let string = name;
         if (ready) {
             string += '<span style="color: green; display: inline-block"> ✓'
@@ -240,6 +240,7 @@ socket.on('loading', function (msg) {
 
     if (!(socket.id in players)) {
         spectator_mode = true;
+        $('#spectator_mode').css('display', 'block');
     }
 
     if (!spectator_mode) {
@@ -252,16 +253,15 @@ socket.on('loading', function (msg) {
             skillCursors[key] = player.skills[key].cursorPath
         }
 
-        UI.InitializeStatus(player.status);
         UI.InitializeSkills(player.skills);
 
         if (uid !== "God") {
+            UI.InitializeStatus(player.status);
             UI.InitializeVault(player.items);
             UI.updateItems(player.items);
         } else {
             isGod = true;
             document.getElementById('vault').style.display = "none";
-            document.getElementById('statusBar').style.display = "none";
         }
     }
 
@@ -280,7 +280,6 @@ socket.on('loading', function (msg) {
         objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
         if (typeof obj['size'] !== 'undefined') {
             objects[name].size = obj.size;
-            console.log(name, objects[name].size);
         }
         
         if (typeof player_profession[name] !== 'undefined') {
@@ -321,6 +320,8 @@ socket.on('Survivor Died', function (msg) {
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)');
         spectator_mode = true;
+        $('#spectator_mode').css('display', 'block');
+
         casting = -1;
         delete objects['casting'];
         setCursor(defaultCursor);
@@ -339,6 +340,7 @@ socket.on('Survivor Revived', function (msg) {
     if (name === uid) {
         $('.game-area').css('filter', 'none')
         spectator_mode = false;
+        $('#spectator_mode').css('display', 'none');
         camera.setPosition(positions[name], true);
     } else {
         document.getElementById(name + "Icon").style.filter = "none";
@@ -423,6 +425,7 @@ $('#nameButton').click(function () {
 });
 
 $('#watchButton').click(function () {
+    $('#spectator_mode').css('display', 'block');
     spectator_mode = true;
     $('#menu').css('pointer-events', 'auto');
     $('#nameScreen').fadeOut();
@@ -846,11 +849,8 @@ function main() {
                 if (typeof player.skills[casting].range) {
                     const distance = glMatrix.vec3.distance(positions[uid], cursor);
                     if (distance > player.skills[casting].range && cursor_icon != noCursor) {
-                        console.log('setting no');
-                        
                         setCursor(noCursor);
                     } else if (distance <= player.skills[casting].range && cursor_icon != skillCursors[casting]) {
-                        console.log('setting skill');
                         setCursor(skillCursors[casting]);
                     }
                 }

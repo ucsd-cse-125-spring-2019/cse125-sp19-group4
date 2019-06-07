@@ -403,6 +403,8 @@ function updateNotification(msg, type) {
 function updateProgressBar(progress) {
     const {curProgress, winProgress} = progress;
     document.getElementById('progressBar').style.width =  curProgress / winProgress * 100 + "%"
+    $('#tower_curHealth').html(curProgress);
+    $('#tower_maxHealth').html(winProgress);
 }
 /* --------------------------all update functions--------------------------- */
 
