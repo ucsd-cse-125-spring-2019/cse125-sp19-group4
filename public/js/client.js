@@ -354,7 +354,9 @@ $('#ArcherButton').click(function () {
 });
 
 $('#nameButton').click(function () {
-    socket.emit("name submitted", document.getElementById('nameInput').value);
+    if (document.getElementById('nameInput').value.length > 0) {
+        socket.emit("name submitted", document.getElementById('nameInput').value);
+    }
 });
 
 $('#readyButton').click(function () {

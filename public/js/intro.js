@@ -49,3 +49,25 @@ if (debug) {
         $("#welcomeText" + i).css('opacity','1');
     }
 }
+
+document.getElementById('GodButton').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('FighterButton').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('ArcherButton').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('HealerButton').addEventListener('mouseenter', descriptionMouseEnter)
+
+document.getElementById('GodButton').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('FighterButton').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('ArcherButton').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('HealerButton').addEventListener('mouseleave', descriptionMouseLeave)
+
+function descriptionMouseEnter(e) {
+    let id = e.target.id + 'description';
+    let description = document.getElementById(e.target.id + 'Description');
+    description.style.opacity = 1;
+}
+
+function descriptionMouseLeave(e) {
+    let id = e.target.id + 'description';
+    let description = document.getElementById(e.target.id + 'Description');
+    description.style.opacity = 0;
+}
