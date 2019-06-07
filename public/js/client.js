@@ -5,6 +5,9 @@ import * as UI from '/public/js/UI.js'
 
 const UIdebug = true;
 
+let game_started = false;
+let alert_prompt = false;
+
 const camera = new Camera();
 let spectator_mode = false;
 
@@ -221,36 +224,44 @@ socket.on('loading', function (msg) {
     const players = data.players;
     const objs = data.objects;
 
-    uid = players[socket.id].name;
+    if (!spectator_mode) {
+        uid = players[socket.id].name;
+        player = players[socket.id];
+        console.log("my name is", uid);
+
+        // get the skill cursor
+        for (let key in player.skills) {
+            skillCursors[key] = player.skills[key].cursorPath
+        }
+
+        UI.InitializeStatus(player.status);
+        UI.InitializeSkills(player.skills);
+
+        if (uid !== "God") {
+            UI.InitializeVault(player.items);
+            UI.updateItems(player.items);
+        } else {
+            isGod = true;
+            document.getElementById('vault').style.display = "none";
+            document.getElementById('statusBar').style.display = "none";
+        }
+    }
+
     for (let key in players) {
         player_alive[players[key].name] = true;
         if (typeof players[key].profession !== 'undefined') {
             player_profession[players[key].name] = players[key].profession;
         }
     }
-    player = players[socket.id];
-    console.log("my name is", uid);
 
-    // get the skill cursor
-    for (let key in player.skills) {
-        skillCursors[key] = player.skills[key].cursorPath
-    }
-
-    UI.InitializeStatus(player.status);
-    UI.InitializeSkills(player.skills);
     UI.InitializeTeammates(players);
-    if (uid !== "God") {
-        UI.InitializeVault(player.items);
-        UI.updateItems(player.items);
-    } else {
-        isGod = true;
-        document.getElementById('vault').style.display = "none"
-    }
 
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
         const obj = objs[name];
         objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
+        console.log(name);
+        
         if (typeof player_profession[name] !== 'undefined') {
             objects[name].profession = player_profession[name];
         }
@@ -394,6 +405,17 @@ $('#readyButton').click(function () {
 });
 
 socket.on('game_status', function (msg) {
+    if (!game_started) {
+        if (alert_prompt) {
+            return;
+        }
+        spectator_mode = true;
+        if (window.confirm("The game has started. Do you want to spectate the game?")) {
+            socket.emit("request enter game");
+        }
+        alert_prompt = true;
+        return;
+    }
     const start = Date.now();
     const status = JSON.parse(msg);
 
@@ -526,6 +548,8 @@ socket.on('pong', (latency) => {
  * Start here
  */
 function main() {
+    game_started = true;
+
     bgm.play();
 
     /** @type {HTMLCanvasElement} */
