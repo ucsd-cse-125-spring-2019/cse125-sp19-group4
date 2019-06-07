@@ -31,26 +31,24 @@ function createStatusItem(statusName, initialValue) {
 
     let img = document.createElement("img");
     img.src = imgSrc;
-    img.height = 30;
-    img.weight = 30;
-    img.style = "vertical-align: middle; margin: 2px";
+    img.style = "vertical-align: middle; margin: 2px; width: 3.5vh; height: 3.5vh";
     img.title = statusName;
 
 
     let text = document.createElement("span");
     text.id = statusName;
     text.innerHTML = initialValue;
-    text.style = "display: inline-block; vertical-align: middle; margin: 0 0 0 5px; color:#B4AE6C; font-size: 14pt;";
+    text.style = "display: inline-block; vertical-align: middle; margin: 0 0 0 5px; color:#B4AE6C; font-size: 3vh;";
 
     let buff = document.createElement("span");
     buff.id = "buff" + statusName;
     buff.innerHTML = "+0"
-    buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 11pt";
+    buff.style = "display: inline-block; margin: 0 0 0 5px; color:green; font-size: 2vh";
 
     let tempbuff = document.createElement("span");
     tempbuff.id = "tempbuff" + statusName;
     tempbuff.innerHTML = ""
-    tempbuff.style = "display: inline-block; margin: 0 0 0 5px; color:red; font-size: 11pt";
+    tempbuff.style = "display: inline-block; margin: 0 0 0 5px; color:red; font-size: 2vh";
 
     div.appendChild(img);
     div.appendChild(text);
@@ -64,13 +62,11 @@ function InitializeStatus(status) {
     let div = document.createElement("div");
     let img = document.createElement("img");
     img.src = "/public/images/status/maxHealth.png";
-    img.height = 25;
-    img.weight = 25;
-    img.style = "vertical-align: middle; margin: 2px";
+    img.style = "vertical-align: middle; margin: 2px; width: 3.5vh; heigth: 3.5vh";
 
     let health = document.createElement("div");
     health.className += "progress"
-    health.style = "display: inline-block; vertical-align: middle; width: 100px; background-color: IndianRed; margin: 0px 5px; height: 18px"
+    health.style = "display: inline-block; vertical-align: middle; width: 100px; background-color: IndianRed; margin: 0px 5px; height: 2.5vh; border-radius: 8px"
     health.background = "black";
 
     let healthBar = document.createElement("div");
