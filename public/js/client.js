@@ -137,14 +137,64 @@ socket.on('notification', function (msg) {
 
 $('.game-area').html($('#intro-screen-template').html());
 
+let roleTimeout;
 socket.on('role already taken', function (msg) {
-    // alert(msg);
+    clearTimeout(roleTimeout);
     $('.talktext').html(msg);
     $('#reminder').css('opacity', '1');
-    setTimeout(function () {
+    roleTimeout = setTimeout(function () {
         $('#reminder').css('opacity', '0');
     }, 2000);
 });
+
+let nameTimeout;
+socket.on('name already taken', function (msg) {
+    clearTimeout(nameTimeout);
+    $('#nameTaken').css('opacity', '1');
+    nameTimeout = setTimeout(function () {
+        $('#nameTaken').css('opacity', '0');
+    }, 2000);
+});
+
+socket.on('enter lobby', function() {
+    let nameScreen = document.getElementById("nameScreen");
+    nameScreen.style.display = "none";
+});
+
+const professions = ['Archer', 'Fighter', 'Healer', 'God'];
+socket.on('profession picked', function(msg) {
+    for (let i in professions) {
+        let profession = professions[i];
+        let ul = document.getElementById(profession + "Pick");
+        while( ul.firstChild ){
+            ul.removeChild( ul.firstChild );
+        }
+    }
+
+    let picks = JSON.parse(msg);
+    for (let name in picks) {
+        let { profession, ready } = picks[name];
+        let ul = document.getElementById(profession + "Pick");
+        let nameDiv = document.createElement('div');
+        let string = name;
+        if (ready) {
+            string += '<span style="color: green"> ✓'
+        }
+        nameDiv.innerHTML = string;
+        ul.appendChild(nameDiv);
+    }
+});
+
+let ready = false;
+socket.on('ready', function() {
+    ready = true;
+    $('#readyButton').html('unready');
+})
+
+socket.on('unready', function() {
+    ready = false;
+    $('#readyButton').html('ready');
+})
 
 socket.on('enter game', function (msg) {
     console.log('enter game');
@@ -256,6 +306,19 @@ $('#ArcherButton').click(function () {
     socket.emit("play as survivor", JSON.stringify("Archer"));
 });
 
+$('#nameButton').click(function () {
+    socket.emit("name submitted", document.getElementById('nameInput').value);
+});
+
+$('#readyButton').click(function () {
+    if (ready) {
+        socket.emit("unready");
+    }
+    else {
+        socket.emit("ready");
+    }
+});
+
 socket.on('game_status', function (msg) {
     const start = Date.now();
     const status = JSON.parse(msg);
@@ -320,7 +383,7 @@ socket.on('game_status', function (msg) {
         }
 
         if (typeof objects[name] === 'undefined') { //TODO move this to other event
-            objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+            objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
         }
 
         if ('model' in obj) {
@@ -452,8 +515,8 @@ function main() {
     gl.useProgram(shaderProgram);
 
     // environment
-    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [255, 229, 165]);
-    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
+    // model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "", false, texture_counter, programInfo, [255, 229, 165]);
+    model_ref['terrain'] = new OBJObject(gl, "terrain", "/public/model/environment/terrainPlane.obj", "/public/model/environment/terrainPlane.mtl", true, texture_counter, programInfo);
     model_ref['tower'] = new OBJObject(gl, "terrain", "/public/model/environment/tower.obj", "/public/model/environment/tower.mtl", true, texture_counter, programInfo);
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 

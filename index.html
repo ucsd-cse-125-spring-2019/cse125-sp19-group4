@@ -52,8 +52,11 @@
       /* ------------------------------------------Lobby----------------------------------------- */
       .loading {display: none; position:absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;}
       #lobbyUl {}
-      #lobbyUl li {display: inline-block; margin: 0 10px 0 10px}
+      #lobbyUl li {display: inline-block; margin: 0 10px 0 10px; position: relative;}
       #lobbyUl img {height: 150px; width: 150px; object-fit: cover; vertical-align: unset;}
+      .professionPick {
+        position: absolute; top: 100%; left: 50%; transform: translateX(-50%)
+      }
 
       /* animation for casting */
       .castingAnimation {
@@ -147,6 +150,12 @@
         -webkit-margin-before: 0em;
         -webkit-margin-after: 0em;
       }
+      .welcomeText {
+        font-size: 32pt;
+        transition: 1s;
+        margin: 20px 0 0 0;
+        opacity: 0;
+      }
       #notification {position: absolute; top: 10%; left: 50%; transform: translateX(-50%); font-size: 20pt; }
       #progressDiv {position: absolute; top: 5%; left: 50%; transform: translateX(-50%); width: 400px; height: 20px; opacity: 0.5;
                     background-image: -webkit-gradient(linear, left top, right top, from(rgba(230,230,230,0.3)),to(rgba(230,230,230,0.8)), color-stop(.2,#fff) );}
@@ -167,26 +176,47 @@
     <script id="intro-screen-template" type="text/template">
       <section>
         <div class="menu" id="menu" style="background-image: url(./public/images/background/desert-01.jpg)">
-          <div id="gameName" style="height:50%; width: 100%; display: flex;"> 
+          <div id="gameName" style="height:35%; width: 100%; display: flex;"> 
             <h1 style="margin: auto; font-size: 200px; color: #edd017; transform: scaleX(1.0);">Kneel Before Obelisk</h1>
           </div>
+          <button id="readyButton" style="left: 50%; position: relative; width: 100px"> ready</button>
 
-          <div style="height:30%; width: 100%; display: flex;"> 
+          <div style="height:40%; width: 100%; display: flex;"> 
             <ul id="lobbyUl" style="margin: auto; font-size: 30px; font-weight: bold; text-align: center;">
               <li>
                 <div id="GodButton" style="position: relative">
                   <img class='menuButton' src='public/images/professions/evil.png'>
                   <br>
-                  <div id='professionName'>God</div>
                   <div style="position: absolute;bottom: 140%;left: -10%;height: 68px;width: 250px;">
                       <div id='reminder' class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 0'><div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold"></div></div>
                   </div>
+                  <ul id="GodPick" class="professionPick"></ul>
                 </div>
               </li>
-              <li><div style="margin: 0 10px 0 10px; border-left: 2px solid Gray; height: 175px"></div></li>
-              <li><div id='FighterButton'><img class='menuButton' src='public/images/professions/PROFESSION_Fighter.png'><br><div id='professionName'>Fighter</div></div></li>
-              <li><div id='ArcherButton'><img class='menuButton' src='public/images/professions/PROFESSION_Archer.png'><br><div id='professionName'>Archer</div></div></li>
-              <li><div id='HealerButton'><img class='menuButton' src='public/images/professions/PROFESSION_Healer.png'><br><div id='professionName'>Healer</div></div></li>
+
+              <li><div style="margin: 0 10px 0 10px; border-left: 2px solid Gray; height: 150px"></div></li>
+              
+              <li>
+                <div id='FighterButton'>
+                  <img class='menuButton' src='public/images/professions/PROFESSION_Fighter.png'><br>
+                  <ul id="FighterPick" class="professionPick"></ul>
+                </div>
+              </li>
+
+              <li>
+                <div id='ArcherButton'>
+                  <img class='menuButton' src='public/images/professions/PROFESSION_Archer.png'><br>
+                  <ul id="ArcherPick" class="professionPick"></ul>
+                </div>
+              </li>
+
+              <li>
+                <div id='HealerButton'>
+                  <img class='menuButton' src='public/images/professions/PROFESSION_Healer.png'><br>
+                  <ul id="HealerPick" class="professionPick"></ul>
+                </div>
+              </li>
+
             </ul>
           </div>
           <!-- <div class="split" style="bottom: 0; left: 0; background-image: url('./public/images/evilGod.jpg');">
@@ -203,12 +233,36 @@
 
         <!-- </div>
 
-        <div style="width: 100vw; height:100vh; background: #ffffffc0; position:absolute; top: 0%">
-          <div style="position:absolute; left: 50%; top: 50%; transform: translate(-50%, -50%)">
-            <textarea id="nameInput" placeholder="Please enter your name" style="border: 1px solid black; border-width: 0 0 2px 0;
-                       background-color: transparent; resize: none; outline: none; width: 320px; font-size: 21pt; height: 40px;"
-                       spellCheck="false" maxLength="15"></textarea>
-          </div> -->
+        <!-- enter name -->
+        <div id="nameScreen" style="width: 100vw; height:100vh; background: #ffffffd0; position:absolute; top: 0%; text-align: center ">
+          <ul style="width: 100%; top:20%; position: absolute">
+            <span class="welcomeText" id="welcomeText1"> Welcome to _______ </span><br>
+            <span class="welcomeText" id="welcomeText2"> First, </span><br>
+            <span class="welcomeText" id="welcomeText3"> tell me who you are </span>
+
+            <div id="welcomeText4" style="opacity: 0; position:relative">
+              <div id='textMaxLen' style="position: absolute;bottom: 250%;left: 50%;height: 68px;width: 250px; opacity:0; transition: 0.5s">
+                <div class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 1'>
+                  <div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold">
+                    Oops! Name can be at most 15 characters!
+                  </div>
+                </div>
+              </div>
+              <div id='nameTaken' style="position: absolute;bottom: 250%;left: 50%;height: 68px;width: 250px; opacity:0; transition: 0.5s">
+                <div class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 1'>
+                  <div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold">
+                    Oops! This name is taken already!
+                  </div>
+                </div>
+              </div>
+              <textarea id="nameInput" placeholder="Please enter your name" style="border: 1px solid black; border-width: 0 0 2px 0;
+                        background-color: transparent; resize: none; outline: none; width: 320px; font-size: 21pt; height: 44px;"
+                        spellCheck="false" maxLength="15"></textarea>
+            </div>
+
+            <button id="nameButton" style="width: 200px; opacity: 0; font-size: 12pt; height: 2em; transition: 0.2s; 
+                        margin-top:10px" class="button"></button>
+          </ul>
         </div>
 
         <div class="loading" id="loadingBox">
@@ -227,17 +281,7 @@
         </div>
 
       </section>
-      <!-- <script>
-        $("#nameInput").keydown(function(e){
-          let textinput = document.getElementById('nameInput');
-          if (e.keyCode == 13) {
-              e.preventDefault();
-              return false;
-          }; 
-          if (textinput.value.length == textinput.maxLength) {
-          } 
-          });
-      </script> -->
+      <script src='/public/js/intro.js'></script>
 
     </script>
     <script id="ingame-template" type="text/template">

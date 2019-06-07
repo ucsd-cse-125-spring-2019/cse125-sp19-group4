@@ -38,48 +38,130 @@ const movementEvents = {};
 const jumpEvents = {};
 const skillEvents = {};
 
+const names = {};
+const professionPicks = {};
+const readys = [];
+
 
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
 
+    socket.on('name submitted', function(name) {
+        for (let key in names) {
+            if (names[key] === name) {
+                io.to(socket.id).emit('name already taken');
+                return;
+            }
+        }
+        names[socket.id] = name;
+        io.to(socket.id).emit('enter lobby');
+
+        let picks = {}
+        for (let socketId in professionPicks) {
+            picks[names[socketId]] = {
+                profession: professionPicks[socketId], 
+                ready: readys.indexOf(socketId) >= 0
+            };
+        }
+        io.emit('profession picked', JSON.stringify(picks))
+    });
+
     socket.on('play as survivor', function (msg) {
-        if (!gameInstance.joinAsSurvivor(socket.id, JSON.parse(msg))) {
-            io.to(socket.id).emit('role already taken', 'Only three survivors are supported');
+        let index = readys.indexOf(socket.id);
+        if (index > -1) {
+            readys.splice(index, 1);
+            io.to(socket.id).emit('unready');
         }
-        else {
-            if (gameInstance.checkEnoughPlayer()) {
-                enterGame();
-            }
-            else {
-                let status = {
-                    playerCount: gameInstance.playerCount,
-                    statusString: gameInstance.numPlayersStatusToString()
-                }
-                gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('wait for game begin', JSON.stringify(status));
-                });
-            }
+
+        professionPicks[socket.id] = JSON.parse(msg);
+
+        let picks = {}
+        for (let socketId in professionPicks) {
+            picks[names[socketId]] = {
+                profession: professionPicks[socketId], 
+                ready: readys.indexOf(socketId) >= 0
+            };
         }
+        io.emit('profession picked', JSON.stringify(picks))
     });
 
     socket.on('play as god', function () {
-        if (!gameInstance.joinAsGod(socket.id)) {
-            io.to(socket.id).emit('role already taken', 'Only one god is supported');
-        }
-        else {
-            if (gameInstance.checkEnoughPlayer()) {
-                enterGame();
+        for (let key in professionPicks) {
+            if (professionPicks[key] === 'God') {
+                io.to(socket.id).emit('role already taken', 'Only one god is supported');
+                return;
             }
-            else {
-                let status = {
-                    playerCount: gameInstance.playerCount,
-                    statusString: gameInstance.numPlayersStatusToString()
+        }
+
+        let index = readys.indexOf(socket.id);
+        if (index > -1) {
+            readys.splice(index, 1);
+            io.to(socket.id).emit('unready');
+        }
+
+        professionPicks[socket.id] = 'God';
+
+        let picks = {}
+        for (let socketId in professionPicks) {
+            picks[names[socketId]] = {
+                profession: professionPicks[socketId], 
+                ready: readys.indexOf(socketId) >= 0
+            };
+        }
+        io.emit('profession picked', JSON.stringify(picks))
+    });
+
+    socket.on('ready', function(msg) {
+        readys.push(socket.id);
+        
+        if (readys.length === gameInstance.max_survivors + 1) {
+
+            let hasGod = false;
+            for (let i in professionPicks) {
+                if (professionPicks[i] === "God") {
+                    hasGod = true;
                 }
-                gameInstance.clientSockets.forEach(function (socket) {
-                    io.to(socket).emit('wait for game begin', JSON.stringify(status));
-                });
             }
+
+            if (!hasGod) {
+                io.emit('role already taken', 'Someone has to pick God!');
+                readys.splice(readys.indexOf(socket.id), 1);
+                return;
+            }
+
+            for (let i in professionPicks) {
+                if (professionPicks[i] == 'God') {
+                    gameInstance.joinAsGod(i, names[i]);
+                } else {
+                    gameInstance.joinAsSurvivor(i, professionPicks[i], names[i]);
+                }
+            }
+            enterGame();
         }
+
+        let picks = {}
+        for (let socketId in professionPicks) {
+            picks[names[socketId]] = {
+                profession: professionPicks[socketId], 
+                ready: readys.indexOf(socketId) >= 0
+            };
+        }
+        io.emit('profession picked', JSON.stringify(picks))
+        io.to(socket.id).emit('ready');
+    });
+
+    socket.on('unready', function(msg) {
+        readys.splice(readys.indexOf(socket.id), 1);
+        let picks = {}
+        for (let socketId in professionPicks) {
+            picks[names[socketId]] = {
+                profession: professionPicks[socketId], 
+                ready: readys.indexOf(socketId) >= 0
+            };
+        }
+        io.emit('profession picked', JSON.stringify(picks))
+        io.to(socket.id).emit('unready');
+
     });
 
     socket.on('movement', function (msg) {
