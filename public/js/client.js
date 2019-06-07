@@ -166,7 +166,7 @@ socket.on('name already taken', function (msg) {
 socket.on('enter lobby', function() {
     let nameScreen = document.getElementById("nameScreen");
     nameScreen.style.display = "none";
-    let menu = docuemtn.getElementById('menu');
+    let menu = document.getElementById('menu');
     menu.style["pointer-events"] = "auto";
 });
 
