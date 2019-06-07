@@ -144,6 +144,7 @@
         padding: 1em;
 	      text-align: left;
         line-height: 1.5em;
+        letter-spacing: 1px
       }
       .talktext p{
         /* remove webkit p margins */
@@ -175,11 +176,13 @@
     <div class="game-area" id="game-area" style="height: 100%; width: 100%; "></div>
     <script id="intro-screen-template" type="text/template">
       <section>
-        <div class="menu" id="menu" style="background-image: url(./public/images/background/desert-01.jpg); pointer-events:none;">
+        <div class="menu" id="menu" style="pointer-events:none; letter-spacing: 3px">
+          <img style="position: absolute; height: 100%; width: 100%; filter: grayscale(20%)" src='public/images/background/desert-01.jpg'>
           <div id="gameName" style="height:35%; width: 100%; display: flex;"> 
-            <h1 style="margin: auto; font-size: 200px; color: #edd017; transform: scaleX(1.0);">Kneel Before Obelisk</h1>
+            <h1 style="margin: auto; font-size: 200px; color: #ed9b17; transform: scaleX(1.0);">Kneel Before the Obelisk</h1>
           </div>
-          <button id="readyButton" style="left: 50%; position: relative; width: 100px"> ready</button>
+          <button id="readyButton" class="button" style="left: 50%; transform: translateX(-50%); position: relative; width: 100px;
+                      font-size: 30pt; padding: 0 2px"> ready</button>
 
           <div style="height:40%; width: 100%; display: flex;"> 
             <ul id="lobbyUl" style="margin: auto; font-size: 30px; font-weight: bold; text-align: center;">
@@ -221,7 +224,7 @@
           </div>
 
         <!-- enter name -->
-        <div id="nameScreen" style="width: 100vw; height:100vh; background: #ffffffd0; position:absolute; top: 0%; text-align: center; pointer-events:auto ">
+        <div id="nameScreen" style="width: 100vw; height:100vh; background: #ffffffd0; position:absolute; top: 0%; text-align: center; pointer-events:auto; letter-spacing:5px ">
           <ul style="width: 100%; top:20%; position: absolute">
             <span class="welcomeText" id="welcomeText1"> Welcome to _______ </span><br>
             <span class="welcomeText" id="welcomeText2"> First, </span><br>
@@ -244,12 +247,12 @@
               </div>
               <textarea id="nameInput" placeholder="Please enter your name" style="border: 1px solid black; border-width: 0 0 2px 0;
                         background-color: transparent; resize: none; outline: none; width: 320px; font-size: 21pt; height: 44px;
-                        overflow: none"
+                        overflow: none; letter-spacing: 3px"
                         spellCheck="false" maxLength="15"></textarea>
             </div>
 
-            <button id="nameButton" style="width: 200px; opacity: 0; font-size: 12pt; height: 2em; transition: 0.2s; 
-                        margin-top:10px" class="button"></button>
+            <button id="nameButton" style="width: 200px; opacity: 0; font-size: 16pt; height: 2em; transition: 0.2s; letter-spacing: 2px;
+                        margin-top:10px;" class="button"></button>
           </ul>
         </div>
 

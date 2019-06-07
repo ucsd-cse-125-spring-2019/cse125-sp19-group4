@@ -185,9 +185,10 @@ socket.on('profession picked', function(msg) {
         let { profession, ready } = picks[name];
         let ul = document.getElementById(profession + "Pick");
         let nameDiv = document.createElement('div');
+        nameDiv.style = "color: black; white-space: nowrap"
         let string = name;
         if (ready) {
-            string += '<span style="color: green"> ✓'
+            string += '<span style="color: green; display: inline-block"> ✓'
         }
         nameDiv.innerHTML = string;
         ul.appendChild(nameDiv);

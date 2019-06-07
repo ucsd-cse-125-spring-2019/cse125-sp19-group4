@@ -67,7 +67,13 @@ io.on('connection', function (socket) {
     });
 
     socket.on('play as survivor', function (msg) {
-        let index = readys.indexOf(socket.id);
+        let index = readys.indexOf(socket.id);      
+
+        // already picked the same profession
+        if (JSON.parse(msg) === professionPicks[socket.id]) {
+            return;
+        }
+
         if (index > -1) {
             readys.splice(index, 1);
             io.to(socket.id).emit('unready');
@@ -112,6 +118,10 @@ io.on('connection', function (socket) {
     });
 
     socket.on('ready', function(msg) {
+        if (typeof professionPicks[socket.id] === 'undefined') {
+            return;
+        }
+
         readys.push(socket.id);
         
         if (readys.length === gameInstance.max_survivors + 1) {
