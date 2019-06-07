@@ -649,6 +649,8 @@ function initializeProfession(survivor, msg) {
         case "Healer":
             profession = new Healer();
             break;
+        default:
+            return;
     }
     survivor.skills = profession.skills;
     survivor.profession = profession.profession;

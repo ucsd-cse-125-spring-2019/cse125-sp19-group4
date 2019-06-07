@@ -21,6 +21,7 @@ const ini = require('ini');
 const config = ini.parse(fs.readFileSync('./config.ini', 'utf-8'))
 const game = require('./public/js/game.js');
 const physics = require('./public/js/physics.js');
+const { initializeProfession, Survivor } = require('./public/js/GameProfession.js');
 const Utils = require('./public/js/utils.js');
 
 app.use("/public", express.static(path.join(__dirname, '/public')));
@@ -29,7 +30,6 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-// TODO: read from config
 const physicsEngine = new physics(config.map.width, config.map.height);
 const gameInstance = new game(config, physicsEngine);
 
@@ -46,7 +46,7 @@ const readys = [];
 io.on('connection', function (socket) {
     console.log(socket.id, 'connected');
 
-    socket.on('name submitted', function(name) {
+    socket.on('name submitted', function (name) {
         for (let key in names) {
             if (names[key] === name) {
                 io.to(socket.id).emit('name already taken');
@@ -59,7 +59,7 @@ io.on('connection', function (socket) {
         let picks = {}
         for (let socketId in professionPicks) {
             picks[names[socketId]] = {
-                profession: professionPicks[socketId], 
+                profession: professionPicks[socketId],
                 ready: readys.indexOf(socketId) >= 0
             };
         }
@@ -67,7 +67,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('play as survivor', function (msg) {
-        let index = readys.indexOf(socket.id);      
+        let index = readys.indexOf(socket.id);
 
         // already picked the same profession
         if (JSON.parse(msg) === professionPicks[socket.id]) {
@@ -84,7 +84,7 @@ io.on('connection', function (socket) {
         let picks = {}
         for (let socketId in professionPicks) {
             picks[names[socketId]] = {
-                profession: professionPicks[socketId], 
+                profession: professionPicks[socketId],
                 ready: readys.indexOf(socketId) >= 0
             };
         }
@@ -110,20 +110,20 @@ io.on('connection', function (socket) {
         let picks = {}
         for (let socketId in professionPicks) {
             picks[names[socketId]] = {
-                profession: professionPicks[socketId], 
+                profession: professionPicks[socketId],
                 ready: readys.indexOf(socketId) >= 0
             };
         }
         io.emit('profession picked', JSON.stringify(picks))
     });
 
-    socket.on('ready', function(msg) {
+    socket.on('ready', function (msg) {
         if (typeof professionPicks[socket.id] === 'undefined') {
             return;
         }
 
         readys.push(socket.id);
-        
+
         if (readys.length === gameInstance.max_survivors + 1) {
 
             let hasGod = false;
@@ -152,7 +152,7 @@ io.on('connection', function (socket) {
         let picks = {}
         for (let socketId in professionPicks) {
             picks[names[socketId]] = {
-                profession: professionPicks[socketId], 
+                profession: professionPicks[socketId],
                 ready: readys.indexOf(socketId) >= 0
             };
         }
@@ -160,12 +160,12 @@ io.on('connection', function (socket) {
         io.to(socket.id).emit('ready');
     });
 
-    socket.on('unready', function(msg) {
+    socket.on('unready', function (msg) {
         readys.splice(readys.indexOf(socket.id), 1);
         let picks = {}
         for (let socketId in professionPicks) {
             picks[names[socketId]] = {
-                profession: professionPicks[socketId], 
+                profession: professionPicks[socketId],
                 ready: readys.indexOf(socketId) >= 0
             };
         }
@@ -216,12 +216,35 @@ io.on('connection', function (socket) {
         io.emit('chat message', gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
     });
 
-    socket.on('request enter game', function () {
-        const data = { players: gameInstance.socketidToPlayer, objects: gameInstance.objects };
-        // Utils.recursiveSetDumbFilter(data);
-        io.to(socket.id).emit('enter game', JSON.stringify(data));
-        // Utils.recursiveSetPropertiesFilter(data);
-    });
+    // socket.on('request enter game', function () {
+    //     const data = { 'players': {}, 'objects': {} };
+    //     for (sid in gameInstance.socketidToPlayer) {
+    //         const player = new Survivor(sid, gameInstance.socketidToPlayer[sid].name);
+    //         initializeProfession(player, gameInstance.socketidToPlayer[sid].profession);
+    //         player.position = gameInstance.socketidToPlayer[sid].position;
+    //         player.direction = gameInstance.socketidToPlayer[sid].direction;
+    //         player.model = gameInstance.socketidToPlayer[sid].model;
+    //         player.dead = gameInstance.socketidToPlayer[sid].dead;
+    //         player.status.curHealth = gameInstance.socketidToPlayer[sid].status.curHealth;
+    //         player.status.maxHealth = gameInstance.socketidToPlayer[sid].status.maxHealth;
+    //         data['players'][sid] = player;
+    //     }
+    //     for (obj in gameInstance.objects) {
+    //         const new_obj = {};
+    //         new_obj['name'] = obj;
+    //         new_obj['model'] = gameInstance.objects[obj].model;
+    //         new_obj['position'] = gameInstance.objects[obj].position;
+    //         new_obj['direction'] = gameInstance.objects[obj].direction;
+    //         if (typeof gameInstance.objects[obj].size !== 'undefined') {
+    //             new_obj['size'] = gameInstance.objects[obj].size;
+    //         }
+    //         data['objects'][obj] = new_obj;
+    //     }
+    //     io.to(socket.id).emit('loading', JSON.stringify(data));
+    //     setTimeout(() => {
+    //         io.to(socket.id).emit('enter game');
+    //     }, 6000);
+    // });
 
     socket.on('disconnect', function (reason) {
         console.log(socket.id, 'disconnected. Reason:', reason);
@@ -239,7 +262,7 @@ function enterGame() {
     // Game begins, notify all participants to enter
     game_start();
     const data = { players: gameInstance.socketidToPlayer, objects: gameInstance.objects }
-    io.emit('enter game', JSON.stringify(data));
+    io.emit('loading', JSON.stringify(data));
     gameInstance.initializeFilterFunctions();
 }
 
@@ -250,9 +273,7 @@ let gameLoopInterval = null;
 
 function game_start() {
     setTimeout(function () {
-        gameInstance.clientSockets.forEach(function (socket) {
-            io.to(socket).emit('enter game');
-        });
+        io.emit('enter game');
         gameStartTime = Date.now();
         then = Date.now();
         gameLoopInterval = setInterval(gameLoop, 1000 / tick_rate);
@@ -314,7 +335,7 @@ function gameLoop() {
         sound: gameInstance.sound,
         time: duration,
         toClean: gameInstance.toClean,
-        debug: {looptime: elapse},
+        debug: { looptime: elapse },
         progress: { curProgress: gameInstance.tower.curHealth, winProgress: gameInstance.tower.maxHealth }
     }
 

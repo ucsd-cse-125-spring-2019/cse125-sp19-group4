@@ -61,7 +61,7 @@ const z_neg_90 = glMatrix.mat4.fromZRotation(glMatrix.mat4.create(), -Math.PI / 
 const transform_ref = {
     '': glMatrix.mat4.create(),
     // environment
-    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [10, 10, 10]),
+    'terrain': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [4, 4, 4]),
     'tower': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 1.5, 2]),
     'tree': glMatrix.mat4.create(),
 
@@ -260,7 +260,10 @@ socket.on('loading', function (msg) {
     Object.keys(objs).forEach(function (name) {
         const obj = objs[name];
         objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
-        console.log(name);
+        if (typeof obj['size'] !== 'undefined') {
+            objects[name].size = obj.size;
+            console.log(name, objects[name].size);
+        }
         
         if (typeof player_profession[name] !== 'undefined') {
             objects[name].profession = player_profession[name];
@@ -271,11 +274,6 @@ socket.on('loading', function (msg) {
 
     $('#game-canvas').css('opacity', '0');
     $('#guide-screen').css('display', 'block');
-    // const loadPage = document.querySelector("#guide-image");
-    // if (window) {
-    //     loadPage.width = window.width;
-    //     loadPage.height = window.height;
-    // }
     main();
 });
 
@@ -409,10 +407,7 @@ socket.on('game_status', function (msg) {
         if (alert_prompt) {
             return;
         }
-        spectator_mode = true;
-        if (window.confirm("The game has started. Do you want to spectate the game?")) {
-            socket.emit("request enter game");
-        }
+        alert('The game has started. Please wait for the next round.');
         alert_prompt = true;
         return;
     }
