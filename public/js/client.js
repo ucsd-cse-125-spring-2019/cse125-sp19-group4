@@ -135,7 +135,21 @@ const socket = io();
 
 socket.on('chat message', function (msg) {
     openChatBox();
-    $('#messages').append($('<li>').text(msg));
+    let li = document.createElement('li');
+    li.innerHTML = msg;
+    $('#messages').append(li);
+    if (!messaging) {
+        chatBoxFade();
+    }
+});
+
+socket.on('server chat messaege', function (msg) {
+    openChatBox();
+    let li = document.createElement('li');
+    li.innerHTML = msg;
+    li.style = "color: rgb(234, 237, 23);"
+    $('#messages').append(li)
+
     if (!messaging) {
         chatBoxFade();
     }

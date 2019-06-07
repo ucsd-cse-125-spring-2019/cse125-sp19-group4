@@ -6,6 +6,7 @@ module.exports = {
     notifyAll,
     endGame,
     tick_rate,
+    sendServerChatMessage,
 }
 
 const express = require('express');
@@ -92,6 +93,10 @@ io.on('connection', function (socket) {
     });
 
     socket.on('play as god', function () {
+        if (professionPicks[socket.id] === "God") {
+            return; 
+        }
+
         for (let key in professionPicks) {
             if (professionPicks[key] === 'God') {
                 io.to(socket.id).emit('role already taken', 'Only one god is supported');
@@ -216,7 +221,7 @@ io.on('connection', function (socket) {
         if (gameInstance.deadSurvivors.includes(gameInstance.socketidToPlayer[socket.id].name)) {
             return;
         }
-        io.emit('chat message', gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
+        io.emit('chat message', getCurrentTimeString() + gameInstance.socketidToPlayer[socket.id].name + ': ' + msg);
     });
 
     // socket.on('request enter game', function () {
@@ -331,7 +336,7 @@ function gameLoop() {
     });
 
     let end = Date.now();
-    duration = Math.floor((end - gameStartTime) / 1000);
+    let duration = Math.floor((end - gameStartTime) / 1000);
 
     const broadcast_status = {
         data: toSend,
@@ -375,4 +380,19 @@ function endGame(survivorsWon) {
     } else {
         io.emit('end game', 'God');
     }
+}
+
+function sendServerChatMessage(msg) {
+    io.emit('server chat messaege', getCurrentTimeString() + msg)
+}
+
+function getCurrentTimeString() {
+    let end = Date.now();
+    let second = Math.floor((end - gameStartTime) / 1000);
+
+    let minute = Math.floor(second / 60 % 60);
+    second = Math.floor(second  % 60);
+    second = ("0" + second).slice(-2)
+    let timeString = "<span style='font-size: 0.7em; color: white'>[" + minute + ":" + second + "]: </span>";
+    return timeString;
 }
