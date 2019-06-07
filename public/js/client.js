@@ -226,6 +226,7 @@ socket.on('loading', function (msg) {
 
     if (!(socket.id in players)) {
         spectator_mode = true;
+        $('#spectator_mode').css('display', 'block');
     }
 
     if (!spectator_mode) {
@@ -238,16 +239,15 @@ socket.on('loading', function (msg) {
             skillCursors[key] = player.skills[key].cursorPath
         }
 
-        UI.InitializeStatus(player.status);
         UI.InitializeSkills(player.skills);
 
         if (uid !== "God") {
+            UI.InitializeStatus(player.status);
             UI.InitializeVault(player.items);
             UI.updateItems(player.items);
         } else {
             isGod = true;
             document.getElementById('vault').style.display = "none";
-            document.getElementById('statusBar').style.display = "none";
         }
     }
 
@@ -307,6 +307,8 @@ socket.on('Survivor Died', function (msg) {
     if (name === uid) {
         $('.game-area').css('filter', 'grayscale(70%)');
         spectator_mode = true;
+        $('#spectator_mode').css('display', 'block');
+
         casting = -1;
         delete objects['casting'];
         setCursor(defaultCursor);
@@ -325,6 +327,7 @@ socket.on('Survivor Revived', function (msg) {
     if (name === uid) {
         $('.game-area').css('filter', 'none')
         spectator_mode = false;
+        $('#spectator_mode').css('display', 'none');
         camera.setPosition(positions[name], true);
     } else {
         document.getElementById(name + "Icon").style.filter = "none";
@@ -407,6 +410,7 @@ $('#nameButton').click(function () {
 });
 
 $('#watchButton').click(function () {
+    $('#spectator_mode').css('display', 'block');
     spectator_mode = true;
     $('#menu').css('pointer-events', 'auto');
     $('#nameScreen').fadeOut();
