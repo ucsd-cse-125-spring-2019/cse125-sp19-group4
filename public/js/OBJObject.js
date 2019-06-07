@@ -5,7 +5,6 @@ class OBJObject {
         this.has_mtl = has_mtl;
         const mesh_content = readTextFile(mesh_path);
         this.mesh = new OBJ.Mesh(mesh_content);
-        // console.log(this.mesh);
 
         this.mesh.name = mesh_name;
         this.alpha = alpha;
@@ -18,7 +17,6 @@ class OBJObject {
             Object.keys(player_texture_files).forEach(prof => {
                 const texture = { 't': loadTexture(gl, player_texture_files[prof]), 'i': texture_counter.i };
                 this.prof_texture[prof] = texture;
-                console.log('obj', mesh_name, prof, player_texture_files[prof]);
             });
             this.hasTexture = true;
         }

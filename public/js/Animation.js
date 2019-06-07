@@ -29,7 +29,6 @@ class Animation {
             Object.keys(player_texture_files).forEach(prof => {
                 const texture = { 't': loadTexture(gl, player_texture_files[prof]), 'i': texture_counter.i };
                 this.prof_texture[prof] = texture;
-                console.log(json_name, prof, player_texture_files[prof]);
             });
             this.hasTexture = true;
         }

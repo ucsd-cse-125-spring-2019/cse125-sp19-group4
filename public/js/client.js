@@ -193,8 +193,8 @@ socket.on('profession picked', function(msg) {
     for (let name in picks) {
         let { profession, ready } = picks[name];
         let ul = document.getElementById(profession + "Pick");
-        let nameDiv = document.createElement('div');
-        nameDiv.style = "color: black; white-space: nowrap; font-size: 30px; font-size: 3.5vw;";
+        let nameDiv = document.createElement('li');
+        nameDiv.style = "color: black; white-space: nowrap; font-size: 2.5vw; display: inline-block; list-style: none;";
         let string = name;
         if (ready) {
             string += '<span style="color: green; display: inline-block"> ✓'
@@ -266,7 +266,6 @@ socket.on('loading', function (msg) {
         objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
         if (typeof obj['size'] !== 'undefined') {
             objects[name].size = obj.size;
-            console.log(name, objects[name].size);
         }
         
         if (typeof player_profession[name] !== 'undefined') {
@@ -834,11 +833,8 @@ function main() {
                 if (typeof player.skills[casting].range) {
                     const distance = glMatrix.vec3.distance(positions[uid], cursor);
                     if (distance > player.skills[casting].range && cursor_icon != noCursor) {
-                        console.log('setting no');
-                        
                         setCursor(noCursor);
                     } else if (distance <= player.skills[casting].range && cursor_icon != skillCursors[casting]) {
-                        console.log('setting skill');
                         setCursor(skillCursors[casting]);
                     }
                 }

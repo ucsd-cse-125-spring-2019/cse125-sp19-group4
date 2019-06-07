@@ -55,7 +55,7 @@
       #lobbyUl li {display: inline-block; margin: 0 10px 0 10px; position: relative;}
       #lobbyUl img {height: 150px; width: 150px; object-fit: cover; vertical-align: unset;}
       .professionPick {
-        position: absolute; top: 100%; left: 50%; transform: translateX(-50%)
+        position: absolute; top: 100%; left: 50%; transform: translateX(-50%); overflow: auto; max-height: 5em;
       }
       .professionDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 400px; background: #000000c0;
                               padding: 15px 10px; border-radius: 10px; color: white; display: none}
@@ -163,7 +163,7 @@
         opacity: 0;
       }
       #notification {position: absolute; top: 20%; left: 50%; transform: translateX(-50%); font-size: 20pt; }
-      #progressDiv {position: absolute; top: 5%; left: 50%; transform: translateX(-50%); width: 400px; height: 20px; opacity: 0.8;
+      #progressDiv {position: absolute; top: 5%; left: 50%; transform: translateX(-50%); width: 50%; height: 30px; opacity: 0.8;
                     background-image: -webkit-gradient(linear, left top, right top, from(rgba(230,230,230,0.3)),to(rgba(230,230,230,0.8)), color-stop(.2,#fff) );}
       @keyframes rotate {
         to {
@@ -337,6 +337,7 @@
       </div>
       <div class="progress" id="progressDiv">
           <div class="progress-bar" id="progressBar" role="progressbar" style="width: 100%"></div>
+          <div style="font-size:1.5rem; letter-spacing: 5px; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%)"><span id="tower_curHealth">-</span>/<span id="tower_maxHealth">-</span></div>
       </div>
     </div>
     </script>
