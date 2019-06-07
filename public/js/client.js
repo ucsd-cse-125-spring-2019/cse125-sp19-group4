@@ -72,7 +72,7 @@ const transform_ref = {
 
     // monster
     'slime': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2]),
-    'cactus': glMatrix.mat4.clone(y_neg_90),
+    'cactus': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_neg_90, glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [2, 2, 2])),
     'spike': glMatrix.mat4.multiply(glMatrix.mat4.create(), y_pos_90, x_neg_90),
 
     // item
