@@ -172,8 +172,8 @@ socket.on('enter lobby', function() {
     let nameScreen = document.getElementById("nameScreen");
     let menu = document.getElementById('menu');
     menu.style["pointer-events"] = "auto";
-    $('#nameScreen').animate({opacity: 0}, 2000);
-    $('#readyButton').animate({opacity: 1}, 2000);
+    $('#nameScreen').animate({opacity: 0}, 1000);
+    $('#readyButton').animate({opacity: 1}, 1000);
     setTimeout(function() {
         $('#nameScreen').css('display', 'none')
     }, 2000);
@@ -387,10 +387,10 @@ $('#watchButton').click(function () {
     spectator_mode = true;
     let nameScreen = document.getElementById("nameScreen");
     let menu = document.getElementById('menu');
-    $('#nameScreen').animate({opacity: 0}, 2000);
+    $('#nameScreen').animate({opacity: 0}, 1000);
     setTimeout(function() {
         $('#nameScreen').css('display', 'none')
-    }, 2000);
+    }, 1000);
 });
 
 $('#readyButton').click(function () {
