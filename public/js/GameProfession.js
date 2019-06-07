@@ -208,7 +208,7 @@ class Fighter {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    game.shoot(name, 50, self.status.damage, 0.2);
+                    game.shoot(name, 50, self.status.damage, 0.5);
                 },
             },
 
@@ -220,12 +220,14 @@ class Fighter {
                 'curCoolDown': 0,
                 'maxCharge': 2,
                 'curCharge': 0,
+                'range': 10,
                 'description': 'Cut a tree',
                 'iconPath': '/public/images/skills/SKILL_CutTree.png',
+                'cursorPath': '/public/images/mouse/axe.png',
                 'function': function (game, self, params) {
                     const location = params.position;
                     // skill location too far from invoker
-                    if (Utils.calculateDistance(self.position, location) > 5) {
+                    if (Utils.calculateDistance(self.position, location) > this.range) {
                         return false;
                     }
 
@@ -482,7 +484,7 @@ class Healer {
                     direction[1] = 0;
                     glMatrix.vec3.normalize(direction, direction);
                     self.direction = direction;
-                    game.shoot(name, 50, self.status.damage, 0.2);
+                    game.shoot(name, 50, self.status.damage, 0.5);
                 },
             },
 
@@ -602,14 +604,16 @@ class Healer {
                 'sound': 'resurrect',
                 'coolDown': 30,
                 'curCoolDown': 0,
+                'range': 10,
                 'description': 'Resurrect a dead player',
                 'iconPath': '/public/images/skills/SKILL_Resurrect.png',
+                'cursorPath': '/public/images/mouse/halo.png',
                 'type': SKILL_TYPE.LOCATION,
                 'function': function (game, self, params) {
                     const name = self.name;
                     const location = params.position;
                     // skill location too far from invoker
-                    if (Utils.calculateDistance(self.position, location) > 5) {
+                    if (Utils.calculateDistance(self.position, location) > this.range) {
                         return false;
                     }
                     const radius = 5;

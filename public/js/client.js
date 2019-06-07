@@ -19,7 +19,9 @@ const FACE = [0.0, 0.0, -1.0];
 const NEG_FACE = glMatrix.vec3.create();
 glMatrix.vec3.negate(NEG_FACE, FACE);
 
-const defaultCursor = "public/images/mouse/normal.cur"
+const defaultCursor = "public/images/mouse/normal.cur";
+const noCursor = "public/images/mouse/cancel.png";
+let cursor_icon = '';
 
 let player = {};
 
@@ -763,6 +765,18 @@ function main() {
                     const skillsParams = { skillNum: casting, position: cursor };
                     socket.emit('skill', JSON.stringify(skillsParams));
                 }
+
+                if (typeof player.skills[casting].range) {
+                    const distance = glMatrix.vec3.distance(positions[uid], cursor);
+                    if (distance > player.skills[casting].range && cursor_icon != noCursor) {
+                        console.log('setting no');
+                        
+                        setCursor(noCursor);
+                    } else if (distance <= player.skills[casting].range && cursor_icon != skillCursors[casting]) {
+                        console.log('setting skill');
+                        setCursor(skillCursors[casting]);
+                    }
+                }
             }
         }
         
@@ -1069,9 +1083,14 @@ function setCursor(url) {
         $('.game-area').css('cursor', 'url(' + url + ') 25 25, auto');
     } else if (url == "/public/images/mouse/fireball.png") {
         $('.game-area').css('cursor', 'url(' + url + ') 24 24, auto');
+    } else if (url == "/public/images/mouse/axe.png") {
+        $('.game-area').css('cursor', 'url(' + url + ') 0 24, auto');
+    } else if (url == "/public/images/mouse/halo.png") {
+        $('.game-area').css('cursor', 'url(' + url + ') 32 32, auto');
     } else {
         $('.game-area').css('cursor', 'url(' + url + '), auto');
     }
+    cursor_icon = url;
 }
 /*================================End of UI===================================*/
 
