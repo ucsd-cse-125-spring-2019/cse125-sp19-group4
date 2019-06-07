@@ -1,5 +1,5 @@
 const tick_rate = 60;
-
+const port = 2400;
 module.exports = {
     notifySurvivorDied,
     notifySurvivorRevived,
@@ -259,8 +259,8 @@ io.on('connection', function (socket) {
     });
 });
 
-http.listen(8080, function () {
-    console.log('listening on http://127.0.0.1:8080');
+http.listen(port, function () {
+    console.log('listening on http://127.0.0.1:' + port);
 });
 
 // Server loop
