@@ -26,6 +26,8 @@ document.getElementById('nameInput').addEventListener('input', function(e) {
     }
 });
 
+
+
 // if debug, show intro text animation
 if (debug) {
     setTimeout(function() {

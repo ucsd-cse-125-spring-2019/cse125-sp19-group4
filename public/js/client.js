@@ -170,6 +170,7 @@ socket.on('enter lobby', function() {
     let menu = document.getElementById('menu');
     menu.style["pointer-events"] = "auto";
     $('#nameScreen').animate({opacity: 0}, 2000);
+    $('#readyButton').animate({opacity: 1}, 2000);
     setTimeout(function() {
         $('#nameScreen').css('display', 'none')
     }, 2000);
@@ -359,6 +360,16 @@ $('#nameButton').click(function () {
     if (document.getElementById('nameInput').value.length > 0) {
         socket.emit("name submitted", document.getElementById('nameInput').value);
     }
+});
+
+$('#watchButton').click(function () {
+    spectator_mode = true;
+    let nameScreen = document.getElementById("nameScreen");
+    let menu = document.getElementById('menu');
+    $('#nameScreen').animate({opacity: 0}, 2000);
+    setTimeout(function() {
+        $('#nameScreen').css('display', 'none')
+    }, 2000);
 });
 
 $('#readyButton').click(function () {
