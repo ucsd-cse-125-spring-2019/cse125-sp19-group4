@@ -286,8 +286,36 @@ socket.on('Survivor Revived', function (msg) {
 });
 
 socket.on('end game', function (msg) {
-    $('.game-area').html($('#endgame-template').html());
-    document.getElementById('endgame-message').innerHTML = msg;
+    // $('.game-area').html($('#endgame-template').html());
+    // document.getElementById('endgame-message').innerHTML = msg;
+    $('#statusBar').css("display", "none");
+    $('#skillBarDiv').css("display", "none");
+    $('#teammatesDiv').css("display", "none");
+    $('#progressDiv').css("display", "none");
+    let endGameMessageDiv = document.createElement('div');
+    let endGameMessage = document.createElement('span');
+    endGameMessage.id = "endGameMessage";
+    endGameMessageDiv.appendChild(endGameMessage);
+
+    let gameArea = document.getElementById('game-area')
+    gameArea.style.transition = "3s"
+    let godWon = msg === "God";
+    let divStyle =  "position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 140px; width: 510px;" +
+                       "clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);"
+    let textStyle = "position: absolute; top: 100%; font-size: 70pt;";
+    endGameMessage.style = textStyle;
+
+    if ((isGod && godWon) || (!isGod && !godWon)) {
+        endGameMessageDiv.style = divStyle
+        endGameMessage.innerHTML = "YOU WON!"
+        gameArea.style.filter = "brightness(1.4)"
+    } else {
+        endGameMessageDiv.style = divStyle + "color: red"
+        endGameMessage.innerHTML = "YOU LOST!"
+        gameArea.style.filter = "grayscale(70%)"
+    }
+    gameArea.appendChild(endGameMessageDiv);
+    $('#endGameMessage').animate({ top: "0%"}, 3000);
 });
 
 $('#GodButton').click(function () {

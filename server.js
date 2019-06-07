@@ -231,13 +231,13 @@ function enterGame() {
 let elapse = 0;
 let gameStartTime = null;
 let then = null;
-let interval = null;
+let gameLoopInterval = null;
 
 function game_start() {
     gameStartTime = Date.now();
     then = Date.now();
 
-    interval = setInterval(gameLoop, 1000 / tick_rate);
+    gameLoopInterval = setInterval(gameLoop, 1000 / tick_rate);
 }
 
 function gameLoop() {
@@ -326,10 +326,10 @@ function notifySurvivorRevived(name) {
 
 
 function endGame(survivorsWon) {
-    clearInterval(interval);
+    clearInterval(gameLoopInterval);
     if (survivorsWon) {
-        io.emit('end game', 'Survivors won the game!');
+        io.emit('end game', 'Survivor');
     } else {
-        io.emit('end game', 'God won the game!');
+        io.emit('end game', 'God');
     }
 }

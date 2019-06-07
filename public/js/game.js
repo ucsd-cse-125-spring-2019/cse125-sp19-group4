@@ -144,7 +144,7 @@ class GameInstance {
     };
 
     joinAsSurvivor(socketid, msg, name) {
-        const survivor = new Survivor(socketid, this.survivorCount);
+        const survivor = new Survivor(socketid, name);
         this.toSend.push(survivor.name);
 
         initializeProfession(survivor, msg);

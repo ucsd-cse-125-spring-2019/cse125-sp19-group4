@@ -29,8 +29,8 @@ class onGoingSkill {
 }
 
 class Survivor {
-    constructor(socketid, sid) {
-        this.name = 'Survivor ' + sid;
+    constructor(socketid, name) {
+        this.name = name;
         this.type = "player"
         this.dead = false;
         this.socketid = socketid;
