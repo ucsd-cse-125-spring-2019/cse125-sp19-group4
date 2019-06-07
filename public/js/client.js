@@ -165,9 +165,12 @@ socket.on('name already taken', function (msg) {
 
 socket.on('enter lobby', function() {
     let nameScreen = document.getElementById("nameScreen");
-    nameScreen.style.display = "none";
     let menu = document.getElementById('menu');
     menu.style["pointer-events"] = "auto";
+    $('#nameScreen').animate({opacity: 0}, 2000);
+    setTimeout(function() {
+        $('#nameScreen').css('display', 'none')
+    }, 2000);
 });
 
 const professions = ['Archer', 'Fighter', 'Healer', 'God'];
@@ -259,7 +262,7 @@ socket.on('wait for game begin', function (msg) {
     $('#loadingBox').css('display', 'block');
     $('#menu').css('opacity', '0.1');
     $('#gameName').css('opacity', '0');
-    $('#lobbyUl').css('opacity', '0');
+    $('#lobbyUl').animate('opacity', '0');
     $('#GodButton').prop('disabled', true);
     $('#SurvivorButton').prop('disabled', true);
 
