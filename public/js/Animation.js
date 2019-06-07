@@ -1,5 +1,5 @@
 class Animation {
-    constructor(gl, json_name, programInfo, texture_counter, defaultColor = [0, 0, 255, 255]) {
+    constructor(gl, json_name, programInfo, texture_counter, player_texture_files = null) {
         this.scaled_now = [];
         this.then = 0;
         this.programInfo = programInfo;
@@ -14,7 +14,7 @@ class Animation {
         this.materials = ObjectJSON.materials;
         const init_indices = ObjectJSON.faces;
         this.indices = new Array(this.materials.length);
-        this.indices.fill([])
+        this.indices.fill([]);
         for (let i = 0; i < init_indices.length; i += 11) {
             this.indices[init_indices[i + 4]].push(init_indices[i + 1]);
             this.indices[init_indices[i + 4]].push(init_indices[i + 2]);
@@ -24,6 +24,15 @@ class Animation {
         this.texture_files = {};
         this.indexBuffers = {};
         this.textureBuffers = {};
+        this.prof_texture = {};
+        if (player_texture_files != null) {
+            Object.keys(player_texture_files).forEach(prof => {
+                const texture = { 't': loadTexture(gl, player_texture_files[prof]), 'i': texture_counter.i };
+                this.prof_texture[prof] = texture;
+                console.log(json_name, prof, player_texture_files[prof]);
+            });
+            this.hasTexture = true;
+        }
         ObjectJSON.materials.forEach((element, index) => {
             const mapping = {};
             if (element.mapNormal) {
@@ -53,7 +62,7 @@ class Animation {
         })
         if (!this.hasTexture) {
             this.texture_index = texture_counter.i;
-            this.texture = loadTexture(gl, "", defaultColor);
+            this.texture = loadTexture(gl, "", [0, 0, 255, 255]);
             texture_counter.i += 1;
         }
         this.fps = ObjectJSON.animation.fps;
@@ -115,7 +124,7 @@ class Animation {
         let array_index = 1;
         gl.uniform1f(this.programInfo.uniformLocations.alpha, 1.0);
         if (this.vertices.length > 1) {
-            instance_idxs.forEach(index => {
+            Object.keys(instance_idxs).forEach(index => {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffers[index]);
                 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.vertices[index]), gl.STATIC_DRAW);
                 gl.vertexAttribPointer(this.programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
@@ -170,6 +179,17 @@ class Animation {
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, this.materials[i].colorSpecular);
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[i]);
                 gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
+                if (Object.keys(instance_idxs).length > 0) {
+                    Object.keys(instance_idxs).forEach((player_i, ind) => {
+                        gl.activeTexture(gl.TEXTURE0 + this.prof_texture[instance_idxs[player_i]].i);
+                        gl.bindTexture(gl.TEXTURE_2D, this.prof_texture[instance_idxs[player_i]].t);
+                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.prof_texture[instance_idxs[player_i]].i);
+                        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
+                        gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[ind + 1]);
+                        gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+                    });
+                    return;
+                }
                 if (this.hasTexture) {
                     if (Object.keys(this.texture_files[i].map).length) {
                         Object.keys(this.texture_files[i].map).forEach((e) => {
@@ -192,9 +212,6 @@ class Animation {
                 });
             })
         }
-        //gl.disableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-
-
     }
 
     resetTime(index) {//use this to reset animation

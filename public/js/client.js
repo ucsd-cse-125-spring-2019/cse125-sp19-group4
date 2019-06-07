@@ -23,8 +23,15 @@ const defaultCursor = "public/images/mouse/normal.cur"
 
 let player = {};
 
+const player_profession = {};
 const player_alive = {};
 const player_die_index = {};
+
+const player_texture_files = {
+    'Archer': '/public/model/player/archerTexture.png',
+    'Fighter': '/public/model/player/fighterTexture.png',
+    'Healer': '/public/model/player/healerTexture.png',
+}
 
 const objects = {};
 const cast_models = [];
@@ -66,12 +73,12 @@ const transform_ref = {
     // item
     // 'boots': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.01, 0.01, 0.01]),
     // 'swords': glMatrix.mat4.clone(z_neg_90),
-    'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.08, 0.08, 0.08]),
+    // 'shields': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [0.08, 0.08, 0.08]),
     // 'hearts': glMatrix.mat4.fromScaling(glMatrix.mat4.create(), [1.2, 1, 1]),
     // 'daggers': glMatrix.mat4.fromTranslation(glMatrix.mat4.create(), [0, 5, 0]),
     'boots': glMatrix.mat4.clone(x_neg_90),
     'swords': glMatrix.mat4.clone(x_neg_90),
-    // 'shields': glMatrix.mat4.create(),
+    'shields': glMatrix.mat4.clone(x_neg_90),
     'hearts': glMatrix.mat4.clone(x_neg_90),
     'daggers': glMatrix.mat4.clone(x_neg_90),
 
@@ -210,10 +217,12 @@ socket.on('enter game', function (msg) {
     uid = players[socket.id].name;
     for (let key in players) {
         player_alive[players[key].name] = true;
+        if (typeof players[key].profession !== 'undefined') {
+            player_profession[players[key].name] = players[key].profession;
+        }
     }
     player = players[socket.id];
     console.log("my name is", uid);
-
 
     // get the skill cursor
     for (let key in player.skills) {
@@ -234,7 +243,10 @@ socket.on('enter game', function (msg) {
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
         const obj = objs[name];
-        objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+        objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
+        if (typeof player_profession[name] !== 'undefined') {
+            objects[name].profession = player_profession[name];
+        }
         directions[name] = obj.direction;
         positions[name] = obj.position;
     });
@@ -552,10 +564,10 @@ function main() {
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
     // player
-    model_ref['player_standing'] = new OBJObject(gl, "player", "/public/model/player/player_standing.obj", "/public/model/player/player_standing.mtl", true, texture_counter, programInfo);
-    model_ref['player_running'] = new Animation(gl, "/public/model/player/player_running.json", programInfo, texture_counter);
+    model_ref['player_standing'] = new OBJObject(gl, "player", "/public/model/player/player_standing.obj", "/public/model/player/player_standing.mtl", true, texture_counter, programInfo, [0, 0, 0], 1.0, player_texture_files);
+    model_ref['player_running'] = new Animation(gl, "/public/model/player/player_running.json", programInfo, texture_counter, player_texture_files);
     model_ref['player_running'].addInstance(gl);
-    model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter);
+    model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter, player_texture_files);
     let i = 0;
     for (let key in player_alive) {
         model_ref['player_die'].addInstance(gl);
@@ -572,7 +584,7 @@ function main() {
     // item
     // model_ref['boots'] = new OBJObject(gl, "boots", "/public/model/item/boot.obj", "", false, texture_counter, programInfo, [0, 255, 255]);
     // model_ref['swords'] = new OBJObject(gl, "swords", "/public/model/item/SwordCartoonLowPoly.obj", "", false, texture_counter, programInfo, [100, 100, 100]);
-    model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/item/Shield_obj.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
+    // model_ref['shields'] = new OBJObject(gl, "shields", "/public/model/item/Shield_obj.obj", "", false, texture_counter, programInfo, [255, 155, 56]);
     // model_ref['hearts'] = new OBJObject(gl, "hearts", "/public/model/item/heart.obj", "", false, texture_counter, programInfo, [255, 0, 0]);
     // model_ref['daggers'] = new OBJObject(gl, "daggers", "/public/model/item/Dagger.obj", "", false, texture_counter, programInfo, [238, 55, 255]);
 
@@ -580,6 +592,8 @@ function main() {
     model_ref['boots'].addInstance(gl);
     model_ref['swords'] = new Animation(gl, "/public/model/item/sword.json", programInfo, texture_counter);
     model_ref['swords'].addInstance(gl);
+    model_ref['shields'] = new Animation(gl, "/public/model/item/shield.json", programInfo, texture_counter);
+    model_ref['shields'].addInstance(gl);
     model_ref['hearts'] = new Animation(gl, "/public/model/item/heart.json", programInfo, texture_counter);
     model_ref['hearts'].addInstance(gl);
     model_ref['daggers'] = new Animation(gl, "/public/model/item/dagger.json", programInfo, texture_counter);
@@ -618,6 +632,7 @@ function main() {
         model_ref['spike'].updateJoints(deltaTime, 0, true);
         model_ref['shieldWall'].updateJoints(deltaTime, 0, true);
         model_ref['boots'].updateJoints(deltaTime, 0, true);
+        model_ref['shields'].updateJoints(deltaTime, 0, true);
         model_ref['swords'].updateJoints(deltaTime, 0, true);
         model_ref['hearts'].updateJoints(deltaTime, 0, true);
         model_ref['daggers'].updateJoints(deltaTime, 0, true);
@@ -806,10 +821,12 @@ function drawScene(gl, programInfo, objects, camera) {
         }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
-            to_render[obj.m].push([]);
+            to_render[obj.m].push({});
             timer[obj.m] = 0;
         }
-        to_render[obj.m][0].push(player_die_index[objects_keys[i]]);
+        if (typeof obj.profession !== 'undefined') {
+            to_render[obj.m][0][player_die_index[objects_keys[i]]] = obj.profession;
+        }
         to_render[obj.m].push(obj.t);
     }
 
