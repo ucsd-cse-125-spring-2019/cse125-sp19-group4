@@ -224,6 +224,10 @@ socket.on('loading', function (msg) {
     const players = data.players;
     const objs = data.objects;
 
+    if (!(socket.id in players)) {
+        spectator_mode = true;
+    }
+
     if (!spectator_mode) {
         uid = players[socket.id].name;
         player = players[socket.id];
@@ -348,15 +352,26 @@ socket.on('end game', function (msg) {
     let textStyle = "position: absolute; top: 100%; font-size: 70pt;";
     endGameMessage.style = textStyle;
 
-    if ((isGod && godWon) || (!isGod && !godWon)) {
-        endGameMessageDiv.style = divStyle
-        endGameMessage.innerHTML = "YOU WON!"
-        gameArea.style.filter = "brightness(1.4)"
+    if (!spectator_mode) {
+        if ((isGod && godWon) || (!isGod && !godWon)) {
+            endGameMessageDiv.style = divStyle
+            endGameMessage.innerHTML = "YOU WON!"
+            gameArea.style.filter = "brightness(1.4)"
+        } else {
+            endGameMessageDiv.style = divStyle + "color: red"
+            endGameMessage.innerHTML = "YOU LOST!"
+            gameArea.style.filter = "grayscale(70%)"
+        }
     } else {
-        endGameMessageDiv.style = divStyle + "color: red"
-        endGameMessage.innerHTML = "YOU LOST!"
-        gameArea.style.filter = "grayscale(70%)"
+        if (godWon) {
+            endGameMessage.innerHTML = "God WON!"
+        }
+        else { 
+            endGameMessage.innerHTML = "Survivor WON!"
+        }
+        endGameMessageDiv.style = divStyle
     }
+
     gameArea.appendChild(endGameMessageDiv);
     $('#endGameMessage').animate({ top: "0%"}, 3000);
 });

@@ -385,7 +385,7 @@ let notificationTimer = null;
 function updateNotification(msg, type) {
     let span = document.createElement("div")
     span.innerHTML = msg;
-    span.style = NOTIFICATION_STYLE[type];
+    // span.style = NOTIFICATION_STYLE[type];
     document.getElementById('notificationList').appendChild(span);
 
     setTimeout(function() {
