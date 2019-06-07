@@ -63,13 +63,11 @@ document.getElementById('ArcherButtoni').addEventListener('mouseleave', descript
 document.getElementById('HealerButtoni').addEventListener('mouseleave', descriptionMouseLeave)
 
 function descriptionMouseEnter(e) {
-    let id = e.target.id + 'description';
-    let description = document.getElementById(e.target.id + 'Description');
-    description.style.opacity = 1;
+    let id = e.target.id + 'Description';
+    $('#'+id).fadeIn();
 }
 
 function descriptionMouseLeave(e) {
-    let id = e.target.id + 'description';
-    let description = document.getElementById(e.target.id + 'Description');
-    description.style.opacity = 0;
+    let id = e.target.id + 'Description';
+    $('#'+id).fadeOut();
 }

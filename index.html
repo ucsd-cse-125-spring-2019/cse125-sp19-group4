@@ -57,8 +57,8 @@
       .professionPick {
         position: absolute; top: 100%; left: 50%; transform: translateX(-50%)
       }
-      .professionDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 400px; background: #000000a0;
-                              transition: 0.5s; padding: 15px 10px; border-radius: 10px; color: white; opacity: 0;}
+      .professionDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 400px; background: #000000c0;
+                              padding: 15px 10px; border-radius: 10px; color: white; display: none}
 
       /* animation for casting */
       .castingAnimation {
@@ -181,10 +181,10 @@
         <div class="menu" id="menu" style="pointer-events:none; letter-spacing: 3px">
           <img style="position: absolute; height: 100%; width: 100%; filter: grayscale(20%)" src='public/images/background/desert-01.jpg'>
           <div id="gameName" style="height:35%; width: 100%; display: flex;"> 
-            <h1 style="margin: auto; font-size: 200px; color: #ed9b17; transform: scaleX(1.0);">Kneel Before the Obelisk</h1>
+            <h1 style="margin: auto; font-size: 200px; color: #ed9b17; transform: scaleX(1.0);">Obelisk</h1>
           </div>
           <button id="readyButton" class="button" style="left: 50%; transform: translateX(-50%); position: relative; width: 100px;
-                      font-size: 30pt; padding: 0 2px; background-color: #00000030; opacity: 0; z-index: 99;"> ready</button>
+                      font-size: 30pt; padding: 0 2px; background-color: #00000030; display: none;"> ready</button>
 
           <div style="height:40%; width: 100%; display: flex;"> 
             <ul id="lobbyUl" style="margin: auto; font-size: 30px; font-weight: bold; text-align: center;">
@@ -196,7 +196,7 @@
                       <div id='reminder' class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 0'><div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold"></div></div>
                   </div>
                   <ul id="GodPick" class="professionPick"></ul>
-                  <div id="GodButtoniDescription" class="professionDescription">Spawn monsters and place trees strategically to kill all survivors</div>
+                  <div id="GodButtoniDescription" class="professionDescription"><span style="color: #f44b42;">Spawn</span> monsters and place trees strategically to kill all survivors</div>
 
                 </div>
               </li>
@@ -223,7 +223,7 @@
                 <div id='HealerButton'>
                   <img class='menuButton' id='HealerButtoni' src='public/images/professions/PROFESSION_Healer.png'><br>
                   <ul id="HealerPick" class="professionPick"></ul>
-                  <div id="HealerButtoniDescription" class="professionDescription">Support your teammates with healing and damage boosting</div>
+                  <div id="HealerButtoniDescription" class="professionDescription">Support your teammates with <span style="color: #7cff89">healing</span> and <span style="color: #ffe67c">damage boosting</span></div>
                 </div>
               </li>
 
@@ -275,7 +275,7 @@
             <h1>Please wait for other players to join:)</h1>
             <ul id="lobbyUl">
               <li><div><img src='public/images/professions/evil.png'><br><span id="GodCount">0</span> God</div></li>
-              <li><div style="margin: 0 10px 0 10px; border-left: 2px solid Gray; height: 175px"></div></li>
+              <li><div style="margin: 0 10px 0 10px; border-left: 5px solid Gray; height: 175px"></div></li>
               <li><div><img src='public/images/professions/PROFESSION_Fighter.png'><br><span id="FighterCount">0</span> Fighter</div></li>
               <li><div><img src='public/images/professions/PROFESSION_Archer.png'><br><span id="ArcherCount">0</span> Archer</div></li>
               <li><div><img src='public/images/professions/PROFESSION_Healer.png'><br><span id="HealerCount">0</span> Healer</div></li>
@@ -290,8 +290,8 @@
 
     </script>
     <script id="ingame-template" type="text/template">
-      <div id="guide-screen" style="width: 100%; height:100%; position:absolute; text-align: center; pointer-events:auto ">
-        <img id='guide-img' src='public/images/background/guidePage.png' style="max-width: 100%; height: auto; bottom: 0; left:0; position: absolute">
+      <div id="guide-screen" style="width: 100%; height:100%;">
+        <img id='guide-img' src='public/images/background/guidePage.png' style="max-width: 100%; height: auto; bottom: 0%; position: fixed;">
         <span class="loading__anim" style="bottom: 5%; right: 5%; position: absolute"></span>
       </div> 
       <div id="game-canvas">
@@ -335,7 +335,7 @@
     </div>
     </script>
     <script id="endgame-template" type="text/template">
-      <h1 id="endgame-message"><h1/>
+      <h1 id="endgame-message"></h1>
     </script>
   </body>
   <script src="/public/lib/jquery-3.4.0.min.js"></script>

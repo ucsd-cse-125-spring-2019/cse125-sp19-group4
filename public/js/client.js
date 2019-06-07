@@ -172,11 +172,11 @@ socket.on('enter lobby', function() {
     let nameScreen = document.getElementById("nameScreen");
     let menu = document.getElementById('menu');
     menu.style["pointer-events"] = "auto";
-    $('#nameScreen').animate({opacity: 0}, 1000);
-    $('#readyButton').animate({opacity: 1}, 1000);
+    $('#nameScreen').fadeOut();
+    $('#readyButton').fadeIn();
     setTimeout(function() {
         $('#nameScreen').css('display', 'none')
-    }, 2000);
+    }, 1000);
 });
 
 const professions = ['Archer', 'Fighter', 'Healer', 'God'];
@@ -194,7 +194,7 @@ socket.on('profession picked', function(msg) {
         let { profession, ready } = picks[name];
         let ul = document.getElementById(profession + "Pick");
         let nameDiv = document.createElement('div');
-        nameDiv.style = "color: black; white-space: nowrap"
+        nameDiv.style = "color: black; white-space: nowrap; font-size: 30px; font-size: 3.5vw;";
         let string = name;
         if (ready) {
             string += '<span style="color: green; display: inline-block"> ✓'
@@ -272,14 +272,14 @@ socket.on('loading', function (msg) {
         positions[name] = obj.position;
     });
 
-    $('#game-canvas').css('opacity', '0');
+    $('#game-canvas').css('display', 'none');
     $('#guide-screen').css('display', 'block');
     main();
 });
 
 socket.on('enter game', function () {
-    $('#guide-screen').css('opacity', '0');
-    $('#game-canvas').css('opacity', '1');
+    $('#guide-screen').css('display', 'none');
+    $('#game-canvas').css('display', 'block');
 }); 
 
 socket.on('wait for game begin', function (msg) {
@@ -361,20 +361,28 @@ socket.on('end game', function (msg) {
     $('#endGameMessage').animate({ top: "0%"}, 3000);
 });
 
-$('#GodButton').click(function () {
-    socket.emit("play as god");
+$('#GodButtoni').click(function () {
+    if (!spectator_mode) {
+        socket.emit("play as god");
+    }
 });
 
-$('#FighterButton').click(function () {
-    socket.emit("play as survivor", JSON.stringify("Fighter"));
+$('#FighterButtoni').click(function () {
+    if (!spectator_mode) {
+        socket.emit("play as survivor", JSON.stringify("Fighter"));
+    }
 });
 
-$('#HealerButton').click(function () {
-    socket.emit("play as survivor", JSON.stringify("Healer"));
+$('#HealerButtoni').click(function () {
+    if (!spectator_mode) {
+        socket.emit("play as survivor", JSON.stringify("Healer"));
+    }
 });
 
-$('#ArcherButton').click(function () {
-    socket.emit("play as survivor", JSON.stringify("Archer"));
+$('#ArcherButtoni').click(function () {
+    if (!spectator_mode) {
+        socket.emit("play as survivor", JSON.stringify("Archer"));
+    }
 });
 
 $('#nameButton').click(function () {
@@ -385,12 +393,8 @@ $('#nameButton').click(function () {
 
 $('#watchButton').click(function () {
     spectator_mode = true;
-    let nameScreen = document.getElementById("nameScreen");
-    let menu = document.getElementById('menu');
-    $('#nameScreen').animate({opacity: 0}, 1000);
-    setTimeout(function() {
-        $('#nameScreen').css('display', 'none')
-    }, 1000);
+    $('#menu').css('pointer-events', 'auto');
+    $('#nameScreen').fadeOut();
 });
 
 $('#readyButton').click(function () {
