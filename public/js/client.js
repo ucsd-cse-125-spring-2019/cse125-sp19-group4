@@ -361,29 +361,31 @@ socket.on('end game', function (msg) {
     let gameArea = document.getElementById('game-area')
     gameArea.style.transition = "3s"
     let godWon = msg === "God";
-    let divStyle =  "position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 140px; width: 510px;" +
+    let divStyle =  "position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: 140px; width: 100%;" +
                        "clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);"
-    let textStyle = "position: absolute; top: 100%; font-size: 70pt;";
+    let textStyle = "position: absolute; top: 100%; left: 50%; transform: translateX(-50%); font-size: 70pt; font-family: 'Josefin Sans', sans-serif; ";
     endGameMessage.style = textStyle;
 
-    if (!spectator_mode) {
+    if (uid !== '') {
         if ((isGod && godWon) || (!isGod && !godWon)) {
             endGameMessageDiv.style = divStyle
-            endGameMessage.innerHTML = "YOU WON!"
+            endGameMessage.innerHTML = "VICTORY"
             gameArea.style.filter = "brightness(1.4)"
         } else {
             endGameMessageDiv.style = divStyle + "color: red"
-            endGameMessage.innerHTML = "YOU LOST!"
+            endGameMessage.innerHTML = "DEFEAT"
             gameArea.style.filter = "grayscale(70%)"
         }
     } else {
         if (godWon) {
-            endGameMessage.innerHTML = "God WON!"
+            endGameMessage.innerHTML = "GOD STILL RULES"
         }
         else { 
-            endGameMessage.innerHTML = "Survivor WON!"
+            endGameMessage.innerHTML = "GOD's DEFEATED"
         }
         endGameMessageDiv.style = divStyle
+        endGameMessage.style = textStyle + "font-size: 56pt"
+
     }
 
     gameArea.appendChild(endGameMessageDiv);
