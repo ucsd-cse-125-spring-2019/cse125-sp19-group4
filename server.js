@@ -127,8 +127,9 @@ io.on('connection', function (socket) {
         if (readys.length === gameInstance.max_survivors + 1) {
 
             let hasGod = false;
-            for (let i in professionPicks) {
-                if (professionPicks[i] === "God") {
+            for (let i in readys) {
+                let socketid = readys[i]
+                if (professionPicks[socketid] === "God") {
                     hasGod = true;
                 }
             }
@@ -139,14 +140,16 @@ io.on('connection', function (socket) {
                 return;
             }
 
-            for (let i in professionPicks) {
-                if (professionPicks[i] == 'God') {
-                    gameInstance.joinAsGod(i, names[i]);
+            for (let i in readys) {
+                let socketid = readys[i];
+                if (professionPicks[socketid] == 'God') {
+                    gameInstance.joinAsGod(socketid, names[socketid]);
                 } else {
-                    gameInstance.joinAsSurvivor(i, professionPicks[i], names[i]);
+                    gameInstance.joinAsSurvivor(socketid, professionPicks[socketid], names[socketid]);
                 }
             }
             enterGame();
+            return;
         }
 
         let picks = {}

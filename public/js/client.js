@@ -224,6 +224,10 @@ socket.on('loading', function (msg) {
     const players = data.players;
     const objs = data.objects;
 
+    if (!(socket.id in players)) {
+        spectator_mode = true;
+    }
+
     if (!spectator_mode) {
         uid = players[socket.id].name;
         player = players[socket.id];
