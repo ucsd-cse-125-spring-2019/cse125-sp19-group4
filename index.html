@@ -167,7 +167,7 @@
           transform: rotate(1turn)
         }
       }
-      .loading__anim { width: 40px; height: 40px; display: inline-block; border: 5px solid rgba(189,189,189 ,0.25);
+      .loading__anim { width: 80px; height: 80px; display: inline-block; border: 10px solid rgba(189,189,189 ,0.25);
         border-left-color: rgba(3,155,229 ,1); border-top-color: rgba(3,155,229 ,1); border-radius: 50%; animation: rotate 600ms infinite linear;}
     </style>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -290,6 +290,11 @@
 
     </script>
     <script id="ingame-template" type="text/template">
+      <div id="guide-screen" style="width: 100%; height:100%; position:absolute; text-align: center; pointer-events:auto ">
+        <img id='guide-img' src='public/images/background/guidePage.png' style="max-width: 100%; height: auto; bottom: 0; left:0; position: absolute">
+        <span class="loading__anim" style="bottom: 5%; right: 5%; position: absolute"></span>
+      </div> 
+      <div id="game-canvas">
       <canvas id="glCanvas"></canvas>
       <div id="Debugger">
         <span style="color:#B4AE6C;">Debugger</span>
@@ -327,6 +332,7 @@
       <div class="progress" id="progressDiv">
           <div class="progress-bar" id="progressBar" role="progressbar" style="width: 100%"></div>
       </div>
+    </div>
     </script>
     <script id="endgame-template" type="text/template">
       <h1 id="endgame-message"><h1/>
