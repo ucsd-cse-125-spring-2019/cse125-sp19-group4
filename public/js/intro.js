@@ -14,17 +14,17 @@ $("#nameInput").keydown(function(e){
             $("#textMaxLen").css("opacity", "0")
         }, 2000)
     } 
+});
 
+document.getElementById('nameInput').addEventListener('input', function(e) {
+    let textinput = document.getElementById('nameInput');
     $("#nameButton").html("I'm " + textinput.value)
     $("#nameButton").css("opacity", "1")
 
-    if (e.keyCode == 8) { // hide when name empty
-        if (textinput.value.length == 1) {
-            $("#nameButton").css("opacity", "0")
-        }
+    if (textinput.value.length == 0) {
+        $("#nameButton").css("opacity", "0")
     }
 });
-
 
 // if debug, show intro text animation
 if (debug) {

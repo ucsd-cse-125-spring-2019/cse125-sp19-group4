@@ -175,7 +175,7 @@
     <div class="game-area" id="game-area" style="height: 100%; width: 100%; "></div>
     <script id="intro-screen-template" type="text/template">
       <section>
-        <div class="menu" id="menu" style="background-image: url(./public/images/background/desert-01.jpg)">
+        <div class="menu" id="menu" style="background-image: url(./public/images/background/desert-01.jpg); pointer-events:none;">
           <div id="gameName" style="height:35%; width: 100%; display: flex;"> 
             <h1 style="margin: auto; font-size: 200px; color: #edd017; transform: scaleX(1.0);">Kneel Before Obelisk</h1>
           </div>
@@ -219,22 +219,9 @@
 
             </ul>
           </div>
-          <!-- <div class="split" style="bottom: 0; left: 0; background-image: url('./public/images/evilGod.jpg');">
-            <button class="button" id='GodButton' style="margin: auto">Rule them!</button>
-          </div>
-          
-          <div class="split" style="bottom: 0; right: 0; background-image: url('./public/images/Survivors.jpg')">
-            <ul class="list-unstyled" style="position: absolute; left: 50%; transform: translate(-50%, -50%); top: 50%; ">
-              <li><button class="button" id='FighterButton' style="margin: auto">I am Fighter</button></li>
-              <li style = "margin: 25px 0 0 0"><button class="button" id='ArcherButton' style="margin: auto">I am Archer</button></li>
-              <li style = "margin: 25px 0 0 0"><button class="button" id='HealerButton' style="margin: auto">I am Healer</button></li>
-            </ul> -->
-
-
-        <!-- </div>
 
         <!-- enter name -->
-        <div id="nameScreen" style="width: 100vw; height:100vh; background: #ffffffd0; position:absolute; top: 0%; text-align: center ">
+        <div id="nameScreen" style="width: 100vw; height:100vh; background: #ffffffd0; position:absolute; top: 0%; text-align: center; pointer-events:auto ">
           <ul style="width: 100%; top:20%; position: absolute">
             <span class="welcomeText" id="welcomeText1"> Welcome to _______ </span><br>
             <span class="welcomeText" id="welcomeText2"> First, </span><br>
@@ -256,7 +243,8 @@
                 </div>
               </div>
               <textarea id="nameInput" placeholder="Please enter your name" style="border: 1px solid black; border-width: 0 0 2px 0;
-                        background-color: transparent; resize: none; outline: none; width: 320px; font-size: 21pt; height: 44px;"
+                        background-color: transparent; resize: none; outline: none; width: 320px; font-size: 21pt; height: 44px;
+                        overflow: none"
                         spellCheck="false" maxLength="15"></textarea>
             </div>
 

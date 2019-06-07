@@ -159,6 +159,8 @@ socket.on('name already taken', function (msg) {
 socket.on('enter lobby', function() {
     let nameScreen = document.getElementById("nameScreen");
     nameScreen.style.display = "none";
+    let menu = docuemtn.getElementById('menu');
+    menu.style["pointer-events"] = "auto";
 });
 
 const professions = ['Archer', 'Fighter', 'Healer', 'God'];
@@ -292,6 +294,7 @@ socket.on('end game', function (msg) {
     $('#skillBarDiv').css("display", "none");
     $('#teammatesDiv').css("display", "none");
     $('#progressDiv').css("display", "none");
+    $('#vault').css("display", "none");
     let endGameMessageDiv = document.createElement('div');
     let endGameMessage = document.createElement('span');
     endGameMessage.id = "endGameMessage";
