@@ -37,12 +37,6 @@ class GameInstance {
         this.interactId = 0;
         this.toClean = [];
         this.skillables = {};
-        this.playerCount = {
-            'GodCount': 0,
-            'FighterCount': 0,
-            'ArcherCount': 0,
-            'HealerCount': 0,
-        }
         this.loadConfig(config);
         this.generateEnvironment();
         this.locationLottery = [0, 1, 2, 3]; // Each representing upper left, upper right, lower left, lower right
@@ -54,7 +48,7 @@ class GameInstance {
     loadConfig(config) {
         this.worldHalfWidth = Number(config.map.width) / 2;
         this.worldHalfHeight = Number(config.map.height) / 2;
-        this.max_survivors = config.game.max_survivors;
+        this.max_survivors = Number(config.game.max_survivors);
         this.itemDropProb = config.game.item_drop_prob;
         this.monsterSpawnBaseProb = Number(config.game.monster_spawn_base_prob);
         this.monsterSpawnAmount = Number(config.game.monster_spawn_amount);
@@ -138,42 +132,32 @@ class GameInstance {
         }
     }
 
-    joinAsGod(socketid) {
-        if (typeof this.god === 'undefined') {
-            this.playerCount.GodCount += 1;
-            this.god = new God(socketid);
-            this.toSend.push(this.god.name);
+    joinAsGod(socketid, name) {
+        this.god = new God(socketid);
+        this.toSend.push(this.god.name);
 
-            this.clientSockets.push(socketid);
-            this.socketidToPlayer[socketid] = this.god;
-            this.insertObjListAndMap(this.god);
-            this.physicsEngine.addPlayer(this.god.name, this.god.mass, this.god.radius, { x: 0, y: 10, z: 0 }, this.god.maxJump, true);
-            this.skillables[this.god.name] = this.god
-            return true;
-        }
-        return false;
+        this.clientSockets.push(socketid);
+        this.socketidToPlayer[socketid] = this.god;
+        this.insertObjListAndMap(this.god);
+        this.physicsEngine.addPlayer(this.god.name, this.god.mass, this.god.radius, { x: 0, y: 10, z: 0 }, this.god.maxJump, true);
+        this.skillables[this.god.name] = this.god
     };
 
-    joinAsSurvivor(socketid, msg) {
-        if (this.survivors.length < this.max_survivors) {
-            this.playerCount[msg + "Count"] += 1;
-            const survivor = new Survivor(socketid, this.survivorCount);
-            this.toSend.push(survivor.name);
+    joinAsSurvivor(socketid, msg, name) {
+        const survivor = new Survivor(socketid, this.survivorCount);
+        this.toSend.push(survivor.name);
 
-            initializeProfession(survivor, msg);
-            this.survivorCount++;
-            this.survivors.push(survivor);
-            this.liveSurvivors.push(survivor.name);
-            this.clientSockets.push(socketid);
-            this.socketidToPlayer[socketid] = survivor;
-            this.insertObjListAndMap(survivor);
-            this.initializePlayerLocation(survivor);
-            this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius,
-                { x: survivor.position[0], y: survivor.position[1], z: survivor.position[2] }, survivor.maxJump, false);
-            this.skillables[survivor.name] = survivor;
-            return true;
-        }
-        return false;
+        initializeProfession(survivor, msg);
+        this.survivorCount++;
+        this.survivors.push(survivor);
+        this.liveSurvivors.push(survivor.name);
+        this.clientSockets.push(socketid);
+        this.socketidToPlayer[socketid] = survivor;
+        this.insertObjListAndMap(survivor);
+        this.initializePlayerLocation(survivor);
+        this.physicsEngine.addPlayer(survivor.name, survivor.mass, survivor.radius,
+            { x: survivor.position[0], y: survivor.position[1], z: survivor.position[2] }, survivor.maxJump, false);
+        this.skillables[survivor.name] = survivor;
     }
 
     checkEnoughPlayer() {

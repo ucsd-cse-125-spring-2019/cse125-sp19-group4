@@ -52,8 +52,11 @@
       /* ------------------------------------------Lobby----------------------------------------- */
       .loading {display: none; position:absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;}
       #lobbyUl {}
-      #lobbyUl li {display: inline-block; margin: 0 10px 0 10px}
+      #lobbyUl li {display: inline-block; margin: 0 10px 0 10px; position: relative;}
       #lobbyUl img {height: 150px; width: 150px; object-fit: cover; vertical-align: unset;}
+      .professionPick {
+        position: absolute; top: 100%; left: 50%; transform: translateX(-50%)
+      }
 
       /* animation for casting */
       .castingAnimation {
@@ -173,26 +176,47 @@
     <script id="intro-screen-template" type="text/template">
       <section>
         <div class="menu" id="menu" style="background-image: url(./public/images/background/desert-01.jpg)">
-          <div id="gameName" style="height:50%; width: 100%; display: flex;"> 
+          <div id="gameName" style="height:35%; width: 100%; display: flex;"> 
             <h1 style="margin: auto; font-size: 200px; color: #edd017; transform: scaleX(1.0);">Kneel Before Obelisk</h1>
           </div>
+          <button id="readyButton" style="left: 50%; position: relative; width: 100px"> ready</button>
 
-          <div style="height:30%; width: 100%; display: flex;"> 
+          <div style="height:40%; width: 100%; display: flex;"> 
             <ul id="lobbyUl" style="margin: auto; font-size: 30px; font-weight: bold; text-align: center;">
               <li>
                 <div id="GodButton" style="position: relative">
                   <img class='menuButton' src='public/images/professions/evil.png'>
                   <br>
-                  <div id='professionName'>God</div>
                   <div style="position: absolute;bottom: 140%;left: -10%;height: 68px;width: 250px;">
                       <div id='reminder' class='talk-bubble tri-right chatBorder round btm-left-in' style='top: 0%; left:25%; position: absolute; opacity: 0'><div class='talktext' style="font-family: 'Josefin Sans', sans-serif; font-size: 15px; font-weight: bold"></div></div>
                   </div>
+                  <ul id="GodPick" class="professionPick"></ul>
                 </div>
               </li>
-              <li><div style="margin: 0 10px 0 10px; border-left: 2px solid Gray; height: 175px"></div></li>
-              <li><div id='FighterButton'><img class='menuButton' src='public/images/professions/PROFESSION_Fighter.png'><br><div id='professionName'>Fighter</div></div></li>
-              <li><div id='ArcherButton'><img class='menuButton' src='public/images/professions/PROFESSION_Archer.png'><br><div id='professionName'>Archer</div></div></li>
-              <li><div id='HealerButton'><img class='menuButton' src='public/images/professions/PROFESSION_Healer.png'><br><div id='professionName'>Healer</div></div></li>
+
+              <li><div style="margin: 0 10px 0 10px; border-left: 2px solid Gray; height: 150px"></div></li>
+              
+              <li>
+                <div id='FighterButton'>
+                  <img class='menuButton' src='public/images/professions/PROFESSION_Fighter.png'><br>
+                  <ul id="FighterPick" class="professionPick"></ul>
+                </div>
+              </li>
+
+              <li>
+                <div id='ArcherButton'>
+                  <img class='menuButton' src='public/images/professions/PROFESSION_Archer.png'><br>
+                  <ul id="ArcherPick" class="professionPick"></ul>
+                </div>
+              </li>
+
+              <li>
+                <div id='HealerButton'>
+                  <img class='menuButton' src='public/images/professions/PROFESSION_Healer.png'><br>
+                  <ul id="HealerPick" class="professionPick"></ul>
+                </div>
+              </li>
+
             </ul>
           </div>
           <!-- <div class="split" style="bottom: 0; left: 0; background-image: url('./public/images/evilGod.jpg');">
