@@ -24,10 +24,10 @@
 
 
       /* ----------------------------------------Skill Bar-------------------------------------- */
-      #skillBarDiv {position: absolute; bottom: 7%; left: 50%; transform: translateX(-50%); width: 320px; height: 70px; }
+      #skillBarDiv {position: absolute; bottom: 5vw; left: 50%; transform: translateX(-50%); width: 26vw; height: 70px; }
       #skillsBar {position: absolute; }
-      .skill { display: inline-block; height: 60px; width: 60px; box-shadow: 0 0 3px; 
-               position: relative; margin: 0 20px 0 0; background: #000000d0; border-radius: 10px}
+      .skill { display: inline-block; height: 5vw; width: 5vw; box-shadow: 0 0 3px; 
+               position: relative; margin: 0 1.5vw 0 0; background: #000000d0; border-radius: 10px}
       .skillDescription {position: absolute; left: 50%; bottom: 110%; transform: translateX(-50%) ; min-width: 200px; background: #000000a0;
                         transition: 0.5s; padding: 15px 10px; border-radius: 10px; color: white; opacity: 0;}
       /* ----------------------------------------SKill Bar-------------------------------------- */
@@ -300,7 +300,7 @@
       </div> 
       <div id="game-canvas">
       <canvas id="glCanvas"></canvas>
-      <div id="Debugger">
+      <div id="Debugger" style="display: none">
         <span style="color:#B4AE6C;">Debugger</span>
         <div style="color:#B4AE6C; display: block;">x: <span id="x" style="color: white;">--</span> y: <span id="y" style="color: white;">--</span> z: <span id="z" style="color: white;">--</span></div>
         <div style="color:#B4AE6C; display: block;">Ping: <span id="ping" style="color: white;">--</span> ms</div>

@@ -655,7 +655,9 @@ class GameInstance {
                     } while (Math.abs(monster.position[0]) < 10 || Math.abs(monster.position[2]) < 10); // TODO: Change 10 to better match with center obelisk 
                 } while (!this.putSlimeOnTheMap(monster));    
             }
-            server.notifyAll(this.monsterSpawnAmount + ' monsters have spawned', '')
+            if (this.monsterSpawnAmount > 0) {
+                server.sendServerChatMessage(this.monsterSpawnAmount + ' wild monsters have spawned')
+            }
         }
         this.monsterSpawnTimer = 0;
     }
