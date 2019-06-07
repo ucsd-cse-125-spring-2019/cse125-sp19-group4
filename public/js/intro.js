@@ -52,15 +52,15 @@ if (debug) {
     }
 }
 
-document.getElementById('GodButton').addEventListener('mouseenter', descriptionMouseEnter)
-document.getElementById('FighterButton').addEventListener('mouseenter', descriptionMouseEnter)
-document.getElementById('ArcherButton').addEventListener('mouseenter', descriptionMouseEnter)
-document.getElementById('HealerButton').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('GodButtoni').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('FighterButtoni').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('ArcherButtoni').addEventListener('mouseenter', descriptionMouseEnter)
+document.getElementById('HealerButtoni').addEventListener('mouseenter', descriptionMouseEnter)
 
-document.getElementById('GodButton').addEventListener('mouseleave', descriptionMouseLeave)
-document.getElementById('FighterButton').addEventListener('mouseleave', descriptionMouseLeave)
-document.getElementById('ArcherButton').addEventListener('mouseleave', descriptionMouseLeave)
-document.getElementById('HealerButton').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('GodButtoni').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('FighterButtoni').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('ArcherButtoni').addEventListener('mouseleave', descriptionMouseLeave)
+document.getElementById('HealerButtoni').addEventListener('mouseleave', descriptionMouseLeave)
 
 function descriptionMouseEnter(e) {
     let id = e.target.id + 'description';
