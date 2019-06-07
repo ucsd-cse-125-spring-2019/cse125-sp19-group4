@@ -211,8 +211,8 @@ socket.on('unready', function() {
     $('#readyButton').html('ready');
 })
 
-socket.on('enter game', function (msg) {
-    console.log('enter game');
+socket.on('loading', function (msg) {
+    console.log('loading');
 
     setCursor(defaultCursor);
     UIInitialize();
@@ -257,8 +257,20 @@ socket.on('enter game', function (msg) {
         positions[name] = obj.position;
     });
 
+    $('#game-canvas').css('opacity', '0');
+    $('#guide-screen').css('display', 'block');
+    // const loadPage = document.querySelector("#guide-image");
+    // if (window) {
+    //     loadPage.width = window.width;
+    //     loadPage.height = window.height;
+    // }
     main();
 });
+
+socket.on('enter game', function () {
+    $('#guide-screen').css('opacity', '0');
+    $('#game-canvas').css('opacity', '1');
+}); 
 
 socket.on('wait for game begin', function (msg) {
     $('#loadingBox').css('display', 'block');
