@@ -27,8 +27,9 @@ class Animation {
         this.prof_texture = {};
         if (player_texture_files != null) {
             Object.keys(player_texture_files).forEach(prof => {
-                this.prof_texture[prof] = loadTexture(gl, player_texture_files[prof]);
-                texture_counter.i += 1;
+                const texture = { 't': loadTexture(gl, player_texture_files[prof]), 'i': texture_counter.i };
+                this.prof_texture[prof] = texture;
+                console.log(json_name, prof, player_texture_files[prof]);
             });
             this.hasTexture = true;
         }
@@ -36,22 +37,18 @@ class Animation {
             const mapping = {};
             if (element.mapNormal) {
                 mapping["ambient"] = loadTexture(gl, element.mapNormal);
-                texture_counter.i += 1;
                 this.hasTexture = true;
             }
             if (element.mapDiffuse) {
                 mapping["diffuse"] = loadTexture(gl, element.mapDiffuse);
-                texture_counter.i += 1;
                 this.hasTexture = true;
             }
             if (element.mapSpecular) {
                 mapping["specular"] = loadTexture(gl, element.mapSpecular);
-                texture_counter.i += 1;
                 this.hasTexture = true;
             }
             if (Object.keys(mapping).length == 0) {
                 mapping["ambient"] = loadTexture(gl, "", [255, 255, 255, 255]);
-                texture_counter.i += 1;
                 this.hasTexture = true;
             }
             this.texture_files[index] = { map: mapping, index: texture_counter.i };
@@ -183,9 +180,15 @@ class Animation {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.textureBuffers[i]);
                 gl.vertexAttribPointer(this.programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
                 if (Object.keys(instance_idxs).length > 0) {
-                    gl.activeTexture(gl.TEXTURE0 + this.texture_files[i].index);
-                        gl.bindTexture(gl.TEXTURE_2D, this.texture_files[i].map[e]);
-                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.texture_files[i].index);
+                    Object.keys(instance_idxs).forEach((player_i, ind) => {
+                        gl.activeTexture(gl.TEXTURE0 + this.prof_texture[instance_idxs[player_i]].i);
+                        gl.bindTexture(gl.TEXTURE_2D, this.prof_texture[instance_idxs[player_i]].t);
+                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.prof_texture[instance_idxs[player_i]].i);
+                        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffers[i]);
+                        gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[ind + 1]);
+                        gl.drawElements(gl.TRIANGLES, this.indices[i].length, gl.UNSIGNED_SHORT, 0);
+                    });
+                    return;
                 }
                 if (this.hasTexture) {
                     if (Object.keys(this.texture_files[i].map).length) {

@@ -27,6 +27,12 @@ const player_profession = {};
 const player_alive = {};
 const player_die_index = {};
 
+const player_texture_files = {
+    'Archer': '/public/model/player/archerTexture.png',
+    'Fighter': '/public/model/player/fighterTexture.png',
+    'Healer': '/public/model/player/healerTexture.png',
+}
+
 const objects = {};
 const cast_models = [];
 
@@ -527,10 +533,10 @@ function main() {
     model_ref['tree'] = new OBJObject(gl, "tree", "/public/model/environment/treeGreen.obj", "/public/model/environment/treeGreen.mtl", true, texture_counter, programInfo);
 
     // player
-    model_ref['player_standing'] = new OBJObject(gl, "player", "/public/model/player/player_standing.obj", "/public/model/player/player_standing.mtl", true, texture_counter, programInfo);
-    model_ref['player_running'] = new Animation(gl, "/public/model/player/player_running.json", programInfo, texture_counter);
+    model_ref['player_standing'] = new OBJObject(gl, "player", "/public/model/player/player_standing.obj", "/public/model/player/player_standing.mtl", true, texture_counter, programInfo, [0, 0, 0], 1.0, player_texture_files);
+    model_ref['player_running'] = new Animation(gl, "/public/model/player/player_running.json", programInfo, texture_counter, player_texture_files);
     model_ref['player_running'].addInstance(gl);
-    model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter);
+    model_ref['player_die'] = new Animation(gl, "/public/model/player/player_die.json", programInfo, texture_counter, player_texture_files);
     let i = 0;
     for (let key in player_alive) {
         model_ref['player_die'].addInstance(gl);
@@ -784,13 +790,11 @@ function drawScene(gl, programInfo, objects, camera) {
         }
         if (typeof to_render[obj.m] === 'undefined') {
             to_render[obj.m] = [];
-            to_render[obj.m].push([]);
+            to_render[obj.m].push({});
             timer[obj.m] = 0;
         }
         if (typeof obj.profession !== 'undefined') {
-            const prof = {};
-            prof[player_die_index[objects_keys[i]]] = obj.profession;
-            to_render[obj.m][0].push(prof);
+            to_render[obj.m][0][player_die_index[objects_keys[i]]] = obj.profession;
         }
         to_render[obj.m].push(obj.t);
     }

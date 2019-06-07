@@ -1,6 +1,6 @@
 class OBJObject {
 
-    constructor(gl, mesh_name, mesh_path, texture_path, has_mtl, texture_counter, programInfo, defaultColor = [0, 0, 255], alpha = 1.0) {
+    constructor(gl, mesh_name, mesh_path, texture_path, has_mtl, texture_counter, programInfo, defaultColor = [0, 0, 255], alpha = 1.0, player_texture_files = null) {
         this.programInfo = programInfo;
         this.has_mtl = has_mtl;
         const mesh_content = readTextFile(mesh_path);
@@ -13,28 +13,32 @@ class OBJObject {
         this.material_names = this.mesh.materialNames;
         this.indexBuffers = {};
         this.texture_files = {};
+        this.prof_texture = {};
+        if (player_texture_files != null) {
+            Object.keys(player_texture_files).forEach(prof => {
+                const texture = { 't': loadTexture(gl, player_texture_files[prof]), 'i': texture_counter.i };
+                this.prof_texture[prof] = texture;
+                console.log('obj', mesh_name, prof, player_texture_files[prof]);
+            });
+            this.hasTexture = true;
+        }
         if (this.has_mtl) {
             this.mtl_content = readTextFile(texture_path);
             this.materials = new OBJ.MaterialLibrary(this.mtl_content).materials;
-            // console.log(this.materials);
             Object.keys(this.materials).forEach((name) => {
                 const material = this.materials[name];
                 const mapping = {};
                 if (material.mapAmbient.filename) {
                     mapping["ambient"] = loadTexture(gl, material.mapAmbient.filename);
-                    texture_counter.i += 1;
                 }
                 if (material.mapDiffuse.filename) {
                     mapping["diffuse"] = loadTexture(gl, material.mapDiffuse.filename);
-                    texture_counter.i += 1;
                 }
                 if (material.mapSpecular.filename) {
                     mapping["specular"] = loadTexture(gl, material.mapSpecular.filename);
-                    texture_counter.i += 1;
                 }
                 if (Object.keys(mapping).length == 0) {
                     mapping["ambient"] = loadTexture(gl, "", [255, 255, 255, 255]);
-                    texture_counter.i += 1;
                 }
                 this.texture_files[name] = { map: mapping, index: texture_counter.i };
                 this.indexBuffers[name] = gl.createBuffer();
@@ -77,8 +81,17 @@ class OBJObject {
                 gl.uniform3fv(this.programInfo.uniformLocations.ambientColor, material.ambient);
                 gl.uniform3fv(this.programInfo.uniformLocations.diffuseColor, material.diffuse);
                 gl.uniform3fv(this.programInfo.uniformLocations.specularColor, material.specular);
-                // gl.uniform1f(this.programInfo.uniformLocations.shininess, material.specularExponent);
                 gl.uniform1f(this.programInfo.uniformLocations.alpha, this.alpha);
+                if (Object.keys(transformMatrix_array[0]).length > 0) {
+                    Object.keys(transformMatrix_array[0]).forEach((player_i, ind) => {
+                        gl.activeTexture(gl.TEXTURE0 + this.prof_texture[transformMatrix_array[0][player_i]].i);
+                        gl.bindTexture(gl.TEXTURE_2D, this.prof_texture[transformMatrix_array[0][player_i]].t);
+                        gl.uniform1i(this.programInfo.uniformLocations.uSampler, this.prof_texture[transformMatrix_array[0][player_i]].i);
+                        gl.uniformMatrix4fv(this.programInfo.uniformLocations.transformMatrix, false, transformMatrix_array[ind + 1]);
+                        gl.drawElements(gl.TRIANGLES, this.mesh.indicesPerMaterial[this.mesh.materialIndices[name]].length, gl.UNSIGNED_SHORT, 0);
+                    });
+                    return;
+                }
                 const map_keys = Object.keys(this.texture_files[name].map);
                 if (map_keys.length > 0) {
                     for (let j = 0; j < map_keys.length; j++) {
