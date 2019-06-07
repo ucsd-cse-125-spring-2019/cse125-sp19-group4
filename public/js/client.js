@@ -23,6 +23,7 @@ const defaultCursor = "public/images/mouse/normal.cur"
 
 let player = {};
 
+const player_profession = {};
 const player_alive = {};
 const player_die_index = {};
 
@@ -173,10 +174,12 @@ socket.on('enter game', function (msg) {
     uid = players[socket.id].name;
     for (let key in players) {
         player_alive[players[key].name] = true;
+        if (typeof players[key].profession !== 'undefined') {
+            player_profession[players[key].name] = players[key].profession;
+        }
     }
     player = players[socket.id];
     console.log("my name is", uid);
-
 
     // get the skill cursor
     for (let key in player.skills) {
@@ -197,7 +200,10 @@ socket.on('enter game', function (msg) {
     // Initialize models for all objects
     Object.keys(objs).forEach(function (name) {
         const obj = objs[name];
-        objects[name] = { m: obj.model, t: glMatrix.mat4.clone(transform_ref[obj.model]) };
+        objects[name] = { 'm': obj.model, 't': glMatrix.mat4.clone(transform_ref[obj.model]) };
+        if (typeof player_profession[name] !== 'undefined') {
+            objects[name].profession = player_profession[name];
+        }
         directions[name] = obj.direction;
         positions[name] = obj.position;
     });
@@ -734,7 +740,11 @@ function drawScene(gl, programInfo, objects, camera) {
             to_render[obj.m].push([]);
             timer[obj.m] = 0;
         }
-        to_render[obj.m][0].push(player_die_index[objects_keys[i]]);
+        if (typeof obj.profession !== 'undefined') {
+            const prof = {};
+            prof[player_die_index[objects_keys[i]]] = obj.profession;
+            to_render[obj.m][0].push(prof);
+        }
         to_render[obj.m].push(obj.t);
     }
 

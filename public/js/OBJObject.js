@@ -22,15 +22,19 @@ class OBJObject {
                 const mapping = {};
                 if (material.mapAmbient.filename) {
                     mapping["ambient"] = loadTexture(gl, material.mapAmbient.filename);
+                    texture_counter.i += 1;
                 }
                 if (material.mapDiffuse.filename) {
                     mapping["diffuse"] = loadTexture(gl, material.mapDiffuse.filename);
+                    texture_counter.i += 1;
                 }
                 if (material.mapSpecular.filename) {
                     mapping["specular"] = loadTexture(gl, material.mapSpecular.filename);
+                    texture_counter.i += 1;
                 }
                 if (Object.keys(mapping).length == 0) {
                     mapping["ambient"] = loadTexture(gl, "", [255, 255, 255, 255]);
+                    texture_counter.i += 1;
                 }
                 this.texture_files[name] = { map: mapping, index: texture_counter.i };
                 this.indexBuffers[name] = gl.createBuffer();
