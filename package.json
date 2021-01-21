@@ -6,6 +6,6 @@
                 "express": "^4.16.4",
                 "gl-matrix": "^3.0.0",
                 "ini": "^1.3.5",
-                "socket.io": "^2.2.0"
+                "socket.io": "^2.4.0"
         }
 }
